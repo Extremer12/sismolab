@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ChevronDown, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Volume2, VolumeX, Sparkles, RotateCcw, Headphones } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { sound } from '../../lib/sound';
 
@@ -74,6 +74,13 @@ const HISTORICAL_SLIDES: SlideEvent[] = [
 ];
 
 export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
+  // Check if user has already completed the initial guided intro
+  const hasCompletedGuidedStory = () => {
+    return localStorage.getItem('history_guided_intro_done') === 'true';
+  };
+
+  const [isGuidedMode, setIsGuidedMode] = useState<boolean>(() => !hasCompletedGuidedStory());
+  const [isScrollLocked, setIsScrollLocked] = useState<boolean>(() => !hasCompletedGuidedStory());
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [waitingForScrollAtIntro, setWaitingForScrollAtIntro] = useState(false);
@@ -82,14 +89,23 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isFirstSlideChange = useRef(true);
   const activeIdxRef = useRef(0);
+  const isGuidedModeRef = useRef(isGuidedMode);
+  const isScrollLockedRef = useRef(isScrollLocked);
   const waitingForScrollRef = useRef(false);
   const hasTriggeredIntroPause = useRef(false);
   const hasResumedAfterIntro = useRef(false);
 
-  // Keep refs updated for event listeners without causing audio re-instantiation
   useEffect(() => {
     activeIdxRef.current = activeIdx;
   }, [activeIdx]);
+
+  useEffect(() => {
+    isGuidedModeRef.current = isGuidedMode;
+  }, [isGuidedMode]);
+
+  useEffect(() => {
+    isScrollLockedRef.current = isScrollLocked;
+  }, [isScrollLocked]);
 
   useEffect(() => {
     waitingForScrollRef.current = waitingForScrollAtIntro;
@@ -109,6 +125,8 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     const handleTimeUpdate = () => {
       if (!audioRef.current) return;
       const time = audioRef.current.currentTime;
+
+      if (!isGuidedModeRef.current) return;
 
       // 1. At 23 seconds: Pause audio during intro, require user to slide down
       if (time >= 23 && time < 25 && !hasTriggeredIntroPause.current) {
@@ -145,6 +163,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
       if (time >= 93) {
         if (activeIdxRef.current < 5 && hasResumedAfterIntro.current) {
           scrollToSlide(5);
+          localStorage.setItem('history_guided_intro_done', 'true');
         }
       }
     };
@@ -152,16 +171,17 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('timeupdate', handleTimeUpdate);
 
-    // Auto-attempt playback on component mount
-    audio.play().then(() => {
-      setIsPlayingAudio(true);
-    }).catch(() => {
-      // Browsers with strict autoplay policy will play on first touch/click
-      setIsPlayingAudio(false);
-    });
+    // If initial guided mode, start audio automatically
+    if (isGuidedModeRef.current) {
+      audio.play().then(() => {
+        setIsPlayingAudio(true);
+      }).catch(() => {
+        setIsPlayingAudio(false);
+      });
+    }
 
     const handleFirstUserInteraction = () => {
-      if (audioRef.current && audioRef.current.paused && !waitingForScrollRef.current) {
+      if (isGuidedModeRef.current && audioRef.current && audioRef.current.paused && !waitingForScrollRef.current) {
         audioRef.current.play().then(() => {
           setIsPlayingAudio(true);
         }).catch(() => {});
@@ -196,6 +216,26 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     }
   };
 
+  // Restart the complete guided story with synchronization from 0:00
+  const handleRestartGuidedStory = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    sound.playClick();
+    setIsGuidedMode(true);
+    setIsScrollLocked(true);
+    setWaitingForScrollAtIntro(false);
+    hasTriggeredIntroPause.current = false;
+    hasResumedAfterIntro.current = false;
+
+    scrollToSlide(0);
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().then(() => {
+        setIsPlayingAudio(true);
+      }).catch(() => {});
+    }
+  };
+
   // Play projector slide sound when scrolling between historical years (slides 1..5)
   useEffect(() => {
     if (activeIdx === 0) return;
@@ -206,12 +246,13 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     sound.playProjectorSlide();
   }, [activeIdx]);
 
-  // Resume audio when user progresses to historical slides (slide >= 1)
+  // Resume audio and unlock when user progresses past slide 0
   const handleSlideProgression = (newIndex: number) => {
     if (newIndex >= 1) {
+      setIsScrollLocked(false);
       setWaitingForScrollAtIntro(false);
       hasResumedAfterIntro.current = true;
-      if (audioRef.current && audioRef.current.paused) {
+      if (audioRef.current && audioRef.current.paused && isGuidedModeRef.current) {
         audioRef.current.play().then(() => {
           setIsPlayingAudio(true);
         }).catch(() => {});
@@ -242,6 +283,12 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     handleSlideProgression(index);
   };
 
+  const handleUnlockFromIntro = () => {
+    setIsScrollLocked(false);
+    setWaitingForScrollAtIntro(false);
+    scrollToSlide(1);
+  };
+
   return (
     <div className="relative h-screen w-screen bg-navy-950 text-slate-100 flex flex-col font-sans select-none overflow-hidden">
       {/* 1. Minimalist Floating Header Controls */}
@@ -255,6 +302,16 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         </button>
 
         <div className="flex items-center gap-2 pointer-events-auto">
+          {/* Replay Narration Button */}
+          <button
+            onClick={handleRestartGuidedStory}
+            className="px-3 py-1.5 rounded-full border border-white/20 bg-black/40 hover:bg-black/70 text-slate-300 hover:text-white flex items-center gap-1.5 transition-all backdrop-blur-md active:scale-95 text-[10px] font-bold uppercase tracking-wider"
+            title="Reproducir narración guiada desde el inicio"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-brand-cyan" />
+            <span>Relato</span>
+          </button>
+
           {/* Subtle Audio Toggle Pill */}
           <button
             onClick={toggleAudio}
@@ -335,11 +392,15 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         })}
       </div>
 
-      {/* 3. Fullscreen Vertical Scroll Snap Stream */}
+      {/* 3. Fullscreen Vertical Scroll Snap Stream (Scroll locked during intro if guided) */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-scroll snap-y snap-mandatory scroll-smooth"
+        className={`flex-1 scroll-smooth ${
+          isScrollLocked && activeIdx === 0
+            ? 'overflow-hidden pointer-events-none'
+            : 'overflow-y-scroll snap-y snap-mandatory pointer-events-auto'
+        }`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {/* =========================================================================
@@ -468,7 +529,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
          ========================================================================= */}
       {waitingForScrollAtIntro && (
         <div
-          onClick={() => scrollToSlide(1)}
+          onClick={handleUnlockFromIntro}
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 cursor-pointer select-none"
         >
           <div className="space-y-8 max-w-sm mx-auto flex flex-col items-center">
