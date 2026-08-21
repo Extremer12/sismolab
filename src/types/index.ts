@@ -18,6 +18,7 @@ export type ScreenId =
   | 'game-emergency-kit'
   | 'game-what-would-you-do'
   | 'game-myth-reality'
+  | 'game-final-challenge'
   | 'history'
   | 'seismic-map'
   | 'ranking'
@@ -35,6 +36,8 @@ export interface UserProfile {
   total_score: number;
   level: number;
   games_played: number;
+  completed_game_ids?: string[];
+  game_high_scores?: Record<string, number>;
   correct_answers_count: number;
   total_answers_count: number;
   created_at: string;

@@ -44,11 +44,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   // Compute unlocked achievements based on conditions
   const isUnlocked = (achId: string) => {
-    if (achId === 'ach_explorador') return user.games_played >= 1;
-    if (achId === 'ach_preparado') return user.total_score >= 400;
-    if (achId === 'ach_casa_segura') return user.games_played >= 2;
-    if (achId === 'ach_experto') return user.correct_answers_count >= 5;
-    if (achId === 'ach_historiador') return user.games_played >= 3;
+    const completed = user.completed_game_ids || [];
+    if (achId === 'ach_explorador') return user.games_played >= 1 || completed.length >= 1;
+    if (achId === 'ach_preparado') return completed.includes('game-emergency-kit') || user.total_score >= 400;
+    if (achId === 'ach_casa_segura') return completed.includes('game-safe-home');
+    if (achId === 'ach_experto') return completed.includes('game-final-challenge') || user.correct_answers_count >= 5;
+    if (achId === 'ach_historiador') return completed.includes('history') || user.games_played >= 3;
     if (achId === 'ach_campeon') return user.total_score >= 1200;
     return false;
   };

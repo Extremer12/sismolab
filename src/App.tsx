@@ -25,6 +25,7 @@ import { SafeHomeGame } from './components/games/SafeHomeGame';
 import { EmergencyKitGame } from './components/games/EmergencyKitGame';
 import { WhatWouldYouDoGame } from './components/games/WhatWouldYouDoGame';
 import { MythOrRealityGame } from './components/games/MythOrRealityGame';
+import { FinalBossChallengeGame } from './components/games/FinalBossChallengeGame';
 
 export function App() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('splash');
@@ -61,11 +62,34 @@ export function App() {
   };
 
   // Handler when any minigame completes
-  const handleFinishGame = (earnedScore: number, correctCount: number, totalCount: number) => {
+  const handleFinishGame = (earnedScore: number, correctCount: number, totalCount: number, gameId?: string) => {
     sound.playWinFanfare();
 
     setUser(prev => {
-      const newScore = prev.total_score + earnedScore;
+      const currentHighScores = prev.game_high_scores || {};
+      const completedIds = prev.completed_game_ids || [];
+      const id = gameId || activeScreen;
+
+      const previousHighScore = currentHighScores[id] || 0;
+      let addedScore = 0;
+
+      if (!completedIds.includes(id)) {
+        // First completion of this mission -> full score
+        addedScore = earnedScore;
+      } else {
+        // Replaying: award delta if high score improved + 25 XP practice bonus
+        if (earnedScore > previousHighScore) {
+          addedScore = (earnedScore - previousHighScore) + 25;
+        } else {
+          addedScore = 25; // small repeat practice bonus
+        }
+      }
+
+      const newHighScore = Math.max(previousHighScore, earnedScore);
+      const newHighScores = { ...currentHighScores, [id]: newHighScore };
+      const newCompletedIds = completedIds.includes(id) ? completedIds : [...completedIds, id];
+
+      const newScore = prev.total_score + addedScore;
       const newLevel = Math.floor(newScore / 400) + 1;
 
       return {
@@ -73,6 +97,8 @@ export function App() {
         total_score: newScore,
         level: newLevel,
         games_played: prev.games_played + 1,
+        completed_game_ids: newCompletedIds,
+        game_high_scores: newHighScores,
         correct_answers_count: prev.correct_answers_count + correctCount,
         total_answers_count: prev.total_answers_count + totalCount
       };
@@ -82,7 +108,7 @@ export function App() {
     setActiveScreen('ranking');
   };
 
-  const showTopBar = activeScreen !== 'splash' && !activeScreen.startsWith('game-');
+  const showTopBar = activeScreen !== 'splash' && !activeScreen.startsWith('game-') && activeScreen !== 'history' && activeScreen !== 'seismic-map';
 
   return (
     <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950">
@@ -124,7 +150,7 @@ export function App() {
           />
         )}
 
-        {/* 5 Minigames */}
+        {/* 5 Minigames + Final Challenge */}
         {activeScreen === 'game-what-is' && (
           <WhatIsSeismicGame
             userMode={user.mode}
@@ -135,6 +161,7 @@ export function App() {
 
         {activeScreen === 'game-safe-home' && (
           <SafeHomeGame
+            userMode={user.mode}
             onFinishGame={handleFinishGame}
             onNavigate={setActiveScreen}
           />
@@ -142,6 +169,7 @@ export function App() {
 
         {activeScreen === 'game-emergency-kit' && (
           <EmergencyKitGame
+            userMode={user.mode}
             onFinishGame={handleFinishGame}
             onNavigate={setActiveScreen}
           />
@@ -149,6 +177,7 @@ export function App() {
 
         {activeScreen === 'game-what-would-you-do' && (
           <WhatWouldYouDoGame
+            userMode={user.mode}
             onFinishGame={handleFinishGame}
             onNavigate={setActiveScreen}
           />
@@ -156,6 +185,15 @@ export function App() {
 
         {activeScreen === 'game-myth-reality' && (
           <MythOrRealityGame
+            userMode={user.mode}
+            onFinishGame={handleFinishGame}
+            onNavigate={setActiveScreen}
+          />
+        )}
+
+        {activeScreen === 'game-final-challenge' && (
+          <FinalBossChallengeGame
+            userMode={user.mode}
             onFinishGame={handleFinishGame}
             onNavigate={setActiveScreen}
           />

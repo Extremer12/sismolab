@@ -21,7 +21,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     'game-safe-home',
     'game-emergency-kit',
     'game-what-would-you-do',
-    'game-myth-reality'
+    'game-myth-reality',
+    'game-final-challenge'
   ].includes(activeScreen)) {
     return null;
   }

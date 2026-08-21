@@ -19,6 +19,8 @@ export function createGuestProfile(nickname?: string, mode: UserMode = 'kids'): 
     total_score: 0,
     level: 1,
     games_played: 0,
+    completed_game_ids: [],
+    game_high_scores: {},
     correct_answers_count: 0,
     total_answers_count: 0,
     created_at: new Date().toISOString()

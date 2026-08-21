@@ -305,6 +305,136 @@ class SoundFX {
       // Fallback
     }
   }
+
+  public playCountdownBeep() {
+    if (!this.soundEnabled) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.12);
+      this.triggerHaptic('medium');
+    } catch {
+      // Fallback
+    }
+  }
+
+  public playCountdownGo() {
+    if (!this.soundEnabled) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(1320, now + 0.28);
+
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.35);
+      this.triggerHaptic('heavy');
+    } catch {
+      // Fallback
+    }
+  }
+
+  public playStarEarned(starIndex: number = 1) {
+    if (!this.soundEnabled) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const freq = 523.25 * Math.pow(1.25, starIndex);
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + 0.18);
+
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.25);
+      this.triggerHaptic('light');
+    } catch {
+      // Fallback
+    }
+  }
+
+  public playSwipeCard(direction: 'left' | 'right') {
+    if (!this.soundEnabled) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = direction === 'right' ? 'triangle' : 'sawtooth';
+      const startFreq = direction === 'right' ? 350 : 250;
+      const endFreq = direction === 'right' ? 700 : 150;
+
+      osc.frequency.setValueAtTime(startFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(endFreq, now + 0.1);
+
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.12);
+      this.triggerHaptic('light');
+    } catch {
+      // Fallback
+    }
+  }
+
+  public playProjectorSlide() {
+    if (!this.soundEnabled || typeof window === 'undefined') return;
+    try {
+      const audio = new Audio('/sonidos/projector-slide-change-sound.mp3');
+      audio.volume = 0.6;
+      audio.play().catch(() => {
+        // Autoplay policy fallback
+      });
+      this.triggerHaptic('light');
+    } catch {
+      // Fallback
+    }
+  }
 }
 
 export const sound = new SoundFX();
+

@@ -74,8 +74,8 @@ const ADULT_MISSIONS: AdultMissionItem[] = [
     numberStr: '06',
     title: 'EVALUACIÓN Y MITOS',
     subtitle: 'Validación técnica de conceptos sismológicos.',
-    xpReward: 800,
-    screenId: 'game-myth-reality',
+    xpReward: 1000,
+    screenId: 'game-final-challenge',
     visualType: 'final',
     unlockRequirement: 5,
   }
@@ -85,7 +85,8 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
   user,
   onNavigate
 }) => {
-  const completedMissionsCount = user.games_played;
+  const completedIds = user.completed_game_ids || [];
+  const completedMissionsCount = ADULT_MISSIONS.filter(m => completedIds.includes(m.screenId)).length;
   const totalMissions = ADULT_MISSIONS.length;
 
   const renderThumbnail = (type: AdultMissionItem['visualType']) => {
@@ -249,9 +250,10 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
         {/* Mission Cards List */}
         <div className="space-y-3.5 pt-1">
           {ADULT_MISSIONS.map((mission, idx) => {
-            const isCompleted = user.games_played > idx;
-            const isPlayable = user.games_played === idx || idx === 0;
-            const isLocked = !isCompleted && !isPlayable;
+            const isCompleted = completedIds.includes(mission.screenId);
+            const reqCount = mission.unlockRequirement || 0;
+            const isPlayable = idx === 0 || completedMissionsCount >= reqCount || isCompleted;
+            const isLocked = !isPlayable;
 
             let cardBorder = 'border-white/10 bg-navy-950/70 opacity-60';
             let tagBg = 'bg-purple-950 border-purple-800 text-purple-300';
@@ -298,6 +300,9 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
                     <div className="flex items-center gap-1 text-[11px] font-black text-brand-yellow pt-0.5">
                       <span>★</span>
                       <span>+{mission.xpReward} XP</span>
+                      {isCompleted && (
+                        <span className="text-[9px] font-bold text-emerald-400 ml-1">✓ Completada</span>
+                      )}
                     </div>
                   ) : (
                     <div className="flex items-center gap-1 text-[9px] font-black text-purple-400 uppercase tracking-wider pt-0.5">
@@ -310,14 +315,16 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
                 {/* Right Action / Status */}
                 <div className="shrink-0 flex flex-col items-center justify-center">
                   {isCompleted ? (
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-10 h-10 rounded-full border-2 border-emerald-400 bg-emerald-950/90 text-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-                        <Check className="w-5 h-5 stroke-[3]" />
-                      </div>
-                      <span className="text-[9px] font-black text-emerald-400 tracking-wider uppercase">
-                        COMPLETADO
-                      </span>
-                    </div>
+                    <button
+                      onClick={() => {
+                        sound.playClick();
+                        onNavigate(mission.screenId);
+                      }}
+                      className="px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-400 text-emerald-300 font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-sm hover:bg-emerald-900 active:scale-95 transition-all"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-400" />
+                      <span>REJUGAR</span>
+                    </button>
                   ) : isPlayable ? (
                     <button
                       onClick={() => {
@@ -331,8 +338,8 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
                     </button>
                   ) : (
                     <div className="flex flex-col items-center gap-1 opacity-70">
-                      <div className="w-10 h-10 rounded-full border-2 border-purple-500/50 bg-purple-950/80 text-purple-300 flex items-center justify-center">
-                        <Lock className="w-4 h-4" />
+                      <div className="w-9 h-9 rounded-full border-2 border-purple-500/50 bg-purple-950/80 text-purple-300 flex items-center justify-center">
+                        <Lock className="w-3.5 h-3.5" />
                       </div>
                       <span className="text-[9px] font-black text-purple-400 tracking-wider uppercase">
                         BLOQUEADO
