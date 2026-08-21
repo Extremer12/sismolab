@@ -85,6 +85,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB to allow audio files & images
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,mp3,m4a,woff2}'],
         runtimeCaching: [
           {
