@@ -1,0 +1,19 @@
+{
+  "name": "SISMO LAB · INPRES San Juan",
+  "short_name": "SISMO LAB",
+  "description": "Aprendé. Jugá. Preparáte. PWA educativa, interactiva y gamificada sobre sismos para INPRES San Juan.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#061426",
+  "theme_color": "#061426",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

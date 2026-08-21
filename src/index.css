@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #061426;
+    color: #F8FAFC;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Sismo Lab Science Dark Glass Cards */
+.sismo-card {
+  background: rgba(8, 28, 51, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(4, 14, 27, 0.6);
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sismo-card:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: 0 12px 36px rgba(0, 184, 255, 0.2);
+}
+
+.sismo-card-interactive {
+  background: rgba(8, 28, 51, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(4, 14, 27, 0.6);
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sismo-card-interactive:active {
+  transform: scale(0.98);
+}
+
+/* Primary Button with Cyan/Blue gradient */
+.sismo-btn-primary {
+  background: linear-gradient(135deg, #0D5FFF 0%, #00B8FF 100%);
+  color: #FFFFFF;
+  border-radius: 100px;
+  font-weight: 800;
+  box-shadow: 0 4px 20px rgba(0, 184, 255, 0.35);
+  transition: all 0.2s ease;
+}
+
+.sismo-btn-primary:hover {
+  box-shadow: 0 6px 25px rgba(0, 184, 255, 0.5);
+  filter: brightness(1.08);
+}
+
+.sismo-btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* Gold / Rewards Button */
+.sismo-btn-gold {
+  background: linear-gradient(135deg, #F5B83D 0%, #FACC15 100%);
+  color: #061426;
+  border-radius: 100px;
+  font-weight: 800;
+  box-shadow: 0 4px 20px rgba(245, 184, 61, 0.35);
+  transition: all 0.2s ease;
+}
+
+.sismo-btn-gold:active {
+  transform: scale(0.97);
+}
+
+/* Purple Adult Button */
+.sismo-btn-purple {
+  background: linear-gradient(135deg, #7C3AED 0%, #0D5FFF 100%);
+  color: #FFFFFF;
+  border-radius: 100px;
+  font-weight: 800;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);
+  transition: all 0.2s ease;
+}
+
+/* Parallax Ambient Floating & Drift Animations */
+@keyframes bgParallaxDrift {
+  0% {
+    transform: scale(1.08) translate(0px, 0px);
+  }
+  25% {
+    transform: scale(1.12) translate(-10px, -6px);
+  }
+  50% {
+    transform: scale(1.15) translate(6px, -12px);
+  }
+  75% {
+    transform: scale(1.11) translate(10px, -4px);
+  }
+  100% {
+    transform: scale(1.08) translate(0px, 0px);
+  }
+}
+
+.animate-bg-parallax {
+  animation: bgParallaxDrift 16s ease-in-out infinite;
+}
+
+@keyframes floatParticles {
+  0% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-25px) translateX(12px);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-50px) translateX(-8px);
+    opacity: 0.1;
+  }
+}
+
+.animate-particle-1 {
+  animation: floatParticles 7s ease-in-out infinite;
+}
+.animate-particle-2 {
+  animation: floatParticles 9s ease-in-out infinite 2s;
+}
+.animate-particle-3 {
+  animation: floatParticles 6s ease-in-out infinite 1s;
+}
+
+@keyframes auraBreath {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.65;
+  }
+}
+
+.animate-aura-breath {
+  animation: auraBreath 5s ease-in-out infinite;
+}
+
+@keyframes shimmerEffect {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(150%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmerEffect 3.5s infinite;
+}
+
+/* Seismic Wave Radar Pulse Animation */
+@keyframes seismicPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-seismic-pulse {
+  animation: seismicPulse 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+/* Subtle Shake Animation for Quiz and Hazard interactions */
+@keyframes subtleShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: subtleShake 0.35s ease-in-out;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #061426;
+}
+::-webkit-scrollbar-thumb {
+  background: #11355E;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #22D3EE;
+}

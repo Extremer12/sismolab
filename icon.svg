@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#071A2B"/>
+      <stop offset="60%" stop-color="#0D2940"/>
+      <stop offset="100%" stop-color="#1788C9"/>
+    </linearGradient>
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4D79B"/>
+      <stop offset="100%" stop-color="#E9B95D"/>
+    </linearGradient>
+    <linearGradient id="mountain1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5ED4E9"/>
+      <stop offset="100%" stop-color="#1788C9"/>
+    </linearGradient>
+    <linearGradient id="mountain2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#146A9F"/>
+      <stop offset="100%" stop-color="#071A2B"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  <circle cx="370" cy="140" r="54" fill="url(#sunGrad)" opacity="0.9"/>
+  <!-- Topographic rings -->
+  <circle cx="370" cy="140" r="75" fill="none" stroke="#E9B95D" stroke-width="2" stroke-dasharray="6,6" opacity="0.4"/>
+  <circle cx="370" cy="140" r="95" fill="none" stroke="#5ED4E9" stroke-width="1.5" opacity="0.2"/>
+  <!-- San Juan Mountain silhouettes -->
+  <path d="M-20 420 L120 220 L210 310 L340 160 L440 280 L540 180 L540 530 L-20 530 Z" fill="url(#mountain2)" opacity="0.8"/>
+  <path d="M-20 460 L90 310 L180 390 L290 260 L390 370 L532 230 L532 532 L-20 532 Z" fill="url(#mountain1)"/>
+  <!-- Compass / Star mark -->
+  <g transform="translate(140, 140)">
+    <circle cx="0" cy="0" r="28" fill="#FFF9ED" opacity="0.95"/>
+    <path d="M0 -22 L6 -6 L22 0 L6 6 L0 22 L-6 6 L-22 0 L-6 -6 Z" fill="#071A2B"/>
+  </g>
+</svg>
