@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ChevronDown, Volume2, VolumeX, Sparkles, RotateCcw, Headphones } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Sparkles, Play, X } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { sound } from '../../lib/sound';
 
 interface HistoryPageProps {
   onNavigate: (screen: ScreenId) => void;
+  onExperienceChange?: (isActive: boolean) => void;
 }
 
 interface SlideEvent {
@@ -73,97 +74,79 @@ const HISTORICAL_SLIDES: SlideEvent[] = [
   }
 ];
 
-export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
-  // Check if user has already completed the initial guided intro
-  const hasCompletedGuidedStory = () => {
-    return localStorage.getItem('history_guided_intro_done') === 'true';
-  };
-
-  const [isGuidedMode, setIsGuidedMode] = useState<boolean>(() => !hasCompletedGuidedStory());
-  const [isScrollLocked, setIsScrollLocked] = useState<boolean>(() => !hasCompletedGuidedStory());
+export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperienceChange }) => {
+  const [isExperienceActive, setIsExperienceActive] = useState<boolean>(false);
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [waitingForScrollAtIntro, setWaitingForScrollAtIntro] = useState(false);
+  const [waitingFor23sSlide, setWaitingFor23sSlide] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isFirstSlideChange = useRef(true);
   const activeIdxRef = useRef(0);
-  const isGuidedModeRef = useRef(isGuidedMode);
-  const isScrollLockedRef = useRef(isScrollLocked);
-  const waitingForScrollRef = useRef(false);
-  const hasTriggeredIntroPause = useRef(false);
-  const hasResumedAfterIntro = useRef(false);
+  const isExperienceActiveRef = useRef(false);
+  const hasTriggered23sPause = useRef(false);
+  const hasResumedAfter23s = useRef(false);
 
   useEffect(() => {
     activeIdxRef.current = activeIdx;
   }, [activeIdx]);
 
   useEffect(() => {
-    isGuidedModeRef.current = isGuidedMode;
-  }, [isGuidedMode]);
+    isExperienceActiveRef.current = isExperienceActive;
+    if (onExperienceChange) {
+      onExperienceChange(isExperienceActive);
+    }
+  }, [isExperienceActive, onExperienceChange]);
 
-  useEffect(() => {
-    isScrollLockedRef.current = isScrollLocked;
-  }, [isScrollLocked]);
-
-  useEffect(() => {
-    waitingForScrollRef.current = waitingForScrollAtIntro;
-  }, [waitingForScrollAtIntro]);
-
-  // Initialize and keep playing the audio in the background seamlessly (ONLY ONCE ON MOUNT)
+  // Audio setup - Single lifecycle instance
   useEffect(() => {
     const audio = new Audio('/sonidos/historia.m4a');
     audio.preload = 'auto';
     audioRef.current = audio;
 
     const handleEnded = () => {
-      setIsPlayingAudio(false);
+      endExperience();
     };
 
-    // Timeupdate listener for exact timeline synchronization
+    // Strict timeline-synchronized automated scene transitions
     const handleTimeUpdate = () => {
-      if (!audioRef.current) return;
+      if (!audioRef.current || !isExperienceActiveRef.current) return;
       const time = audioRef.current.currentTime;
 
-      if (!isGuidedModeRef.current) return;
-
-      // 1. At 23 seconds: Pause audio during intro, require user to slide down
-      if (time >= 23 && time < 25 && !hasTriggeredIntroPause.current) {
+      // 1. At 0:23: Pause audio at end of intro and prompt user to slide
+      if (time >= 23 && time < 25 && !hasTriggered23sPause.current) {
         if (activeIdxRef.current === 0) {
-          hasTriggeredIntroPause.current = true;
+          hasTriggered23sPause.current = true;
           audioRef.current.pause();
-          setIsPlayingAudio(false);
-          setWaitingForScrollAtIntro(true);
+          setWaitingFor23sSlide(true);
         }
       }
 
-      // 2. At 35 seconds: Transition to Slide 2 (1944)
+      // 2. At 0:35: Automatically transition to Slide 2 (1944)
       if (time >= 35 && time < 58) {
-        if (activeIdxRef.current < 2 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 2 && hasResumedAfter23s.current) {
           scrollToSlide(2);
         }
       }
 
-      // 3. At 58 seconds: Transition to Slide 3 (1977)
+      // 3. At 0:58: Automatically transition to Slide 3 (1977)
       if (time >= 58 && time < 76) {
-        if (activeIdxRef.current < 3 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 3 && hasResumedAfter23s.current) {
           scrollToSlide(3);
         }
       }
 
-      // 4. At 1:16 (76s): Transition to Slide 4 (2021)
+      // 4. At 1:16 (76s): Automatically transition to Slide 4 (2021)
       if (time >= 76 && time < 93) {
-        if (activeIdxRef.current < 4 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 4 && hasResumedAfter23s.current) {
           scrollToSlide(4);
         }
       }
 
-      // 5. At 1:33 (93s): Transition to Slide 5 (2026 / Presente & Futuro)
+      // 5. At 1:33 (93s): Automatically transition to Slide 5 (2026 / Presente & Futuro)
       if (time >= 93) {
-        if (activeIdxRef.current < 5 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 5 && hasResumedAfter23s.current) {
           scrollToSlide(5);
-          localStorage.setItem('history_guided_intro_done', 'true');
         }
       }
     };
@@ -171,72 +154,18 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('timeupdate', handleTimeUpdate);
 
-    // If initial guided mode, start audio automatically
-    if (isGuidedModeRef.current) {
-      audio.play().then(() => {
-        setIsPlayingAudio(true);
-      }).catch(() => {
-        setIsPlayingAudio(false);
-      });
-    }
-
-    const handleFirstUserInteraction = () => {
-      if (isGuidedModeRef.current && audioRef.current && audioRef.current.paused && !waitingForScrollRef.current) {
-        audioRef.current.play().then(() => {
-          setIsPlayingAudio(true);
-        }).catch(() => {});
-      }
-      window.removeEventListener('pointerdown', handleFirstUserInteraction);
-      window.removeEventListener('scroll', handleFirstUserInteraction);
-    };
-
-    window.addEventListener('pointerdown', handleFirstUserInteraction, { once: true });
-    window.addEventListener('scroll', handleFirstUserInteraction, { once: true });
-
     return () => {
       audio.pause();
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
-      window.removeEventListener('pointerdown', handleFirstUserInteraction);
-      window.removeEventListener('scroll', handleFirstUserInteraction);
       audioRef.current = null;
+      if (onExperienceChange) {
+        onExperienceChange(false);
+      }
     };
   }, []);
 
-  const toggleAudio = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!audioRef.current) return;
-    if (isPlayingAudio) {
-      audioRef.current.pause();
-      setIsPlayingAudio(false);
-    } else {
-      audioRef.current.play().then(() => {
-        setIsPlayingAudio(true);
-      }).catch(() => {});
-    }
-  };
-
-  // Restart the complete guided story with synchronization from 0:00
-  const handleRestartGuidedStory = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    sound.playClick();
-    setIsGuidedMode(true);
-    setIsScrollLocked(true);
-    setWaitingForScrollAtIntro(false);
-    hasTriggeredIntroPause.current = false;
-    hasResumedAfterIntro.current = false;
-
-    scrollToSlide(0);
-
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().then(() => {
-        setIsPlayingAudio(true);
-      }).catch(() => {});
-    }
-  };
-
-  // Play projector slide sound when scrolling between historical years (slides 1..5)
+  // Play projector slide sound when switching between historical photo slides
   useEffect(() => {
     if (activeIdx === 0) return;
     if (isFirstSlideChange.current) {
@@ -246,29 +175,38 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     sound.playProjectorSlide();
   }, [activeIdx]);
 
-  // Resume audio and unlock when user progresses past slide 0
-  const handleSlideProgression = (newIndex: number) => {
-    if (newIndex >= 1) {
-      setIsScrollLocked(false);
-      setWaitingForScrollAtIntro(false);
-      hasResumedAfterIntro.current = true;
-      if (audioRef.current && audioRef.current.paused && isGuidedModeRef.current) {
-        audioRef.current.play().then(() => {
-          setIsPlayingAudio(true);
-        }).catch(() => {});
-      }
+  // Start the fullscreen synchronized experience
+  const startExperience = () => {
+    sound.playClick();
+    setIsExperienceActive(true);
+    setWaitingFor23sSlide(false);
+    hasTriggered23sPause.current = false;
+    hasResumedAfter23s.current = false;
+
+    scrollToSlide(0);
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
     }
   };
 
-  // Handle scroll snap to detect current active slide index (0 = Intro, 1..5 = Years)
-  const handleScroll = () => {
-    if (!containerRef.current) return;
-    const scrollPos = containerRef.current.scrollTop;
-    const slideHeight = containerRef.current.clientHeight;
-    const newIdx = Math.round(scrollPos / slideHeight);
-    if (newIdx !== activeIdx && newIdx >= 0 && newIdx <= HISTORICAL_SLIDES.length) {
-      setActiveIdx(newIdx);
-      handleSlideProgression(newIdx);
+  // End or exit the experience and return to free exploration
+  const endExperience = () => {
+    setIsExperienceActive(false);
+    setWaitingFor23sSlide(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+  };
+
+  // Resume playback after user unlocks at 23s
+  const handleUnlock23s = () => {
+    setWaitingFor23sSlide(false);
+    hasResumedAfter23s.current = true;
+    scrollToSlide(1);
+    if (audioRef.current && audioRef.current.paused) {
+      audioRef.current.play().catch(() => {});
     }
   };
 
@@ -280,75 +218,74 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
       top: index * slideHeight,
       behavior: 'smooth'
     });
-    handleSlideProgression(index);
+    setActiveIdx(index);
   };
 
-  const handleUnlockFromIntro = () => {
-    setIsScrollLocked(false);
-    setWaitingForScrollAtIntro(false);
-    scrollToSlide(1);
+  // Handle manual scroll in Free Mode
+  const handleScroll = () => {
+    if (isExperienceActiveRef.current) return; // Prevent manual scroll interference in Experience Mode
+    if (!containerRef.current) return;
+    const scrollPos = containerRef.current.scrollTop;
+    const slideHeight = containerRef.current.clientHeight;
+    const newIdx = Math.round(scrollPos / slideHeight);
+    if (newIdx !== activeIdx && newIdx >= 0 && newIdx <= HISTORICAL_SLIDES.length) {
+      setActiveIdx(newIdx);
+    }
   };
 
   return (
     <div className="relative h-screen w-screen bg-navy-950 text-slate-100 flex flex-col font-sans select-none overflow-hidden">
-      {/* 1. Minimalist Floating Header Controls */}
+      {/* 1. Header Controls (Shown in Free Mode, Minimal Exit in Experience Mode) */}
       <div className="absolute top-0 left-0 right-0 z-40 p-4 sm:p-5 flex items-center justify-between pointer-events-none">
-        <button
-          onClick={() => { sound.playClick(); onNavigate('home'); }}
-          className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 flex items-center justify-center text-white pointer-events-auto active:scale-95 transition-all backdrop-blur-md"
-          aria-label="Volver a Inicio"
-        >
-          <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
-        </button>
+        {/* Back to Home Button */}
+        {!isExperienceActive ? (
+          <button
+            onClick={() => { sound.playClick(); onNavigate('home'); }}
+            className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 flex items-center justify-center text-white pointer-events-auto active:scale-95 transition-all backdrop-blur-md"
+            aria-label="Volver a Inicio"
+          >
+            <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <span className="px-3 py-1 rounded-full bg-black/50 border border-brand-cyan/40 text-brand-cyan text-[10px] font-black uppercase tracking-widest backdrop-blur-md animate-pulse">
+              ● Experiencia en curso
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Replay Narration Button */}
-          <button
-            onClick={handleRestartGuidedStory}
-            className="px-3 py-1.5 rounded-full border border-white/20 bg-black/40 hover:bg-black/70 text-slate-300 hover:text-white flex items-center gap-1.5 transition-all backdrop-blur-md active:scale-95 text-[10px] font-bold uppercase tracking-wider"
-            title="Reproducir narración guiada desde el inicio"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-brand-cyan" />
-            <span>Relato</span>
-          </button>
-
-          {/* Subtle Audio Toggle Pill */}
-          <button
-            onClick={toggleAudio}
-            className={`px-3 py-1.5 rounded-full border flex items-center gap-2 transition-all backdrop-blur-md active:scale-95 ${
-              isPlayingAudio
-                ? 'bg-brand-cyan/20 border-brand-cyan/60 text-brand-cyan shadow-glow-cyan/30'
-                : 'bg-black/40 border-white/20 text-slate-400'
-            }`}
-            title={isPlayingAudio ? 'Silenciar narración' : 'Activar narración de audio'}
-          >
-            {isPlayingAudio ? (
-              <>
-                <Volume2 className="w-4 h-4 text-brand-cyan animate-pulse" />
-                <div className="flex gap-0.5 items-end h-2.5">
-                  <span className="w-0.5 bg-brand-cyan rounded-full animate-bounce" style={{ height: '100%', animationDelay: '0ms' }}></span>
-                  <span className="w-0.5 bg-brand-cyan rounded-full animate-bounce" style={{ height: '60%', animationDelay: '150ms' }}></span>
-                  <span className="w-0.5 bg-brand-cyan rounded-full animate-bounce" style={{ height: '85%', animationDelay: '300ms' }}></span>
-                </div>
-              </>
-            ) : (
-              <>
-                <VolumeX className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
-                  {waitingForScrollAtIntro ? 'Pausa' : 'Audio'}
-                </span>
-              </>
-            )}
-          </button>
+          {/* In Experience Mode: Exit Button */}
+          {isExperienceActive ? (
+            <button
+              onClick={endExperience}
+              className="px-3.5 py-1.5 rounded-full border border-white/20 bg-black/50 hover:bg-black/80 text-slate-300 hover:text-white flex items-center gap-1.5 transition-all backdrop-blur-md active:scale-95 text-[10px] font-bold uppercase tracking-wider"
+              title="Salir al modo libre"
+            >
+              <X className="w-3.5 h-3.5 text-slate-400" />
+              <span>Modo Libre</span>
+            </button>
+          ) : (
+            /* In Free Mode: Start Experience CTA */
+            <button
+              onClick={startExperience}
+              className="px-4 py-2 rounded-full border border-brand-cyan/50 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan flex items-center gap-2 transition-all backdrop-blur-md active:scale-95 text-[11px] font-extrabold uppercase tracking-wider shadow-glow-cyan/20"
+              title="Iniciar relato cinematográfico con audio y avance sincronizado"
+            >
+              <Play className="w-3.5 h-3.5 fill-brand-cyan" />
+              <span>Experiencia</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 2. Floating Timeline Navigation Dots (Right Side) */}
+      {/* 2. Floating Timeline Navigation Dots (Right Side) - Clickable in Free Mode */}
       <div className="absolute right-3.5 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2.5 pointer-events-auto">
         {/* Intro Dot (Index 0) */}
         <button
-          onClick={() => scrollToSlide(0)}
-          className="group flex items-center gap-2 justify-end transition-all"
+          onClick={() => !isExperienceActive && scrollToSlide(0)}
+          disabled={isExperienceActive}
+          className={`group flex items-center gap-2 justify-end transition-all ${isExperienceActive ? 'cursor-default' : 'cursor-pointer'}`}
           aria-label="Ir a la Introducción"
         >
           <span className={`text-[9px] font-black tracking-wider transition-all duration-300 ${
@@ -371,8 +308,9 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
           return (
             <button
               key={event.id}
-              onClick={() => scrollToSlide(slideIndex)}
-              className="group flex items-center gap-2 justify-end transition-all"
+              onClick={() => !isExperienceActive && scrollToSlide(slideIndex)}
+              disabled={isExperienceActive}
+              className={`group flex items-center gap-2 justify-end transition-all ${isExperienceActive ? 'cursor-default' : 'cursor-pointer'}`}
               aria-label={`Ir a ${event.year}`}
             >
               <span className={`text-[9px] font-black tracking-wider transition-all duration-300 ${
@@ -392,19 +330,19 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         })}
       </div>
 
-      {/* 3. Fullscreen Vertical Scroll Snap Stream (Scroll locked during intro if guided) */}
+      {/* 3. Fullscreen Vertical Scroll Snap Stream (Strictly locked during Experience Mode) */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
         className={`flex-1 scroll-smooth ${
-          isScrollLocked && activeIdx === 0
+          isExperienceActive
             ? 'overflow-hidden pointer-events-none'
             : 'overflow-y-scroll snap-y snap-mandatory pointer-events-auto'
         }`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {/* =========================================================================
-            SLIDE 0: MINIMALIST CINEMATIC INTRO WITH SLOW FADE ANIMATIONS
+            SLIDE 0: MINIMALIST CINEMATIC INTRO
            ========================================================================= */}
         <div className="relative w-full h-screen snap-start flex flex-col justify-between p-6 sm:p-8 pb-16 overflow-hidden">
           {/* Uiverse Stars Background */}
@@ -414,15 +352,15 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
             <div id="stars3" />
           </div>
 
-          {/* Top spacing with Slow Fade Badge */}
+          {/* Top Badge */}
           <div className="pt-12 text-center animate-intro-badge">
             <span className="text-[11px] font-black text-brand-cyan uppercase tracking-[0.35em] drop-shadow-[0_2px_10px_rgba(34,211,238,0.5)]">
               INPRES · SAN JUAN
             </span>
           </div>
 
-          {/* Giant Minimalist Typography Title (Slow Entrance Animations) */}
-          <div className="relative z-20 my-auto text-center space-y-4 max-w-md mx-auto">
+          {/* Giant Minimalist Typography Title */}
+          <div className="relative z-20 my-auto text-center space-y-4 max-w-md mx-auto pointer-events-auto">
             <div className="animate-intro-title">
               <h1 className="font-black text-5xl sm:text-7xl text-white tracking-tight uppercase leading-none drop-shadow-[0_8px_40px_rgba(0,0,0,0.95)]">
                 MEMORIA & <br />
@@ -437,10 +375,35 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
                 Un viaje por los sismos que forjaron la ingeniería, la ciencia y el coraje de nuestra provincia.
               </p>
             </div>
+
+            {/* Minimalist Start Experience Button in center of Intro in Free Mode */}
+            {!isExperienceActive && (
+              <div className="pt-4 animate-in fade-in duration-700">
+                <button
+                  onClick={startExperience}
+                  className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-brand-cyan to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-navy-950 font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-500/25 active:scale-95 transition-all"
+                >
+                  <Play className="w-4 h-4 fill-navy-950" />
+                  VIVIR LA EXPERIENCIA
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Bottom spacing (Clean & Minimalist, no redundant text) */}
-          <div className="relative z-20 h-6"></div>
+          {/* Bottom spacing */}
+          <div className="relative z-20 text-center pb-2">
+            {!isExperienceActive && (
+              <button
+                onClick={() => scrollToSlide(1)}
+                className="group inline-flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-brand-cyan">
+                  O explorar libremente
+                </span>
+                <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-brand-cyan animate-bounce" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* =========================================================================
@@ -467,7 +430,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/55 z-0 pointer-events-none" />
 
               {/* Minimalist Typographic Layout (No boxes) */}
-              <div className={`relative z-20 space-y-3 max-w-md mx-auto w-full transition-all duration-700 transform ${
+              <div className={`relative z-20 space-y-3 max-w-md mx-auto w-full transition-all duration-700 transform pointer-events-auto ${
                 isActive ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
               }`}>
                 {/* Year Marker */}
@@ -506,8 +469,8 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
                   {event.description}
                 </p>
 
-                {/* Next Slide Arrow Indicator */}
-                {slideIndex < HISTORICAL_SLIDES.length && (
+                {/* Next Slide Arrow in Free Mode */}
+                {!isExperienceActive && slideIndex < HISTORICAL_SLIDES.length && (
                   <div className="pt-2 text-center">
                     <button
                       onClick={() => scrollToSlide(slideIndex + 1)}
@@ -525,12 +488,12 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* =========================================================================
-          4. MINIMALIST CENTERED FULLSCREEN OVERLAY AT 23 SECONDS (No generic emojis/icons)
+          4. MINIMALIST CENTERED FULLSCREEN OVERLAY AT 23 SECONDS
          ========================================================================= */}
-      {waitingForScrollAtIntro && (
+      {waitingFor23sSlide && (
         <div
-          onClick={handleUnlockFromIntro}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 cursor-pointer select-none"
+          onClick={handleUnlock23s}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 cursor-pointer select-none pointer-events-auto"
         >
           <div className="space-y-8 max-w-sm mx-auto flex flex-col items-center">
             {/* Pure minimalist animated vertical indicator line */}
@@ -561,3 +524,4 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
+

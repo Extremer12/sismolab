@@ -30,6 +30,7 @@ import { FinalBossChallengeGame } from './components/games/FinalBossChallengeGam
 
 export function App() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('splash');
+  const [isHistoryExperienceActive, setIsHistoryExperienceActive] = useState(false);
   
   const [user, setUser] = useState<UserProfile>(() => {
     return loadLocalProfile() || createGuestProfile();
@@ -204,6 +205,7 @@ export function App() {
         {activeScreen === 'history' && (
           <HistoryPage
             onNavigate={setActiveScreen}
+            onExperienceChange={setIsHistoryExperienceActive}
           />
         )}
 
@@ -238,12 +240,14 @@ export function App() {
       {/* PWA Install Banner for Mobile Browsers */}
       <PWAInstallBanner />
 
-      {/* Persistent Bottom Navigation */}
-      <BottomNav
-        activeScreen={activeScreen}
-        userMode={user.mode}
-        onNavigate={setActiveScreen}
-      />
+      {/* Persistent Bottom Navigation (Hidden during fullscreen History Experience) */}
+      {!(activeScreen === 'history' && isHistoryExperienceActive) && (
+        <BottomNav
+          activeScreen={activeScreen}
+          userMode={user.mode}
+          onNavigate={setActiveScreen}
+        />
+      )}
     </div>
   );
 }
