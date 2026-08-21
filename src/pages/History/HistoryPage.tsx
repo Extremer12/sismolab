@@ -77,15 +77,25 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [waitingForScrollAtIntro, setWaitingForScrollAtIntro] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isFirstSlideChange = useRef(true);
+  const activeIdxRef = useRef(0);
+  const waitingForScrollRef = useRef(false);
   const hasTriggeredIntroPause = useRef(false);
   const hasResumedAfterIntro = useRef(false);
 
-  // Initialize and keep playing the audio in the background seamlessly
+  // Keep refs updated for event listeners without causing audio re-instantiation
+  useEffect(() => {
+    activeIdxRef.current = activeIdx;
+  }, [activeIdx]);
+
+  useEffect(() => {
+    waitingForScrollRef.current = waitingForScrollAtIntro;
+  }, [waitingForScrollAtIntro]);
+
+  // Initialize and keep playing the audio in the background seamlessly (ONLY ONCE ON MOUNT)
   useEffect(() => {
     const audio = new Audio('/sonidos/historia.m4a');
     audio.preload = 'auto';
@@ -99,11 +109,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     const handleTimeUpdate = () => {
       if (!audioRef.current) return;
       const time = audioRef.current.currentTime;
-      setCurrentTime(time);
 
       // 1. At 23 seconds: Pause audio during intro, require user to slide down
       if (time >= 23 && time < 25 && !hasTriggeredIntroPause.current) {
-        if (activeIdx === 0) {
+        if (activeIdxRef.current === 0) {
           hasTriggeredIntroPause.current = true;
           audioRef.current.pause();
           setIsPlayingAudio(false);
@@ -113,28 +122,28 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
 
       // 2. At 35 seconds: Transition to Slide 2 (1944)
       if (time >= 35 && time < 58) {
-        if (activeIdx < 2 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 2 && hasResumedAfterIntro.current) {
           scrollToSlide(2);
         }
       }
 
       // 3. At 58 seconds: Transition to Slide 3 (1977)
       if (time >= 58 && time < 76) {
-        if (activeIdx < 3 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 3 && hasResumedAfterIntro.current) {
           scrollToSlide(3);
         }
       }
 
       // 4. At 1:16 (76s): Transition to Slide 4 (2021)
       if (time >= 76 && time < 93) {
-        if (activeIdx < 4 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 4 && hasResumedAfterIntro.current) {
           scrollToSlide(4);
         }
       }
 
       // 5. At 1:33 (93s): Transition to Slide 5 (2026 / Presente & Futuro)
       if (time >= 93) {
-        if (activeIdx < 5 && hasResumedAfterIntro.current) {
+        if (activeIdxRef.current < 5 && hasResumedAfterIntro.current) {
           scrollToSlide(5);
         }
       }
@@ -152,7 +161,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     });
 
     const handleFirstUserInteraction = () => {
-      if (audioRef.current && audioRef.current.paused && !waitingForScrollAtIntro) {
+      if (audioRef.current && audioRef.current.paused && !waitingForScrollRef.current) {
         audioRef.current.play().then(() => {
           setIsPlayingAudio(true);
         }).catch(() => {});
@@ -172,7 +181,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
       window.removeEventListener('scroll', handleFirstUserInteraction);
       audioRef.current = null;
     };
-  }, [activeIdx, waitingForScrollAtIntro]);
+  }, []);
 
   const toggleAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -197,9 +206,9 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     sound.playProjectorSlide();
   }, [activeIdx]);
 
-  // Resume audio if user scrolls past slide 0 after being paused at 23s
+  // Resume audio when user progresses to historical slides (slide >= 1)
   const handleSlideProgression = (newIndex: number) => {
-    if (newIndex >= 1 && (waitingForScrollAtIntro || hasTriggeredIntroPause.current)) {
+    if (newIndex >= 1) {
       setWaitingForScrollAtIntro(false);
       hasResumedAfterIntro.current = true;
       if (audioRef.current && audioRef.current.paused) {
@@ -235,7 +244,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
 
   return (
     <div className="relative h-screen w-screen bg-navy-950 text-slate-100 flex flex-col font-sans select-none overflow-hidden">
-      {/* 1. Minimalist Floating Header Controls (No boxes, clean icons) */}
+      {/* 1. Minimalist Floating Header Controls */}
       <div className="absolute top-0 left-0 right-0 z-40 p-4 sm:p-5 flex items-center justify-between pointer-events-none">
         <button
           onClick={() => { sound.playClick(); onNavigate('home'); }}
@@ -246,7 +255,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         </button>
 
         <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Subtle Audio Toggle Pill with timer indicator */}
+          {/* Subtle Audio Toggle Pill */}
           <button
             onClick={toggleAudio}
             className={`px-3 py-1.5 rounded-full border flex items-center gap-2 transition-all backdrop-blur-md active:scale-95 ${
@@ -269,7 +278,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
               <>
                 <VolumeX className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">
-                  {waitingForScrollAtIntro ? 'Pausado (23s)' : 'Audio'}
+                  {waitingForScrollAtIntro ? 'Pausa' : 'Audio'}
                 </span>
               </>
             )}
@@ -369,36 +378,8 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Bottom Minimalist Scroll Hint & 23s Pause Alert */}
-          <div className="relative z-20 text-center space-y-2 pb-2">
-            {waitingForScrollAtIntro ? (
-              <div className="animate-in fade-in zoom-in duration-500">
-                <button
-                  onClick={() => scrollToSlide(1)}
-                  className="animate-pulse-prompt inline-flex items-center gap-3 bg-gradient-to-r from-brand-cyan to-blue-600 text-navy-950 font-black text-xs sm:text-sm uppercase tracking-widest py-3 px-6 rounded-full shadow-2xl active:scale-95 transition-all"
-                >
-                  <Sparkles className="w-4 h-4 animate-spin" />
-                  DESLIZÁ AHORA PARA CONTINUAR
-                  <ChevronDown className="w-5 h-5 animate-bounce stroke-[3]" />
-                </button>
-                <p className="text-[10px] text-brand-cyan font-bold tracking-wider uppercase mt-2 drop-shadow-md">
-                  🎧 El audio continuará con la historia al deslizar
-                </p>
-              </div>
-            ) : (
-              <div className="animate-intro-scroll">
-                <button
-                  onClick={() => scrollToSlide(1)}
-                  className="group inline-flex flex-col items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
-                >
-                  <span className="text-[11px] font-black uppercase tracking-[0.25em] text-brand-cyan group-hover:text-white transition-colors">
-                    Deslizá para explorar
-                  </span>
-                  <ChevronDown className="w-5 h-5 text-brand-cyan group-hover:text-white animate-bounce" />
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Bottom spacing (Clean & Minimalist, no redundant text) */}
+          <div className="relative z-20 h-6"></div>
         </div>
 
         {/* =========================================================================
@@ -481,6 +462,41 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
           );
         })}
       </div>
+
+      {/* =========================================================================
+          4. MINIMALIST CENTERED FULLSCREEN OVERLAY AT 23 SECONDS (No generic emojis/icons)
+         ========================================================================= */}
+      {waitingForScrollAtIntro && (
+        <div
+          onClick={() => scrollToSlide(1)}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 cursor-pointer select-none"
+        >
+          <div className="space-y-8 max-w-sm mx-auto flex flex-col items-center">
+            {/* Pure minimalist animated vertical indicator line */}
+            <div className="flex flex-col items-center gap-1.5">
+              <div className="w-[1px] h-12 bg-gradient-to-b from-transparent via-brand-cyan to-transparent animate-pulse" />
+              <ChevronDown className="w-6 h-6 text-brand-cyan animate-bounce stroke-[2.5]" />
+            </div>
+
+            {/* Minimalist Typographic Instruction */}
+            <div className="space-y-3">
+              <h3 className="font-black text-2xl sm:text-3xl text-white uppercase tracking-[0.25em] leading-tight">
+                DESLIZÁ HACIA ABAJO
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400 font-medium tracking-wider uppercase">
+                Para continuar con el relato histórico
+              </p>
+            </div>
+
+            {/* Subtle animated touch pill */}
+            <div className="pt-2">
+              <span className="inline-block px-5 py-2 rounded-full border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan text-[11px] font-bold tracking-[0.2em] uppercase shadow-[0_0_20px_rgba(0,184,255,0.25)]">
+                TOCÁ O DESLIZÁ
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
