@@ -7,6 +7,7 @@ import { sound } from './lib/sound';
 // Navigation Components
 import { TopBar } from './components/navigation/TopBar';
 import { BottomNav } from './components/navigation/BottomNav';
+import { PWAInstallBanner } from './components/ui/PWAInstallBanner';
 
 // Pages
 import { SplashScreen } from './pages/Splash/SplashScreen';
@@ -233,6 +234,9 @@ export function App() {
           />
         )}
       </main>
+
+      {/* PWA Install Banner for Mobile Browsers */}
+      <PWAInstallBanner />
 
       {/* Persistent Bottom Navigation */}
       <BottomNav
