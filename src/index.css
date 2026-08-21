@@ -1972,18 +1972,52 @@
   }
 }
 
-@keyframes introFadeUp {
+@keyframes introFadeUpSlow {
   0% {
     opacity: 0;
-    transform: translateY(35px);
+    transform: translateY(25px) scale(0.98);
+    filter: blur(4px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
   }
 }
 
-.animate-intro-fade {
-  animation: introFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-intro-badge {
+  animation: introFadeUpSlow 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-intro-title {
+  animation: introFadeUpSlow 2.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  opacity: 0;
+}
+
+.animate-intro-desc {
+  animation: introFadeUpSlow 2.6s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+  opacity: 0;
+}
+
+.animate-intro-scroll {
+  animation: introFadeUpSlow 2.8s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+  opacity: 0;
+}
+
+@keyframes pulsePromptGlow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(0, 184, 255, 0.4), 0 0 30px rgba(0, 184, 255, 0.2);
+    border-color: rgba(34, 211, 238, 0.8);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 184, 255, 0.8), 0 0 60px rgba(0, 184, 255, 0.4);
+    border-color: rgba(34, 211, 238, 1);
+  }
+}
+
+.animate-pulse-prompt {
+  animation: pulsePromptGlow 1.5s ease-in-out infinite;
 }
 

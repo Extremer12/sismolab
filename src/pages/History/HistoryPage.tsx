@@ -76,9 +76,14 @@ const HISTORICAL_SLIDES: SlideEvent[] = [
 export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [waitingForScrollAtIntro, setWaitingForScrollAtIntro] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isFirstSlideChange = useRef(true);
+  const hasTriggeredIntroPause = useRef(false);
+  const hasResumedAfterIntro = useRef(false);
 
   // Initialize and keep playing the audio in the background seamlessly
   useEffect(() => {
@@ -90,7 +95,53 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
       setIsPlayingAudio(false);
     };
 
+    // Timeupdate listener for exact timeline synchronization
+    const handleTimeUpdate = () => {
+      if (!audioRef.current) return;
+      const time = audioRef.current.currentTime;
+      setCurrentTime(time);
+
+      // 1. At 23 seconds: Pause audio during intro, require user to slide down
+      if (time >= 23 && time < 25 && !hasTriggeredIntroPause.current) {
+        if (activeIdx === 0) {
+          hasTriggeredIntroPause.current = true;
+          audioRef.current.pause();
+          setIsPlayingAudio(false);
+          setWaitingForScrollAtIntro(true);
+        }
+      }
+
+      // 2. At 35 seconds: Transition to Slide 2 (1944)
+      if (time >= 35 && time < 58) {
+        if (activeIdx < 2 && hasResumedAfterIntro.current) {
+          scrollToSlide(2);
+        }
+      }
+
+      // 3. At 58 seconds: Transition to Slide 3 (1977)
+      if (time >= 58 && time < 76) {
+        if (activeIdx < 3 && hasResumedAfterIntro.current) {
+          scrollToSlide(3);
+        }
+      }
+
+      // 4. At 1:16 (76s): Transition to Slide 4 (2021)
+      if (time >= 76 && time < 93) {
+        if (activeIdx < 4 && hasResumedAfterIntro.current) {
+          scrollToSlide(4);
+        }
+      }
+
+      // 5. At 1:33 (93s): Transition to Slide 5 (2026 / Presente & Futuro)
+      if (time >= 93) {
+        if (activeIdx < 5 && hasResumedAfterIntro.current) {
+          scrollToSlide(5);
+        }
+      }
+    };
+
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
 
     // Auto-attempt playback on component mount
     audio.play().then(() => {
@@ -101,7 +152,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     });
 
     const handleFirstUserInteraction = () => {
-      if (audioRef.current && audioRef.current.paused) {
+      if (audioRef.current && audioRef.current.paused && !waitingForScrollAtIntro) {
         audioRef.current.play().then(() => {
           setIsPlayingAudio(true);
         }).catch(() => {});
@@ -116,11 +167,12 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     return () => {
       audio.pause();
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
       window.removeEventListener('pointerdown', handleFirstUserInteraction);
       window.removeEventListener('scroll', handleFirstUserInteraction);
       audioRef.current = null;
     };
-  }, []);
+  }, [activeIdx, waitingForScrollAtIntro]);
 
   const toggleAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -145,6 +197,19 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     sound.playProjectorSlide();
   }, [activeIdx]);
 
+  // Resume audio if user scrolls past slide 0 after being paused at 23s
+  const handleSlideProgression = (newIndex: number) => {
+    if (newIndex >= 1 && (waitingForScrollAtIntro || hasTriggeredIntroPause.current)) {
+      setWaitingForScrollAtIntro(false);
+      hasResumedAfterIntro.current = true;
+      if (audioRef.current && audioRef.current.paused) {
+        audioRef.current.play().then(() => {
+          setIsPlayingAudio(true);
+        }).catch(() => {});
+      }
+    }
+  };
+
   // Handle scroll snap to detect current active slide index (0 = Intro, 1..5 = Years)
   const handleScroll = () => {
     if (!containerRef.current) return;
@@ -153,6 +218,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
     const newIdx = Math.round(scrollPos / slideHeight);
     if (newIdx !== activeIdx && newIdx >= 0 && newIdx <= HISTORICAL_SLIDES.length) {
       setActiveIdx(newIdx);
+      handleSlideProgression(newIdx);
     }
   };
 
@@ -164,6 +230,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
       top: index * slideHeight,
       behavior: 'smooth'
     });
+    handleSlideProgression(index);
   };
 
   return (
@@ -179,7 +246,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         </button>
 
         <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Subtle Audio Toggle Pill */}
+          {/* Subtle Audio Toggle Pill with timer indicator */}
           <button
             onClick={toggleAudio}
             className={`px-3 py-1.5 rounded-full border flex items-center gap-2 transition-all backdrop-blur-md active:scale-95 ${
@@ -201,7 +268,9 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
             ) : (
               <>
                 <VolumeX className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Audio</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">
+                  {waitingForScrollAtIntro ? 'Pausado (23s)' : 'Audio'}
+                </span>
               </>
             )}
           </button>
@@ -265,7 +334,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {/* =========================================================================
-            SLIDE 0: MINIMALIST CINEMATIC INTRO WITH UIVERSE STARS BACKGROUND
+            SLIDE 0: MINIMALIST CINEMATIC INTRO WITH SLOW FADE ANIMATIONS
            ========================================================================= */}
         <div className="relative w-full h-screen snap-start flex flex-col justify-between p-6 sm:p-8 pb-16 overflow-hidden">
           {/* Uiverse Stars Background */}
@@ -275,38 +344,60 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
             <div id="stars3" />
           </div>
 
-          {/* Top spacing */}
-          <div className="pt-12 text-center">
-            <span className="text-[11px] font-black text-brand-cyan uppercase tracking-[0.3em] drop-shadow-[0_2px_10px_rgba(34,211,238,0.4)]">
+          {/* Top spacing with Slow Fade Badge */}
+          <div className="pt-12 text-center animate-intro-badge">
+            <span className="text-[11px] font-black text-brand-cyan uppercase tracking-[0.35em] drop-shadow-[0_2px_10px_rgba(34,211,238,0.5)]">
               INPRES · SAN JUAN
             </span>
           </div>
 
-          {/* Giant Minimalist Typography Title (No boxes) */}
-          <div className="relative z-20 my-auto text-center space-y-3 max-w-md mx-auto animate-intro-fade">
-            <h1 className="font-black text-5xl sm:text-7xl text-white tracking-tight uppercase leading-none drop-shadow-[0_6px_35px_rgba(0,0,0,0.9)]">
-              MEMORIA & <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-sky-300 to-brand-electric">
-                RESILIENCIA
-              </span>
-            </h1>
+          {/* Giant Minimalist Typography Title (Slow Entrance Animations) */}
+          <div className="relative z-20 my-auto text-center space-y-4 max-w-md mx-auto">
+            <div className="animate-intro-title">
+              <h1 className="font-black text-5xl sm:text-7xl text-white tracking-tight uppercase leading-none drop-shadow-[0_8px_40px_rgba(0,0,0,0.95)]">
+                MEMORIA & <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-sky-300 to-brand-electric">
+                  RESILIENCIA
+                </span>
+              </h1>
+            </div>
 
-            <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)] pt-2">
-              Un viaje por los sismos que forjaron la ingeniería, la ciencia y el coraje de nuestra provincia.
-            </p>
+            <div className="animate-intro-desc">
+              <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)] max-w-sm mx-auto">
+                Un viaje por los sismos que forjaron la ingeniería, la ciencia y el coraje de nuestra provincia.
+              </p>
+            </div>
           </div>
 
-          {/* Bottom Minimalist Scroll Hint */}
-          <div className="relative z-20 text-center space-y-1 pb-2">
-            <button
-              onClick={() => scrollToSlide(1)}
-              className="group inline-flex flex-col items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
-            >
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-cyan group-hover:text-white transition-colors">
-                Deslizá para explorar
-              </span>
-              <ChevronDown className="w-5 h-5 text-brand-cyan group-hover:text-white animate-bounce" />
-            </button>
+          {/* Bottom Minimalist Scroll Hint & 23s Pause Alert */}
+          <div className="relative z-20 text-center space-y-2 pb-2">
+            {waitingForScrollAtIntro ? (
+              <div className="animate-in fade-in zoom-in duration-500">
+                <button
+                  onClick={() => scrollToSlide(1)}
+                  className="animate-pulse-prompt inline-flex items-center gap-3 bg-gradient-to-r from-brand-cyan to-blue-600 text-navy-950 font-black text-xs sm:text-sm uppercase tracking-widest py-3 px-6 rounded-full shadow-2xl active:scale-95 transition-all"
+                >
+                  <Sparkles className="w-4 h-4 animate-spin" />
+                  DESLIZÁ AHORA PARA CONTINUAR
+                  <ChevronDown className="w-5 h-5 animate-bounce stroke-[3]" />
+                </button>
+                <p className="text-[10px] text-brand-cyan font-bold tracking-wider uppercase mt-2 drop-shadow-md">
+                  🎧 El audio continuará con la historia al deslizar
+                </p>
+              </div>
+            ) : (
+              <div className="animate-intro-scroll">
+                <button
+                  onClick={() => scrollToSlide(1)}
+                  className="group inline-flex flex-col items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
+                >
+                  <span className="text-[11px] font-black uppercase tracking-[0.25em] text-brand-cyan group-hover:text-white transition-colors">
+                    Deslizá para explorar
+                  </span>
+                  <ChevronDown className="w-5 h-5 text-brand-cyan group-hover:text-white animate-bounce" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -322,9 +413,9 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
               key={event.id}
               className="relative w-full h-screen snap-start flex flex-col justify-end p-6 sm:p-8 pb-20 overflow-hidden"
             >
-              {/* Fullscreen Historical Image */}
+              {/* Fullscreen Historical Image with Ken Burns slow zoom */}
               <div
-                className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[10000ms] ease-out pointer-events-none z-0 ${
+                className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[12000ms] ease-out pointer-events-none z-0 ${
                   isActive ? 'scale-105' : 'scale-100'
                 }`}
                 style={{ backgroundImage: `url('${event.imagePath}')` }}
