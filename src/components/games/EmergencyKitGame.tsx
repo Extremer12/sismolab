@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Timer, CheckCircle2, XCircle, Sparkles, ArrowRight, ShieldCheck, Flame, Backpack, Check, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Timer, CheckCircle2, Sparkles, ArrowRight, ShieldCheck, Flame, Backpack, Check, AlertTriangle, HelpCircle, PackageCheck, Zap } from 'lucide-react';
 import { ScreenId, EmergencyKitItem, UserMode } from '../../types';
 import { EMERGENCY_KIT_ITEMS } from '../../services/gamesService';
 import { Button } from '../ui/Button';
@@ -19,29 +19,30 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   onNavigate
 }) => {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [timeLeft, setTimeLeft] = useState<number>(30);
+  const [packedItemIds, setPackedItemIds] = useState<string[]>([]);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [isDragOverBackpack, setIsDragOverBackpack] = useState<boolean>(false);
+  const [timeLeft, setTimeLeft] = useState<number>(35);
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
   const [maxStreak, setMaxStreak] = useState<number>(0);
+  const [earnedScore, setEarnedScore] = useState<number>(0);
+
+  const draggedItemId = useRef<string | null>(null);
 
   const essentialItems = EMERGENCY_KIT_ITEMS.filter(i => i.isEssential);
-  const correctSelected = selectedIds.filter(id => {
-    const item = EMERGENCY_KIT_ITEMS.find(i => i.id === id);
-    return item?.isEssential;
-  }).length;
+  const packedItems = EMERGENCY_KIT_ITEMS.filter(i => packedItemIds.includes(i.id));
+  const availableItems = EMERGENCY_KIT_ITEMS.filter(i => !packedItemIds.includes(i.id));
 
-  const wrongSelected = selectedIds.filter(id => {
-    const item = EMERGENCY_KIT_ITEMS.find(i => i.id === id);
-    return !item?.isEssential;
-  }).length;
+  const correctPackedCount = packedItems.filter(i => i.isEssential).length;
+  const isAllEssentialPacked = correctPackedCount === essentialItems.length;
 
   // Timer countdown
   useEffect(() => {
     if (gameState !== 'playing' || isFinished) return;
 
     if (timeLeft <= 0) {
-      handleEvaluate();
+      handleFinishGame();
       return;
     }
 
@@ -52,49 +53,79 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
     return () => clearInterval(timer);
   }, [timeLeft, isFinished, gameState]);
 
-  const handleToggleItem = (item: EmergencyKitItem) => {
-    if (isFinished) return;
+  // Handle packing an item into the backpack
+  const handlePackItem = (item: EmergencyKitItem) => {
+    if (isFinished || packedItemIds.includes(item.id)) return;
 
-    if (selectedIds.includes(item.id)) {
-      sound.playClick();
-      setSelectedIds(prev => prev.filter(id => id !== item.id));
+    if (item.isEssential) {
+      sound.playPackItem();
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak > maxStreak) setMaxStreak(newStreak);
+
+      const points = 75 + (newStreak > 1 ? 25 * (newStreak - 1) : 0);
+      setEarnedScore(prev => prev + points);
+      setPackedItemIds(prev => [...prev, item.id]);
+      setFeedbackMessage({ text: `✓ ${item.name} empacado (+${points} XP)`, isError: false });
     } else {
-      if (item.isEssential) {
-        sound.playPackItem();
-        const newStreak = streak + 1;
-        setStreak(newStreak);
-        if (newStreak > maxStreak) setMaxStreak(newStreak);
-      } else {
-        sound.playWrong();
-        setStreak(0);
-      }
-      setSelectedIds(prev => [...prev, item.id]);
+      sound.playWrong();
+      setStreak(0);
+      setFeedbackMessage({ text: `⚠️ ${item.reason}`, isError: true });
     }
+
+    // Clear feedback after 3.5s
+    setTimeout(() => {
+      setFeedbackMessage(null);
+    }, 3500);
   };
 
-  const handleEvaluate = () => {
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, item: EmergencyKitItem) => {
+    draggedItemId.current = item.id;
+    e.dataTransfer.setData('text/plain', item.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverBackpack(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOverBackpack(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverBackpack(false);
+    const itemId = draggedItemId.current || e.dataTransfer.getData('text/plain');
+    if (!itemId) return;
+
+    const item = EMERGENCY_KIT_ITEMS.find(i => i.id === itemId);
+    if (item) {
+      handlePackItem(item);
+    }
+    draggedItemId.current = null;
+  };
+
+  const handleFinishGame = () => {
     setIsFinished(true);
     sound.playWinFanfare();
   };
 
-  const calculateFinalScore = () => {
-    const baseScore = correctSelected * 60;
-    const penalty = wrongSelected * 30;
-    const speedBonus = timeLeft > 10 ? 100 : timeLeft > 5 ? 50 : 0;
-    const perfectBonus = correctSelected === essentialItems.length ? 150 : 0;
-    return Math.max(50, baseScore - penalty + speedBonus + perfectBonus);
-  };
-
   const handleReplay = () => {
-    setSelectedIds([]);
-    setTimeLeft(30);
+    setPackedItemIds([]);
+    setFeedbackMessage(null);
+    setTimeLeft(35);
     setIsFinished(false);
     setStreak(0);
     setMaxStreak(0);
+    setEarnedScore(0);
     setGameState('intro');
   };
 
-  const finalScore = calculateFinalScore();
+  const speedBonus = timeLeft > 10 ? 100 : timeLeft > 5 ? 50 : 0;
+  const perfectBonus = isAllEssentialPacked ? 200 : 0;
+  const finalTotalScore = earnedScore + speedBonus + perfectBonus;
 
   return (
     <div
@@ -107,12 +138,12 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
       {gameState === 'intro' && (
         <GameIntroCountdown
           title="MOCHILA DE 72 HORAS"
-          category="PREVENCIÓN SÍSMICA · MISIÓN 04"
-          subtitle="Autonomía y supervivencia post-terremoto"
-          instructions="Tenés 30 segundos para empacar todos los elementos vitales (agua, linterna, radio, botiquín, silbato, etc.) evitando los distractores pesados o peligrosos."
+          category="PREVENCIÓN SÍSMICA · MISIÓN 03"
+          subtitle="Empacá los insumos vitales para la supervivencia"
+          instructions="Arrastrá hacia la mochila (o tocá) todos los artículos de primera necesidad (agua, linterna, radio, botiquín, etc.) evitando los objetos innecesarios o peligrosos."
           icon="🎒"
           rewardXp={500}
-          timeLimitSec={30}
+          timeLimitSec={35}
           onStart={() => setGameState('playing')}
         />
       )}
@@ -120,26 +151,26 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
       {/* 2. RESULT SCREEN */}
       {gameState === 'result' && (
         <GameResultScreen
-          gameTitle="Kit de Emergencia"
-          earnedScore={finalScore}
-          correctCount={correctSelected}
+          gameTitle="Mochila de Emergencia"
+          earnedScore={finalTotalScore}
+          correctCount={correctPackedCount}
           totalCount={essentialItems.length}
           maxStreak={maxStreak}
-          speedBonus={timeLeft > 10 ? 100 : 0}
+          speedBonus={speedBonus + perfectBonus}
           onReplay={handleReplay}
-          onContinue={() => onFinishGame(finalScore, correctSelected, essentialItems.length, 'game-emergency-kit')}
+          onContinue={() => onFinishGame(finalTotalScore, correctPackedCount, essentialItems.length, 'game-emergency-kit')}
         />
       )}
 
       {/* 3. ACTIVE GAME PLAYING */}
       {gameState === 'playing' && (
         <>
-          {/* Header */}
+          {/* Header Controls */}
           <div className="relative z-10 space-y-2">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => { sound.playClick(); onNavigate(userMode === 'kids' ? 'kids' : 'adults'); }}
-                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800"
+                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -152,98 +183,129 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                 <span>00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}s</span>
               </div>
 
-              {/* Packed Counter Pill */}
+              {/* Score Badge */}
               <div className="flex items-center gap-1.5 bg-navy-900/90 px-3 py-1 rounded-2xl border border-brand-gold/40">
-                <Backpack className="w-4 h-4 text-brand-gold" />
-                <span className="font-black text-xs text-brand-yellow">
-                  {correctSelected}/{essentialItems.length} Vitales
-                </span>
+                <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
+                <span className="font-black text-xs text-brand-yellow tabular-nums">+{earnedScore} pts</span>
               </div>
             </div>
 
             {/* Title */}
             <div className="text-center pt-0.5">
               <h1 className="font-black text-lg text-white uppercase tracking-tight">
-                ARMÁ LA MOCHILA DE 72H
+                ARMÁ LA MOCHILA DE 72 HORAS
               </h1>
-              <p className="text-[11px] text-slate-300 font-medium">
-                Tocá los elementos indispensables para la supervivencia familiar.
+              <p className="text-[11px] text-slate-300">
+                Arrastrá o tocá los elementos para guardarlos dentro
               </p>
             </div>
           </div>
 
-          {/* Grid of Items */}
-          <div className="relative z-10 my-auto grid grid-cols-2 gap-2.5 py-2 max-h-[60vh] overflow-y-auto pr-1">
-            {EMERGENCY_KIT_ITEMS.map((item) => {
-              const isSelected = selectedIds.includes(item.id);
-
-              let borderStyle = 'border-white/10 bg-navy-950/80 hover:border-brand-cyan/50';
-              if (isSelected) {
-                if (isFinished) {
-                  borderStyle = item.isEssential
-                    ? 'bg-emerald-950/95 border-2 border-emerald-400 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                    : 'bg-rose-950/95 border-2 border-rose-500 text-rose-100 animate-shake';
-                } else {
-                  borderStyle = 'bg-brand-blue/30 border-2 border-brand-cyan shadow-glow-cyan/30 scale-102';
-                }
-              }
-
-              return (
-                <button
-                  key={item.id}
-                  disabled={isFinished}
-                  onClick={() => handleToggleItem(item)}
-                  className={`sismo-card p-3 rounded-2xl flex flex-col justify-between text-left transition-all active:scale-[0.97] min-h-[95px] ${borderStyle}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-3xl filter drop-shadow">{item.icon}</span>
-                    {isSelected && (
-                      <span className={`w-6 h-6 rounded-full flex items-center justify-center font-black text-xs shadow-md ${
-                        isFinished && !item.isEssential ? 'bg-rose-500 text-white' : 'bg-brand-cyan text-navy-950'
-                      }`}>
-                        {isFinished && !item.isEssential ? '✗' : '✓'}
-                      </span>
-                    )}
+          {/* Centerpiece: Interactive Backpack Drop Target */}
+          <div className="relative z-10 my-auto py-2 flex flex-col items-center">
+            {/* The Central Backpack Canvas */}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`w-full max-w-[320px] p-5 rounded-3xl border-2 transition-all duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden backdrop-blur-xl ${
+                isDragOverBackpack
+                  ? 'bg-brand-cyan/20 border-brand-cyan shadow-[0_0_35px_rgba(34,211,238,0.6)] scale-105'
+                  : isAllEssentialPacked
+                  ? 'bg-emerald-950/80 border-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.5)]'
+                  : 'bg-gradient-to-b from-navy-900/90 via-navy-950/95 to-navy-950 border-brand-cyan/40 shadow-xl'
+              }`}
+            >
+              {/* Backpack Icon & Animation */}
+              <div className="relative">
+                <span className={`text-6xl sm:text-7xl block filter drop-shadow-lg transition-transform ${isDragOverBackpack ? 'scale-110' : ''}`}>
+                  🎒
+                </span>
+                {streak >= 2 && (
+                  <div className="absolute -top-2 -right-3 flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-orange-950 border border-orange-500 text-orange-400 font-black text-[10px] shadow-md">
+                    <Flame className="w-3 h-3 fill-orange-500" /> x{streak}
                   </div>
+                )}
+              </div>
 
-                  <div className="pt-1">
-                    <h3 className="font-bold text-xs text-white leading-tight">
-                      {item.name}
-                    </h3>
-                    {isFinished && (
-                      <p className={`text-[10px] font-medium leading-snug mt-1 ${item.isEssential ? 'text-emerald-300' : 'text-rose-300'}`}>
-                        {item.reason}
-                      </p>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+              {/* Progress Count */}
+              <div className="mt-2 space-y-0.5">
+                <span className="font-black text-sm text-white uppercase tracking-wider block">
+                  {correctPackedCount} de {essentialItems.length} Elementos Vitales
+                </span>
+                <span className="text-[10px] text-brand-cyan font-bold uppercase tracking-widest block">
+                  {isAllEssentialPacked ? '¡MOCHILA 100% COMPLETA!' : 'SOLTÁ LOS ARTÍCULOS AQUÍ'}
+                </span>
+              </div>
+
+              {/* Packed Item Miniatures Grid inside Backpack */}
+              {packedItems.length > 0 && (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 pt-2.5 border-t border-white/10 w-full">
+                  {packedItems.map((item) => (
+                    <span
+                      key={item.id}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-xs font-bold text-emerald-200 animate-in zoom-in-50"
+                      title={item.name}
+                    >
+                      <span>{item.icon}</span>
+                      <Check className="w-2.5 h-2.5 text-emerald-400" />
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Live Interactive Feedback Banner */}
+            {feedbackMessage && (
+              <div className={`mt-2.5 px-3.5 py-1.5 rounded-xl text-xs font-bold max-w-sm text-center animate-in fade-in duration-200 ${
+                feedbackMessage.isError
+                  ? 'bg-rose-950/90 border border-rose-500/80 text-rose-200 shadow-md'
+                  : 'bg-emerald-950/90 border border-emerald-500/80 text-emerald-200 shadow-md'
+              }`}>
+                {feedbackMessage.text}
+              </div>
+            )}
           </div>
 
-          {/* Action Footer */}
-          <div className="relative z-10 space-y-2 pt-1">
-            {!isFinished ? (
+          {/* Available Items Deck (Draggable or Tappable) */}
+          <div className="relative z-10 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 px-1">
+              <span>ARTÍCULOS DISPONIBLES:</span>
+              <span className="text-brand-cyan text-[10px]">TOCÁ O ARRASTRÁ</span>
+            </div>
+
+            {/* Horizontal Scrollable Shelf of Available Items */}
+            <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1 py-1">
+              {availableItems.map((item) => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item)}
+                  onClick={() => handlePackItem(item)}
+                  className="p-2.5 rounded-2xl border border-white/15 bg-navy-950/90 hover:border-brand-cyan/60 hover:bg-navy-900/90 active:scale-95 transition-all flex flex-col items-center justify-center text-center cursor-pointer group shadow-md"
+                >
+                  <span className="text-2xl sm:text-3xl filter drop-shadow group-hover:scale-110 transition-transform">
+                    {item.icon}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-200 leading-tight mt-1 line-clamp-2">
+                    {item.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom Finalize Button */}
+            <div className="pt-1">
               <Button
-                variant="primary"
-                size="md"
-                fullWidth
-                onClick={handleEvaluate}
-              >
-                <span>¡Cerrar Mochila y Evaluar!</span>
-                <ShieldCheck className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                variant="gold"
+                variant={isAllEssentialPacked ? 'primary' : 'secondary'}
                 size="md"
                 fullWidth
                 onClick={() => setGameState('result')}
               >
-                <span>Ver Puntuación Final (+XP)</span>
+                <span>{isAllEssentialPacked ? '¡MOCHILA LISTA! (Ver Puntuación +XP)' : `Evaluar Mochila (${correctPackedCount}/${essentialItems.length})`}</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-            )}
+            </div>
           </div>
         </>
       )}

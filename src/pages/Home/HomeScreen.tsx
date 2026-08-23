@@ -195,12 +195,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-cyan shrink-0 ml-1" />
           </button>
         </div>
-
-        {/* 6. Footer Indicator */}
-        <div className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-300 font-medium pt-2">
-          <Smartphone className="w-3.5 h-3.5" />
-          <span>Sin instalar nada • Jugá desde tu celular en el stand <strong className="text-brand-cyan font-bold">INPRES</strong></span>
-        </div>
       </div>
     </div>
   );
