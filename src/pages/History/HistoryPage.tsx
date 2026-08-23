@@ -160,14 +160,11 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperien
     };
   }, []);
 
-  // Play projector slide sound when switching between historical photo slides
+  // Play projector slide sound when switching to any historical photo slide (1..5)
   useEffect(() => {
-    if (activeIdx === 0) return;
-    if (isFirstSlideChange.current) {
-      isFirstSlideChange.current = false;
-      return;
+    if (activeIdx >= 1) {
+      sound.playProjectorSlide();
     }
-    sound.playProjectorSlide();
   }, [activeIdx]);
 
   // Start the fullscreen synchronized experience

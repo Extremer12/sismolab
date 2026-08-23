@@ -232,42 +232,13 @@ class SoundFX {
   }
 
   public playWinFanfare() {
-    if (!this.soundEnabled) return;
-    this.initCtx();
-    if (!this.ctx) return;
-
+    if (!this.soundEnabled || typeof window === 'undefined') return;
     try {
-      const now = this.ctx.currentTime;
-      const notes = [
-        { f: 523.25, d: 0.12 },
-        { f: 523.25, d: 0.12 },
-        { f: 523.25, d: 0.12 },
-        { f: 659.25, d: 0.35 },
-        { f: 587.33, d: 0.18 },
-        { f: 659.25, d: 0.18 },
-        { f: 783.99, d: 0.55 }
-      ];
-
-      let elapsed = 0;
-      notes.forEach((n) => {
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        const start = now + elapsed;
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(n.f, start);
-
-        gain.gain.setValueAtTime(0.22, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + n.d);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(start);
-        osc.stop(start + n.d);
-
-        elapsed += n.d * 0.85;
+      const audio = new Audio('/sonidos/win.mp3');
+      audio.volume = 0.85;
+      audio.play().catch(() => {
+        // Fallback to oscillator if file autoplay fails
+        this.playCorrect();
       });
       this.triggerHaptic('success');
     } catch {

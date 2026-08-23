@@ -73,8 +73,8 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
       <div className="relative z-10 my-auto text-center space-y-5 py-4">
         {countdown === null ? (
           <div className="space-y-4 animate-in zoom-in-95 duration-200">
-            {/* Pulsing Icon */}
-            <div className="relative mx-auto w-24 h-24 rounded-3xl bg-gradient-to-tr from-brand-electric via-navy-900 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40 animate-bounce">
+            {/* Stable Icon Box */}
+            <div className="relative mx-auto w-24 h-24 rounded-3xl bg-gradient-to-tr from-brand-electric via-navy-900 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40">
               <span>{icon}</span>
               <div className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-brand-gold text-navy-950 font-black text-[10px] uppercase shadow-md">
                 ★ +{rewardXp} XP
@@ -109,21 +109,21 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
             </div>
           </div>
         ) : (
-          /* Giant Cinematic Countdown */
+          /* Giant Minimalist Cinematic Countdown (No enclosing circle) */
           <div className="space-y-4 py-8 flex flex-col items-center justify-center animate-in zoom-in-50 duration-200">
-            <div className="relative w-40 h-40 rounded-full border-4 border-brand-cyan bg-navy-900/90 flex items-center justify-center shadow-[0_0_50px_rgba(34,211,238,0.6)]">
+            <div className="flex items-center justify-center h-36">
               {countdown > 0 ? (
-                <span className="font-black text-7xl sm:text-8xl text-white animate-ping" style={{ animationDuration: '0.9s' }}>
+                <span className="font-black text-8xl sm:text-9xl text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-200 to-brand-cyan drop-shadow-[0_0_35px_rgba(34,211,238,0.8)] font-mono">
                   {countdown}
                 </span>
               ) : (
-                <span className="font-black text-4xl sm:text-5xl text-brand-yellow tracking-widest animate-bounce">
+                <span className="font-black text-6xl sm:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-amber-300 to-yellow-500 tracking-widest drop-shadow-[0_0_40px_rgba(250,204,21,0.9)]">
                   ¡YA!
                 </span>
               )}
             </div>
 
-            <p className="text-sm font-extrabold text-brand-cyan tracking-wider uppercase animate-pulse">
+            <p className="text-sm font-extrabold text-brand-cyan tracking-wider uppercase">
               {countdown > 0 ? '¡PREPARATE!' : '¡DEMOSTRÁ LO QUE SABÉS!'}
             </p>
           </div>

@@ -11,14 +11,16 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({ user, onNavigate }) => {
   return (
     <header className="sticky top-0 z-40 bg-navy-950/90 backdrop-blur-xl border-b border-brand-cyan/15 px-4 py-3 max-w-md mx-auto w-full flex items-center justify-between select-none">
-      {/* Brand Group */}
+      {/* Brand Group with Real App Icon */}
       <div
         onClick={() => { sound.playClick(); onNavigate('home'); }}
-        className="flex items-center gap-2.5 cursor-pointer group"
+        className="flex items-center gap-3 cursor-pointer group"
       >
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-navy-850 to-navy-900 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shadow-glow-cyan/40">
-          <Activity className="w-5 h-5 animate-pulse text-brand-cyan" />
-        </div>
+        <img
+          src="/images/icono.png"
+          alt="SISMO LAB"
+          className="w-10 h-10 rounded-2xl object-cover border border-brand-cyan/40 shadow-glow-cyan/40 shrink-0 group-hover:scale-105 transition-transform"
+        />
         <div>
           <div className="text-[10px] font-black text-brand-cyan uppercase tracking-wider leading-none">
             INPRES • SAN JUAN
@@ -31,19 +33,10 @@ export const TopBar: React.FC<TopBarProps> = ({ user, onNavigate }) => {
 
       {/* Right Controls */}
       <div className="flex items-center gap-2">
-        {/* Mode Pill */}
-        <button
-          onClick={() => { sound.playClick(); onNavigate('profile'); }}
-          className="px-3 py-1.5 rounded-full bg-navy-900/90 border border-brand-cyan/30 text-brand-cyan font-black text-xs uppercase flex items-center gap-1.5 hover:border-brand-cyan transition-all"
-        >
-          <span>MODO</span>
-          <span className="text-sm">☺</span>
-        </button>
-
         {/* Score Pill */}
         <button
           onClick={() => { sound.playClick(); onNavigate('ranking'); }}
-          className="px-3 py-1 rounded-2xl bg-navy-900/90 border border-brand-gold/40 flex items-center gap-2 shadow-sm hover:border-brand-gold transition-all"
+          className="px-3.5 py-1.5 rounded-2xl bg-navy-900/90 border border-brand-gold/40 flex items-center gap-2 shadow-sm hover:border-brand-gold hover:scale-105 active:scale-95 transition-all"
         >
           <span className="text-brand-yellow text-sm">★</span>
           <div className="text-left leading-tight">

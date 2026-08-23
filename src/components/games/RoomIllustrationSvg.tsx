@@ -1,5 +1,6 @@
 import React from 'react';
 import { SafeHomeHazard } from '../../types';
+import { ShieldCheck, Search } from 'lucide-react';
 
 interface RoomIllustrationSvgProps {
   hazards: SafeHomeHazard[];
@@ -14,8 +15,6 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
   isShaking,
   onSelectHazard
 }) => {
-  const getHazard = (id: string) => hazards.find(h => h.id === id);
-
   return (
     <div className={`relative w-full h-80 sm:h-84 rounded-3xl overflow-hidden border-2 border-brand-cyan/40 bg-gradient-to-b from-slate-950 via-navy-900 to-navy-950 shadow-2xl transition-transform ${
       isShaking ? 'animate-shake' : ''
@@ -43,10 +42,6 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
             <stop offset="0%" stopColor="#2A1B10" />
             <stop offset="100%" stopColor="#3D2817" />
           </linearGradient>
-          <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
         </defs>
 
         {/* --- ROOM WALLS & PERSPECTIVE --- */}
@@ -73,18 +68,15 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
           <polygon points="380,80 430,70 430,220 380,210" fill="url(#windowGlow)" stroke="#38BDF8" strokeWidth="2" />
           <line x1="405" y1="75" x2="405" y2="215" stroke="#38BDF8" strokeWidth="1.5" />
           <line x1="380" y1="145" x2="430" y2="145" stroke="#38BDF8" strokeWidth="1.5" />
-          {/* Andes Mountains silhouette through window */}
           <polygon points="385,170 405,140 415,155 425,130 430,140 430,210 385,210" fill="#0C2548" />
         </g>
 
         {/* 2. Tall Bookcase (Right of Center) */}
         <g>
           <rect x="330" y="70" width="45" height="150" fill="url(#woodGradient)" stroke="#5B3E25" strokeWidth="1.5" rx="3" />
-          {/* Shelves & Books */}
           <line x1="330" y1="110" x2="375" y2="110" stroke="#5B3E25" strokeWidth="2" />
           <line x1="330" y1="150" x2="375" y2="150" stroke="#5B3E25" strokeWidth="2" />
           <line x1="330" y1="190" x2="375" y2="190" stroke="#5B3E25" strokeWidth="2" />
-          {/* Colorful Book Spines */}
           <rect x="333" y="85" width="6" height="25" fill="#EF4444" rx="1" />
           <rect x="340" y="80" width="7" height="30" fill="#3B82F6" rx="1" />
           <rect x="348" y="88" width="5" height="22" fill="#FACC15" rx="1" />
@@ -95,16 +87,11 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
 
         {/* 3. Bed & Headboard (Center-Right) */}
         <g>
-          {/* Bed Base */}
           <polygon points="210,210 330,210 360,290 190,290" fill="#1E293B" stroke="#334155" strokeWidth="2" />
-          {/* Mattress */}
           <polygon points="215,205 325,205 355,275 195,275" fill="#0284C7" stroke="#38BDF8" strokeWidth="1.5" />
-          {/* Blanket Fold */}
           <polygon points="200,240 345,240 355,275 195,275" fill="#0369A1" />
-          {/* Pillows */}
           <rect x="225" y="200" width="40" height="18" fill="#F8FAFC" rx="4" opacity="0.9" />
           <rect x="275" y="200" width="40" height="18" fill="#F8FAFC" rx="4" opacity="0.9" />
-          {/* Headboard */}
           <rect x="210" y="150" width="120" height="55" fill="url(#woodGradient)" stroke="#5B3E25" strokeWidth="2" rx="4" />
         </g>
 
@@ -117,20 +104,16 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
 
         {/* 5. TV & Entertainment Console (Left Wall) */}
         <g>
-          {/* Table */}
           <polygon points="80,180 170,180 185,240 65,240" fill="url(#woodGradient)" stroke="#5B3E25" strokeWidth="2" />
-          {/* TV Screen */}
           <rect x="90" y="115" width="70" height="50" fill="#020617" stroke="#475569" strokeWidth="3" rx="4" />
           <rect x="94" y="119" width="62" height="42" fill="#0F172A" />
           <polygon points="100,150 120,130 140,145 150,135 154,155 96,155" fill="#0284C7" opacity="0.4" />
-          {/* TV Stand */}
           <polygon points="115,165 135,165 140,180 110,180" fill="#334155" />
         </g>
 
         {/* 6. Top Shelf with Heavy Vase (Center-Left) */}
         <g>
           <rect x="190" y="55" width="70" height="8" fill="url(#woodGradient)" stroke="#5B3E25" strokeWidth="1.5" rx="2" />
-          {/* Vase / Pot */}
           <ellipse cx="225" cy="45" rx="9" ry="12" fill="#D97706" stroke="#B45309" strokeWidth="1.5" />
           <ellipse cx="225" cy="33" rx="5" ry="2" fill="#F59E0B" />
         </g>
@@ -146,7 +129,6 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
         <g>
           <polygon points="10,100 45,115 45,280 10,320" fill="#020617" stroke="#1E293B" strokeWidth="2" />
           <polygon points="12,105 43,118 43,275 12,315" fill="#0369A1" opacity="0.2" />
-          {/* Exit sign */}
           <rect x="18" y="125" width="22" height="10" fill="#10B981" rx="2" />
           <text x="29" y="132" fill="#FFFFFF" fontSize="6" fontWeight="bold" textAnchor="middle">SALIDA</text>
         </g>
@@ -159,7 +141,7 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
         </g>
       </svg>
 
-      {/* 2. Interactive Hotspot Overlay Buttons */}
+      {/* 2. Interactive Natural Inspection Targets (No spoiler warning badges) */}
       {hazards.map((hazard) => {
         const isSelected = selectedHazardId === hazard.id;
         const isSecured = hazard.isSecured;
@@ -169,25 +151,20 @@ export const RoomIllustrationSvg: React.FC<RoomIllustrationSvgProps> = ({
             key={hazard.id}
             onClick={() => onSelectHazard(hazard)}
             style={{ left: `${hazard.x}%`, top: `${hazard.y}%` }}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 p-1.5 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 group z-20 ${
+            className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 rounded-2xl flex items-center justify-center transition-all duration-300 group z-20 active:scale-95 ${
               isSecured
-                ? 'bg-emerald-950/90 border-2 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.6)] scale-100'
-                : 'bg-navy-950/95 border-2 border-rose-500 shadow-[0_0_18px_rgba(244,63,94,0.6)] animate-pulse hover:scale-115 active:scale-95'
-            } ${isSelected ? 'ring-4 ring-brand-cyan scale-115' : ''}`}
-            title={hazard.name}
+                ? 'bg-emerald-950/90 border border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                : isSelected
+                ? 'bg-brand-cyan/30 border-2 border-brand-cyan text-white shadow-[0_0_20px_rgba(34,211,238,0.7)] scale-110'
+                : 'bg-navy-950/70 border border-white/20 text-slate-200 hover:border-brand-cyan/60 hover:bg-navy-900/90 backdrop-blur-sm'
+            }`}
+            title={`Inspeccionar ${hazard.name}`}
           >
-            <span className="text-2xl sm:text-3xl leading-none filter drop-shadow">
-              {hazard.icon}
-            </span>
-
-            {/* Badge Indicator */}
-            <span className={`text-[8px] sm:text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1 shadow-md whitespace-nowrap tracking-tight ${
-              isSecured
-                ? 'bg-emerald-500 text-navy-950 font-black'
-                : 'bg-rose-500 text-white font-black animate-bounce'
-            }`}>
-              {isSecured ? '✓ SEGURO' : '⚠️ RIESGO'}
-            </span>
+            {isSecured ? (
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            ) : (
+              <Search className="w-4 h-4 text-cyan-300 group-hover:scale-110 transition-transform" />
+            )}
           </button>
         );
       })}

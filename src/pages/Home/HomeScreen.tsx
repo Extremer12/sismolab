@@ -38,28 +38,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
       {/* Main Content Layout */}
       <div className="relative z-10 p-4 sm:p-5 space-y-4 pb-24 max-w-md mx-auto">
-        {/* 1. Compact User Welcome Card */}
-        <div className="sismo-card px-4 py-3 rounded-2xl border border-brand-cyan/35 bg-navy-950/80 backdrop-blur-xl shadow-lg flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Avatar with glowing ring */}
-            <div className="relative w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-cyan to-brand-blue shadow-glow-cyan/50 shrink-0">
-              <div className="w-full h-full rounded-full bg-navy-900 flex items-center justify-center text-2xl overflow-hidden">
-                {user.avatar_emoji || '🧒'}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="font-black text-base text-white leading-tight">
-                ¡HOLA, <span className="text-brand-cyan">{user.nickname}!</span>
-              </h2>
-              <p className="text-[11px] text-slate-300 font-medium">
-                Bienvenido a Sismo Lab
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Hero Section: ¿ESTÁS LISTO PARA EL DESAFÍO? + San Juan Map Graphic */}
+        {/* 1. Hero Section: ¿ESTÁS LISTO PARA EL DESAFÍO? + San Juan Map Graphic */}
         <div className="relative py-1 px-1 flex items-center justify-between overflow-hidden">
           <div className="max-w-[210px] space-y-1.5 z-10">
             <h1 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase leading-none">
