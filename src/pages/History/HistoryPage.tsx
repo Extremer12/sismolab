@@ -77,15 +77,12 @@ const HISTORICAL_SLIDES: SlideEvent[] = [
 export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperienceChange }) => {
   const [isExperienceActive, setIsExperienceActive] = useState<boolean>(false);
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
-  const [waitingFor23sSlide, setWaitingFor23sSlide] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isFirstSlideChange = useRef(true);
   const activeIdxRef = useRef(0);
   const isExperienceActiveRef = useRef(false);
-  const hasTriggered23sPause = useRef(false);
-  const hasResumedAfter23s = useRef(false);
 
   useEffect(() => {
     activeIdxRef.current = activeIdx;
@@ -108,44 +105,42 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperien
       endExperience();
     };
 
-    // Strict timeline-synchronized automated scene transitions
+    // Strict timeline-synchronized 100% automated scene transitions
     const handleTimeUpdate = () => {
       if (!audioRef.current || !isExperienceActiveRef.current) return;
       const time = audioRef.current.currentTime;
 
-      // 1. At 0:23: Pause audio at end of intro and prompt user to slide
-      if (time >= 23 && time < 25 && !hasTriggered23sPause.current) {
-        if (activeIdxRef.current === 0) {
-          hasTriggered23sPause.current = true;
-          audioRef.current.pause();
-          setWaitingFor23sSlide(true);
+      // 1. At 0:22: Automatically transition to Slide 1 (1894) (1s earlier for perfect audio sync)
+      if (time >= 22 && time < 35) {
+        if (activeIdxRef.current < 1) {
+          scrollToSlide(1);
         }
       }
 
       // 2. At 0:35: Automatically transition to Slide 2 (1944)
       if (time >= 35 && time < 58) {
-        if (activeIdxRef.current < 2 && hasResumedAfter23s.current) {
+        if (activeIdxRef.current < 2) {
           scrollToSlide(2);
         }
       }
 
       // 3. At 0:58: Automatically transition to Slide 3 (1977)
       if (time >= 58 && time < 76) {
-        if (activeIdxRef.current < 3 && hasResumedAfter23s.current) {
+        if (activeIdxRef.current < 3) {
           scrollToSlide(3);
         }
       }
 
       // 4. At 1:16 (76s): Automatically transition to Slide 4 (2021)
       if (time >= 76 && time < 93) {
-        if (activeIdxRef.current < 4 && hasResumedAfter23s.current) {
+        if (activeIdxRef.current < 4) {
           scrollToSlide(4);
         }
       }
 
       // 5. At 1:33 (93s): Automatically transition to Slide 5 (2026 / Presente & Futuro)
       if (time >= 93) {
-        if (activeIdxRef.current < 5 && hasResumedAfter23s.current) {
+        if (activeIdxRef.current < 5) {
           scrollToSlide(5);
         }
       }
@@ -179,9 +174,6 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperien
   const startExperience = () => {
     sound.playClick();
     setIsExperienceActive(true);
-    setWaitingFor23sSlide(false);
-    hasTriggered23sPause.current = false;
-    hasResumedAfter23s.current = false;
 
     scrollToSlide(0);
 
@@ -194,19 +186,8 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperien
   // End or exit the experience and return to free exploration
   const endExperience = () => {
     setIsExperienceActive(false);
-    setWaitingFor23sSlide(false);
     if (audioRef.current) {
       audioRef.current.pause();
-    }
-  };
-
-  // Resume playback after user unlocks at 23s
-  const handleUnlock23s = () => {
-    setWaitingFor23sSlide(false);
-    hasResumedAfter23s.current = true;
-    scrollToSlide(1);
-    if (audioRef.current && audioRef.current.paused) {
-      audioRef.current.play().catch(() => {});
     }
   };
 
@@ -486,41 +467,6 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperien
           );
         })}
       </div>
-
-      {/* =========================================================================
-          4. MINIMALIST CENTERED FULLSCREEN OVERLAY AT 23 SECONDS
-         ========================================================================= */}
-      {waitingFor23sSlide && (
-        <div
-          onClick={handleUnlock23s}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 cursor-pointer select-none pointer-events-auto"
-        >
-          <div className="space-y-8 max-w-sm mx-auto flex flex-col items-center">
-            {/* Pure minimalist animated vertical indicator line */}
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="w-[1px] h-12 bg-gradient-to-b from-transparent via-brand-cyan to-transparent animate-pulse" />
-              <ChevronDown className="w-6 h-6 text-brand-cyan animate-bounce stroke-[2.5]" />
-            </div>
-
-            {/* Minimalist Typographic Instruction */}
-            <div className="space-y-3">
-              <h3 className="font-black text-2xl sm:text-3xl text-white uppercase tracking-[0.25em] leading-tight">
-                DESLIZÁ HACIA ABAJO
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium tracking-wider uppercase">
-                Para continuar con el relato histórico
-              </p>
-            </div>
-
-            {/* Subtle animated touch pill */}
-            <div className="pt-2">
-              <span className="inline-block px-5 py-2 rounded-full border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan text-[11px] font-bold tracking-[0.2em] uppercase shadow-[0_0_20px_rgba(0,184,255,0.25)]">
-                TOCÁ O DESLIZÁ
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
