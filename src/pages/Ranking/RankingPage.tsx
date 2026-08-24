@@ -110,102 +110,82 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
           })}
         </div>
 
-        {/* 4. Redesigned Premium Top 3 Podium */}
-        <div className="pt-4 pb-1">
-          <div className="grid grid-cols-3 gap-2.5 items-end text-center">
+        {/* 4. Sleek Minimalist Top 3 Podium */}
+        <div className="pt-3 pb-1">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 items-end text-center">
             
             {/* 2nd Place (Silver - Left) */}
-            <div className="relative rounded-3xl p-3 border border-slate-400/40 bg-gradient-to-b from-slate-900/95 via-navy-950/95 to-slate-950/95 shadow-[0_8px_30px_rgba(148,163,184,0.15)] flex flex-col items-center space-y-1.5 transition-all hover:scale-102">
-              {/* Badge 2° */}
-              <div className="absolute -top-3 w-7 h-7 rounded-full bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 text-navy-950 font-black text-xs flex items-center justify-center shadow-md border border-white">
-                2°
+            <div className="relative rounded-3xl p-3 border border-slate-400/30 bg-gradient-to-b from-slate-900/90 via-navy-950/95 to-slate-950/95 shadow-lg flex flex-col items-center space-y-2">
+              {/* Rank Pill */}
+              <div className="px-2.5 py-0.5 rounded-full bg-slate-300 text-navy-950 font-black text-[10px] tracking-wider shadow-sm">
+                #2 PLATA
               </div>
 
-              {/* Glowing Avatar Portrait */}
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-1 bg-gradient-to-tr from-slate-400 via-slate-200 to-brand-cyan shadow-md mt-1.5">
-                <div className="w-full h-full rounded-full bg-navy-900 flex items-center justify-center text-3xl overflow-hidden border border-slate-400/40">
+              {/* Mathematically Perfect Circle Avatar */}
+              <div className="w-14 h-14 sm:w-16 sm:h-16 aspect-square shrink-0 mx-auto rounded-full p-1 bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 shadow-md">
+                <div className="w-full h-full aspect-square rounded-full bg-navy-900 flex items-center justify-center text-3xl overflow-hidden border border-slate-300/40">
                   {second.avatar_emoji || '🔬'}
                 </div>
               </div>
 
               {/* Name & Score */}
-              <div className="space-y-0.5 w-full">
-                <h3 className="font-black text-xs sm:text-sm text-white truncate max-w-full">
+              <div className="space-y-0.5 w-full min-w-0">
+                <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5">
                   {second.nickname.split(' ')[0]}
                 </h3>
                 <span className="font-black text-xs text-brand-cyan tabular-nums block">
-                  {second.score.toLocaleString()} <span className="text-[10px] font-bold text-slate-400">pts</span>
+                  {second.score.toLocaleString()} <span className="text-[9px] font-bold text-slate-400">pts</span>
                 </span>
-              </div>
-
-              {/* Metallic Pedestal */}
-              <div className="w-full py-1 rounded-xl bg-gradient-to-b from-slate-700/80 to-slate-900/90 flex items-center justify-center border-t border-slate-400/40 text-[10px] font-black text-slate-200 tracking-wider">
-                PLATA
               </div>
             </div>
 
-            {/* 1st Place (Gold - Center Protagonist) */}
-            <div className="relative rounded-3xl p-3.5 border-2 border-brand-gold bg-gradient-to-b from-amber-950/90 via-navy-900/95 to-navy-950/95 shadow-[0_12px_45px_rgba(245,184,61,0.45)] flex flex-col items-center space-y-1.5 -mt-3 z-10 transition-all hover:scale-105">
-              {/* Crown Icon */}
-              <div className="absolute -top-6 flex items-center justify-center">
-                <Crown className="w-7 h-7 text-brand-yellow drop-shadow-[0_0_12px_rgba(250,204,21,0.9)] animate-bounce" />
+            {/* 1st Place (Gold - Center Protagonist & Elevated) */}
+            <div className="relative rounded-3xl p-3.5 border-2 border-brand-gold/60 bg-gradient-to-b from-amber-950/70 via-navy-900/95 to-navy-950/95 shadow-[0_8px_35px_rgba(245,184,61,0.25)] flex flex-col items-center space-y-2.5 -mt-3 z-10">
+              {/* Rank Pill */}
+              <div className="px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-navy-950 font-black text-[11px] tracking-wider shadow-glow-gold">
+                #1 CAMPEÓN
               </div>
 
-              {/* Badge 1° */}
-              <div className="absolute -top-2.5 w-7 h-7 rounded-full bg-gradient-to-b from-yellow-300 via-amber-400 to-yellow-500 text-navy-950 font-black text-xs flex items-center justify-center shadow-glow-gold border border-white">
-                1°
-              </div>
-
-              {/* Golden Avatar Portrait */}
-              <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full p-1 bg-gradient-to-tr from-brand-yellow via-amber-400 to-yellow-200 shadow-glow-gold mt-2">
-                <div className="w-full h-full rounded-full bg-navy-950 flex items-center justify-center text-4xl overflow-hidden border-2 border-amber-300/60">
+              {/* Mathematically Perfect Large Circle Avatar */}
+              <div className="w-16 h-16 sm:w-20 sm:h-20 aspect-square shrink-0 mx-auto rounded-full p-1 bg-gradient-to-tr from-yellow-400 via-amber-300 to-amber-500 shadow-glow-gold">
+                <div className="w-full h-full aspect-square rounded-full bg-navy-950 flex items-center justify-center text-4xl overflow-hidden border-2 border-amber-300/60">
                   {first.avatar_emoji || '🦅'}
                 </div>
               </div>
 
               {/* Name & Score */}
-              <div className="space-y-0.5 w-full">
-                <h3 className="font-black text-sm sm:text-base text-brand-yellow truncate max-w-full">
+              <div className="space-y-0.5 w-full min-w-0">
+                <h3 className="font-black text-sm sm:text-base text-brand-yellow truncate px-0.5">
                   {first.nickname.split(' ')[0]}
                 </h3>
                 <span className="font-black text-sm text-white tabular-nums block drop-shadow-md">
                   {first.score.toLocaleString()} <span className="text-xs font-bold text-brand-gold">pts</span>
                 </span>
               </div>
-
-              {/* Golden Pedestal */}
-              <div className="w-full py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 flex items-center justify-center text-navy-950 font-black text-[10px] tracking-wider shadow-md">
-                ★ CAMPEÓN ★
-              </div>
             </div>
 
             {/* 3rd Place (Bronze - Right) */}
-            <div className="relative rounded-3xl p-3 border border-amber-700/40 bg-gradient-to-b from-amber-950/80 via-navy-950/95 to-slate-950/95 shadow-[0_8px_30px_rgba(180,83,9,0.15)] flex flex-col items-center space-y-1.5 transition-all hover:scale-102">
-              {/* Badge 3° */}
-              <div className="absolute -top-3 w-7 h-7 rounded-full bg-gradient-to-b from-amber-500 via-amber-600 to-amber-800 text-white font-black text-xs flex items-center justify-center shadow-md border border-amber-400">
-                3°
+            <div className="relative rounded-3xl p-3 border border-amber-700/30 bg-gradient-to-b from-amber-950/70 via-navy-950/95 to-slate-950/95 shadow-lg flex flex-col items-center space-y-2">
+              {/* Rank Pill */}
+              <div className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black text-[10px] tracking-wider shadow-sm">
+                #3 BRONCE
               </div>
 
-              {/* Bronze Avatar Portrait */}
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-1 bg-gradient-to-tr from-amber-600 via-amber-400 to-amber-800 shadow-md mt-1.5">
-                <div className="w-full h-full rounded-full bg-navy-900 flex items-center justify-center text-3xl overflow-hidden border border-amber-600/40">
+              {/* Mathematically Perfect Circle Avatar */}
+              <div className="w-14 h-14 sm:w-16 sm:h-16 aspect-square shrink-0 mx-auto rounded-full p-1 bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-700 shadow-md">
+                <div className="w-full h-full aspect-square rounded-full bg-navy-900 flex items-center justify-center text-3xl overflow-hidden border border-amber-600/40">
                   {third.avatar_emoji || '🦙'}
                 </div>
               </div>
 
               {/* Name & Score */}
-              <div className="space-y-0.5 w-full">
-                <h3 className="font-black text-xs sm:text-sm text-white truncate max-w-full">
+              <div className="space-y-0.5 w-full min-w-0">
+                <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5">
                   {third.nickname.split(' ')[0]}
                 </h3>
                 <span className="font-black text-xs text-brand-cyan tabular-nums block">
-                  {third.score.toLocaleString()} <span className="text-[10px] font-bold text-slate-400">pts</span>
+                  {third.score.toLocaleString()} <span className="text-[9px] font-bold text-slate-400">pts</span>
                 </span>
-              </div>
-
-              {/* Bronze Pedestal */}
-              <div className="w-full py-1 rounded-xl bg-gradient-to-b from-amber-800/80 to-amber-950/90 flex items-center justify-center border-t border-amber-700/40 text-[10px] font-black text-amber-300 tracking-wider">
-                BRONCE
               </div>
             </div>
 

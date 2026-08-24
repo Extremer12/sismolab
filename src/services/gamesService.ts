@@ -836,10 +836,10 @@ export const OFFICIAL_ACHIEVEMENTS: Achievement[] = [
   },
   {
     id: 'ach_casa_segura',
-    name: 'CASA SEGURA',
+    name: 'REFLEJOS ACTIVOS',
     slug: 'casa-segura',
-    description: 'Detectaste y aseguraste los riesgos en la habitación interactiva.',
-    icon: '🏠',
+    description: 'Demostraste reflejos de supervivencia impecables ante un sismo inminente.',
+    icon: '🏢',
     condition_type: 'hazards_found',
     condition_value: 5
   },

@@ -85,7 +85,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       <div className="sismo-card p-5 flex flex-col items-center text-center space-y-3 border-brand-cyan/30">
         <button
           onClick={() => { sound.playClick(); setIsAvatarModalOpen(true); }}
-          className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-blue via-navy-800 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40 hover:scale-105 transition-transform"
+          className="relative w-24 h-24 aspect-square rounded-full bg-gradient-to-br from-brand-blue via-navy-800 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40 hover:scale-105 transition-transform"
         >
           <span>{user.avatar_emoji}</span>
           <div className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center shadow-md">
