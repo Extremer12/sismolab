@@ -279,17 +279,17 @@ export const SAFE_HOME_HAZARDS: SafeHomeHazard[] = [
 // ==========================================
 export const EMERGENCY_KIT_ITEMS: EmergencyKitItem[] = [
   // Esenciales vitales
-  { id: 'water', name: 'Agua potable embotellada', icon: '💧', isEssential: true, category: 'vital', reason: 'Mínimo 2 litros por persona por día para 72 horas de supervivencia.' },
+  { id: 'water', name: 'Agua potable embotellada', icon: '💧', image: '/images/kit/agua.png', isEssential: true, category: 'vital', reason: 'Mínimo 2 litros por persona por día para 72 horas de supervivencia.' },
   { id: 'flashlight', name: 'Linterna LED a pilas', icon: '🔦', isEssential: true, category: 'vital', reason: 'Permite iluminar sin peligro de explosión ante posibles fugas de gas.' },
-  { id: 'radio', name: 'Radio a pilas con repuesto', icon: '📻', isEssential: true, category: 'vital', reason: 'Único canal de comunicación oficial si colapsan las redes celulares e internet.' },
+  { id: 'radio', name: 'Radio a pilas con repuesto', icon: '📻', image: '/images/kit/radio.png', isEssential: true, category: 'vital', reason: 'Único canal de comunicación oficial si colapsan las redes celulares e internet.' },
   { id: 'first_aid', name: 'Botiquín de primeros auxilios', icon: '🩹', isEssential: true, category: 'vital', reason: 'Gasas, vendas, antiséptico y medicamentos recetados indispensables.' },
-  { id: 'whistle', name: 'Silbato de emergencia', icon: '🔊', isEssential: true, category: 'vital', reason: 'Permite pedir auxilio gastando mucha menos energía que gritar bajo escombros.' },
+  { id: 'whistle', name: 'Silbato de emergencia', icon: '🔊', image: '/images/kit/silbato.png', isEssential: true, category: 'vital', reason: 'Permite pedir auxilio gastando mucha menos energía que gritar bajo escombros.' },
   { id: 'canned_food', name: 'Alimentos no perecederos', icon: '🥫', isEssential: true, category: 'vital', reason: 'Aportan calorías inmediatas sin requerir cocción ni heladera.' },
   { id: 'docs', name: 'Copia de DNI y escrituras', icon: '📄', isEssential: true, category: 'vital', reason: 'En bolsa hermética plástica impermeable para trámites post-emergencia.' },
-  { id: 'blanket', name: 'Manta térmica liviana', icon: '🧥', isEssential: true, category: 'vital', reason: 'Evita la hipotermia nocturna al evacuar a cielo abierto.' },
+  { id: 'blanket', name: 'Manta térmica liviana', icon: '🧥', image: '/images/kit/manta.png', isEssential: true, category: 'vital', reason: 'Evita la hipotermia nocturna al evacuar a cielo abierto.' },
   { id: 'powerbank', name: 'Batería externa cargada', icon: '🔋', isEssential: true, category: 'vital', reason: 'Mantener un celular con carga para llamados puntuales de rescate.' },
   { id: 'multitool', name: 'Navaja o multiherramienta', icon: '🔧', isEssential: true, category: 'vital', reason: 'Útil para cortar cuerdas, abrir latas y reparar fijaciones provisorias.' },
-  { id: 'matches_waterproof', name: 'Fósforos en estuche sellado', icon: '🔥', isEssential: true, category: 'vital', reason: 'Para encender fuego controlado en zonas abiertas de campamento seguro.' },
+  { id: 'matches_waterproof', name: 'Fósforos en estuche sellado', icon: '🔥', image: '/images/kit/fosforos.png', isEssential: true, category: 'vital', reason: 'Para encender fuego controlado en zonas abiertas de campamento seguro.' },
   { id: 'hygiene', name: 'Kit de higiene (alcohol/jabón)', icon: '🧼', isEssential: true, category: 'vital', reason: 'Previene infecciones y epidemias en situaciones de corte de agua.' },
 
   // Distractores / No esenciales

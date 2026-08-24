@@ -281,17 +281,22 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
               <div className="w-full min-h-[52px] mt-3 pt-2 border-t border-white/10 flex flex-wrap items-center justify-center gap-1.5">
                 {packedItems.length === 0 ? (
                   <span className="text-xs text-slate-400 font-medium py-2">
-                    Mochila vacía. Arrastrá o tocá los objetos de abajo.
+                    Mochila vacía. Tocá o arrastrá los objetos de abajo.
                   </span>
                 ) : (
                   packedItems.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => handleUnpackItem(item.id)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-navy-800/90 border border-brand-cyan/40 text-xs text-slate-100 hover:border-rose-400 hover:bg-rose-950/80 active:scale-95 transition-all group shadow-sm"
+                      type="button"
+                      onPointerDown={() => handleUnpackItem(item.id)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-navy-800/90 border border-brand-cyan/40 text-xs text-slate-100 hover:border-rose-400 hover:bg-rose-950/80 active:scale-95 transition-all group shadow-sm touch-manipulation cursor-pointer"
                       title="Quitar de la mochila"
                     >
-                      <span className="text-sm">{item.icon}</span>
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className="w-4 h-4 object-contain" />
+                      ) : (
+                        <span className="text-sm">{item.icon}</span>
+                      )}
                       <span className="font-bold text-[10px] truncate max-w-[80px]">{item.name.split(' ')[0]}</span>
                       <X className="w-3 h-3 text-slate-400 group-hover:text-rose-300" />
                     </button>
@@ -307,34 +312,46 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
               <span>ARTÍCULOS DISPONIBLES ({availableItems.length}):</span>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={handleShuffleAvailable}
-                  className="px-2 py-0.5 rounded-lg bg-navy-900 border border-brand-cyan/30 text-[10px] text-brand-cyan hover:bg-navy-800 flex items-center gap-1 transition-all active:scale-95"
+                  className="px-2 py-0.5 rounded-lg bg-navy-900 border border-brand-cyan/30 text-[10px] text-brand-cyan hover:bg-navy-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation"
                   title="Mezclar de nuevo"
                 >
                   <span>🔀 Mezclar</span>
                 </button>
-                <span className="text-brand-cyan text-[10px]">TOCÁ O ARRASTRÁ</span>
+                <span className="text-brand-cyan text-[10px]">TOCÁ RÁPIDO O ARRASTRÁ</span>
               </div>
             </div>
 
-            {/* Scrollable grid of items */}
+            {/* Scrollable grid of items with instant tap response */}
             <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1 py-1 scrollbar-none">
               {availableItems.map((item) => (
-                <div
+                <button
                   key={item.id}
+                  type="button"
                   draggable
                   onDragStart={(e) => handleDragStart(e, item)}
-                  onTouchEnd={(e) => handleTouchEndItem(e, item)}
-                  onClick={() => handlePackItem(item)}
-                  className="p-2 rounded-2xl border border-white/15 bg-navy-950/90 hover:border-brand-cyan hover:bg-navy-900 active:scale-95 transition-all flex flex-col items-center justify-center text-center cursor-pointer group shadow-md"
+                  onPointerDown={(e) => {
+                    // Instant packing on touch/click with 0ms lag
+                    handlePackItem(item);
+                  }}
+                  className="p-2 rounded-2xl border border-white/15 bg-navy-950/90 hover:border-brand-cyan hover:bg-navy-900 active:scale-90 transition-transform flex flex-col items-center justify-center text-center cursor-pointer group shadow-md select-none touch-manipulation min-h-[82px]"
                 >
-                  <span className="text-2xl sm:text-3xl filter drop-shadow group-hover:scale-110 transition-transform">
-                    {item.icon}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-200 leading-tight mt-1 line-clamp-2">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-10 h-10 object-contain drop-shadow group-hover:scale-110 transition-transform pointer-events-none"
+                    />
+                  ) : (
+                    <span className="text-3xl filter drop-shadow group-hover:scale-110 transition-transform pointer-events-none">
+                      {item.icon}
+                    </span>
+                  )}
+                  <span className="text-[10px] font-bold text-slate-200 leading-tight mt-1 line-clamp-2 pointer-events-none">
                     {item.name}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -388,7 +405,11 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             {/* 1. Correct Items */}
             {correctPackedItems.map((item) => (
               <div key={item.id} className="p-3 rounded-2xl bg-emerald-950/70 border border-emerald-500/50 flex items-start gap-3">
-                <span className="text-2xl shrink-0">{item.icon}</span>
+                {item.image ? (
+                  <img src={item.image} alt={item.name} className="w-8 h-8 object-contain shrink-0" />
+                ) : (
+                  <span className="text-2xl shrink-0">{item.icon}</span>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-xs text-emerald-200 truncate">{item.name}</h4>
@@ -402,7 +423,11 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             {/* 2. Wrong / Distractor Items */}
             {wrongPackedItems.map((item) => (
               <div key={item.id} className="p-3 rounded-2xl bg-rose-950/70 border border-rose-500/50 flex items-start gap-3">
-                <span className="text-2xl shrink-0">{item.icon}</span>
+                {item.image ? (
+                  <img src={item.image} alt={item.name} className="w-8 h-8 object-contain shrink-0" />
+                ) : (
+                  <span className="text-2xl shrink-0">{item.icon}</span>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-xs text-rose-200 truncate">{item.name}</h4>
@@ -416,7 +441,11 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             {/* 3. Missed Vital Items */}
             {missedVitalItems.map((item) => (
               <div key={item.id} className="p-3 rounded-2xl bg-amber-950/60 border border-amber-500/40 flex items-start gap-3 opacity-80">
-                <span className="text-2xl shrink-0">{item.icon}</span>
+                {item.image ? (
+                  <img src={item.image} alt={item.name} className="w-8 h-8 object-contain shrink-0" />
+                ) : (
+                  <span className="text-2xl shrink-0">{item.icon}</span>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-xs text-amber-200 truncate">{item.name} (Faltante)</h4>

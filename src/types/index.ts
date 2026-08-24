@@ -89,6 +89,7 @@ export interface EmergencyKitItem {
   id: string;
   name: string;
   icon: string;
+  image?: string;
   isEssential: boolean;
   category: 'vital' | 'no-essential';
   reason: string;
