@@ -288,7 +288,7 @@ export const EMERGENCY_KIT_ITEMS: EmergencyKitItem[] = [
   { id: 'docs', name: 'Copia de DNI y escrituras', icon: '📄', isEssential: true, category: 'vital', reason: 'En bolsa hermética plástica impermeable para trámites post-emergencia.' },
   { id: 'blanket', name: 'Manta térmica liviana', icon: '🧥', image: '/images/kit/manta.png', isEssential: true, category: 'vital', reason: 'Evita la hipotermia nocturna al evacuar a cielo abierto.' },
   { id: 'powerbank', name: 'Batería externa cargada', icon: '🔋', image: '/images/kit/powerbank.png', isEssential: true, category: 'vital', reason: 'Mantener un celular con carga para llamados puntuales de rescate.' },
-  { id: 'multitool', name: 'Navaja o multiherramienta', icon: '🔧', isEssential: true, category: 'vital', reason: 'Útil para cortar cuerdas, abrir latas y reparar fijaciones provisorias.' },
+  { id: 'multitool', name: 'Navaja o multiherramienta', icon: '🔧', image: '/images/kit/multiherramienta.png', isEssential: true, category: 'vital', reason: 'Útil para cortar cuerdas, abrir latas y reparar fijaciones provisorias.' },
   { id: 'matches_waterproof', name: 'Fósforos en estuche sellado', icon: '🔥', image: '/images/kit/fosforos.png', isEssential: true, category: 'vital', reason: 'Para encender fuego controlado en zonas abiertas de campamento seguro.' },
   { id: 'hygiene', name: 'Kit de higiene (alcohol/jabón)', icon: '🧼', isEssential: true, category: 'vital', reason: 'Previene infecciones y epidemias en situaciones de corte de agua.' },
 

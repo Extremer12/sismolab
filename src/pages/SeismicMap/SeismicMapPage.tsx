@@ -1,151 +1,300 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Activity, ShieldAlert, Layers } from 'lucide-react';
+import { ArrowLeft, Activity, MapPin, Radio, Shield, Info, Flame, ChevronRight } from 'lucide-react';
 import { ScreenId, SeismicEvent } from '../../types';
 import { SanJuanMap, MapMarkerItem } from '../../components/map/SanJuanMap';
-import { SEISMIC_MAP_EVENTS } from '../../services/gamesService';
-import { BottomSheet } from '../../components/ui/Modal';
 import { sound } from '../../lib/sound';
 
 interface SeismicMapPageProps {
   onNavigate: (screen: ScreenId) => void;
 }
 
+const SEISMIC_MARKERS: (MapMarkerItem & {
+  date: string;
+  depth: number;
+  intensity: string;
+  department: string;
+  description: string;
+  historicalImpact: string;
+})[] = [
+  {
+    id: 'ev_1894',
+    label: '1894 · M8.0',
+    locationName: 'Noroeste / Jáchal e Iglesia',
+    department: 'Jáchal - Iglesia',
+    xPercent: 46,
+    yPercent: 28,
+    magnitude: 8.0,
+    year: 1894,
+    color: '#EF4444',
+    type: 'quake',
+    date: '27 de Octubre de 1894',
+    depth: 30,
+    intensity: 'IX (Muy Destructivo)',
+    description: 'El terremoto de mayor magnitud instrumental en la historia argentina. Afectó templos de adobe y valles cordilleranos.',
+    historicalImpact: 'Primer registro sismológico instrumental documentado en Cuyo.'
+  },
+  {
+    id: 'ev_1944',
+    label: '1944 · M7.4',
+    locationName: 'Albardón / La Laja',
+    department: 'Albardón - Gran San Juan',
+    xPercent: 54,
+    yPercent: 48,
+    magnitude: 7.4,
+    year: 1944,
+    color: '#EF4444',
+    type: 'quake',
+    date: '15 de Enero de 1944 (20:52 hs)',
+    depth: 11,
+    intensity: 'IX (Devastador)',
+    description: 'Colapsó el 80% del adobe en la capital provincial. Es el hito histórico que originó la ingeniería sismorresistente argentina.',
+    historicalImpact: 'Creó el CONCAR y sentó las bases fundacionales del INPRES.'
+  },
+  {
+    id: 'ev_1977',
+    label: '1977 · M7.4',
+    locationName: 'Sierra de Pie de Palo',
+    department: 'Caucete',
+    xPercent: 74,
+    yPercent: 62,
+    magnitude: 7.4,
+    year: 1977,
+    color: '#EF4444',
+    type: 'quake',
+    date: '23 de Noviembre de 1977 (06:23 hs)',
+    depth: 17,
+    intensity: 'IX (Destructivo)',
+    description: 'Generó licuación generalizada en viñedos. Las estructuras modernas construidas tras 1944 no colapsaron, validando las normas.',
+    historicalImpact: 'Confirmó ante el mundo la eficacia del código sismorresistente sanjuanino.'
+  },
+  {
+    id: 'ev_2021',
+    label: '2021 · M6.4',
+    locationName: 'Sarmiento / Pocito',
+    department: 'Pocito - Sarmiento',
+    xPercent: 48,
+    yPercent: 76,
+    magnitude: 6.4,
+    year: 2021,
+    color: '#FACC15',
+    type: 'quake',
+    date: '18 de Enero de 2021 (23:46 hs)',
+    depth: 8,
+    intensity: 'VII (Muy Fuerte)',
+    description: 'Sismo superficial que sacudió intensamente todo Cuyo. La edificación moderna impidió pérdidas fatales.',
+    historicalImpact: 'Monitoreo 100% digital en tiempo real con acelerógrafos de última generación.'
+  },
+  {
+    id: 'fault_laja',
+    label: 'Falla La Laja',
+    locationName: 'Falla Geológica Activa',
+    department: 'Albardón',
+    xPercent: 36,
+    yPercent: 44,
+    magnitude: 5.5,
+    color: '#22D3EE',
+    type: 'fault',
+    date: 'Monitoreo Continuo',
+    depth: 10,
+    intensity: 'Falla Neotectónica',
+    description: 'Escarpe de falla inversa cuaternaria activa. Fuente sismogénica de sismos superficiales en el Gran San Juan.',
+    historicalImpact: 'Monitoreada con sensores GPS y estaciones sismológicas permanentes del INPRES.'
+  }
+];
+
 export const SeismicMapPage: React.FC<SeismicMapPageProps> = ({ onNavigate }) => {
-  const [selectedEvent, setSelectedEvent] = useState<SeismicEvent | null>(null);
+  const [selectedId, setSelectedId] = useState<string>('ev_1944');
+  const [filterType, setFilterType] = useState<'all' | 'major' | 'faults'>('all');
 
-  const markers: MapMarkerItem[] = [
-    { id: 'ev_3', label: '1944 · M7.4', xPercent: 54, yPercent: 50, magnitude: 7.4, color: '#EF4444' },
-    { id: 'ev_2', label: '1977 · M7.4', xPercent: 65, yPercent: 58, magnitude: 7.4, color: '#EF4444' },
-    { id: 'ev_1', label: '2021 · M6.4', xPercent: 49, yPercent: 68, magnitude: 6.4, color: '#FACC15' },
-    { id: 'fault_1', label: 'Falla La Laja', xPercent: 46, yPercent: 45, magnitude: 5.2, color: '#22D3EE' },
-  ];
+  const filteredMarkers = SEISMIC_MARKERS.filter(m => {
+    if (filterType === 'major') return m.magnitude && m.magnitude >= 7.0;
+    if (filterType === 'faults') return m.type === 'fault';
+    return true;
+  });
 
-  const handleMarkerClick = (marker: MapMarkerItem) => {
+  const activeItem = SEISMIC_MARKERS.find(m => m.id === selectedId) || SEISMIC_MARKERS[0];
+
+  const handleSelectMarker = (marker: MapMarkerItem) => {
     sound.playClick();
-    const found = SEISMIC_MAP_EVENTS.find(e => e.id === marker.id) || {
-      id: marker.id,
-      event_date: 'Monitoreo Permanente',
-      event_time: 'Registro INPRES',
-      latitude: -31.42,
-      longitude: -68.53,
-      depth: 12,
-      magnitude: marker.magnitude || 5.0,
-      location: marker.label,
-      province: 'San Juan',
-      intensity: 'Actividad Falla Activa',
-      description: 'Estructura geológica sismogénica monitoreada por la Red Sismológica Nacional del INPRES.',
-      source: 'INPRES Oficial'
-    };
-    setSelectedEvent(found);
+    setSelectedId(marker.id);
   };
 
   return (
-    <div className="p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto select-none">
-      {/* Header */}
+    <div className="p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto select-none font-sans text-slate-100">
+      {/* Top Navigation */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => { sound.playClick(); onNavigate('home'); }}
-          className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-slate-300 hover:text-white"
-          aria-label="Volver a Inicio"
+          className="w-10 h-10 rounded-2xl bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all"
+          aria-label="Volver"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <div className="px-3 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/30 text-brand-cyan font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <Activity className="w-3.5 h-3.5" />
-          <span>RED INPRES</span>
+        <div className="px-3.5 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+          <Activity className="w-3.5 h-3.5 animate-pulse" />
+          <span>RED NACIONAL INPRES</span>
         </div>
       </div>
 
-      {/* Title */}
+      {/* Header Info */}
       <div className="text-center space-y-0.5">
-        <h1 className="font-black text-2xl text-white uppercase tracking-tight">
+        <h1 className="font-black text-xl sm:text-2xl text-white uppercase tracking-tight">
           MAPA SÍSMICO DE SAN JUAN
         </h1>
-        <p className="text-xs text-slate-300 font-medium">
-          Tocá los epicentros y fallas geológicas para consultar su ficha técnica.
+        <p className="text-xs text-slate-300">
+          Tocá un epicentro en el mapa para ver sus datos técnicos
         </p>
       </div>
 
-      {/* Reusable Interactive San Juan Map */}
-      <div className="sismo-card p-3 border-brand-cyan/30 shadow-2xl">
+      {/* Filter Tabs */}
+      <div className="flex items-center justify-center gap-1.5 p-1 rounded-2xl bg-navy-950/80 border border-white/10 text-[11px] font-bold">
+        <button
+          onClick={() => setFilterType('all')}
+          className={`flex-1 py-1.5 rounded-xl transition-all ${
+            filterType === 'all'
+              ? 'bg-brand-cyan text-navy-950 font-black shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          Todos ({SEISMIC_MARKERS.length})
+        </button>
+        <button
+          onClick={() => setFilterType('major')}
+          className={`flex-1 py-1.5 rounded-xl transition-all ${
+            filterType === 'major'
+              ? 'bg-rose-500 text-white font-black shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          M &ge; 7.0 (Mayores)
+        </button>
+        <button
+          onClick={() => setFilterType('faults')}
+          className={`flex-1 py-1.5 rounded-xl transition-all ${
+            filterType === 'faults'
+              ? 'bg-cyan-500 text-navy-950 font-black shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          Fallas Activas
+        </button>
+      </div>
+
+      {/* Interactive San Juan Map */}
+      <div className="relative">
         <SanJuanMap
-          markers={markers}
-          activeMarkerId={selectedEvent?.id}
-          onMarkerClick={handleMarkerClick}
+          markers={filteredMarkers}
+          activeMarkerId={selectedId}
+          onMarkerClick={handleSelectMarker}
           showWaveAnimation={true}
         />
       </div>
 
       {/* Map Legend */}
-      <div className="sismo-card p-3.5 grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
-        <div className="flex items-center justify-center gap-1.5 text-accent-error">
-          <span className="w-2.5 h-2.5 rounded-full bg-accent-error"></span>
+      <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] font-bold p-2.5 rounded-2xl bg-navy-950/80 border border-white/10">
+        <div className="flex items-center justify-center gap-1 text-rose-400">
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm" />
           <span>M &ge; 7.0 (Mayor)</span>
         </div>
-        <div className="flex items-center justify-center gap-1.5 text-brand-yellow">
-          <span className="w-2.5 h-2.5 rounded-full bg-brand-yellow"></span>
-          <span>M 6.0 - 6.9 (Fuerte)</span>
+        <div className="flex items-center justify-center gap-1 text-amber-400">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm" />
+          <span>M 6.0 - 6.9</span>
         </div>
-        <div className="flex items-center justify-center gap-1.5 text-brand-cyan">
-          <span className="w-2.5 h-2.5 rounded-full bg-brand-cyan"></span>
+        <div className="flex items-center justify-center gap-1 text-cyan-400">
+          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-sm" />
           <span>Falla Activa</span>
         </div>
       </div>
 
-      {/* Bottom Sheet for Seismic Event Details */}
-      <BottomSheet
-        isOpen={!!selectedEvent}
-        onClose={() => setSelectedEvent(null)}
-        title="SISMO REGISTRADO (INPRES)"
-      >
-        {selectedEvent && (
-          <div className="space-y-3.5 text-left">
-            <div className="flex items-center justify-between bg-navy-950 p-3 rounded-2xl border border-white/10">
-              <div>
-                <span className="text-[10px] font-black text-brand-cyan uppercase tracking-wider block">
-                  EPICENTRO / ZONA
+      {/* Active Seismic Event Telemetry Card */}
+      {activeItem && (
+        <div className="p-4 rounded-3xl bg-navy-950/95 border border-brand-cyan/50 shadow-2xl space-y-3 animate-in fade-in duration-200">
+          {/* Card Header */}
+          <div className="flex items-start justify-between border-b border-white/10 pb-2.5">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style={{ backgroundColor: activeItem.color, color: '#030A16' }}>
+                  {activeItem.type === 'fault' ? 'FALLA ACTIVA' : `MAGNITUD M ${activeItem.magnitude}`}
                 </span>
-                <h3 className="font-extrabold text-base text-white">
-                  📍 {selectedEvent.location}
-                </h3>
+                <span className="text-[10px] font-bold text-slate-400">{activeItem.date}</span>
               </div>
-              <div className="text-right">
-                <span className="text-[10px] font-black text-accent-gray block">MAGNITUD</span>
-                <span className="font-black text-lg text-accent-error">M {selectedEvent.magnitude}</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-navy-950 p-2.5 rounded-xl border border-white/10">
-                <span className="text-[10px] font-bold text-accent-gray block">Fecha</span>
-                <span className="font-bold text-xs text-white truncate block">{selectedEvent.event_date}</span>
-              </div>
-              <div className="bg-navy-950 p-2.5 rounded-xl border border-white/10">
-                <span className="text-[10px] font-bold text-accent-gray block">Profundidad</span>
-                <span className="font-bold text-xs text-brand-yellow">{selectedEvent.depth} km</span>
-              </div>
-              <div className="bg-navy-950 p-2.5 rounded-xl border border-white/10">
-                <span className="text-[10px] font-bold text-accent-gray block">Intensidad</span>
-                <span className="font-bold text-xs text-brand-cyan truncate block">{selectedEvent.intensity}</span>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                DESCRIPCIÓN TÉCNICA
+              <h2 className="font-black text-lg text-white mt-1">
+                📍 {activeItem.locationName}
+              </h2>
+              <span className="text-[11px] text-brand-cyan font-bold block">
+                Departamento: {activeItem.department}
               </span>
-              <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                {selectedEvent.description}
-              </p>
             </div>
 
-            <div className="pt-2 border-t border-white/10 text-[11px] text-accent-gray flex items-center justify-between font-bold">
-              <span>Fuente Oficial: {selectedEvent.source}</span>
+            <div className="w-10 h-10 rounded-2xl bg-navy-900 border border-brand-cyan/30 flex items-center justify-center text-xl shrink-0">
+              {activeItem.type === 'fault' ? '⚡' : '🌋'}
             </div>
           </div>
-        )}
-      </BottomSheet>
+
+          {/* Quick Metrics Grid */}
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-2 rounded-xl bg-navy-900/90 border border-white/10">
+              <span className="text-[9px] font-bold text-slate-400 block uppercase">Profundidad</span>
+              <span className="font-black text-xs text-brand-cyan">{activeItem.depth} km</span>
+            </div>
+            <div className="p-2 rounded-xl bg-navy-900/90 border border-white/10">
+              <span className="text-[9px] font-bold text-slate-400 block uppercase">Intensidad</span>
+              <span className="font-black text-xs text-amber-300 truncate block">{activeItem.intensity.split(' ')[0]}</span>
+            </div>
+            <div className="p-2 rounded-xl bg-navy-900/90 border border-white/10">
+              <span className="text-[9px] font-bold text-slate-400 block uppercase">Red</span>
+              <span className="font-black text-xs text-emerald-400">INPRES</span>
+            </div>
+          </div>
+
+          {/* Technical Description */}
+          <div className="space-y-1 bg-navy-900/60 p-2.5 rounded-2xl border border-white/5">
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {activeItem.description}
+            </p>
+            <div className="pt-1.5 border-t border-white/10 text-[10px] text-brand-cyan font-semibold flex items-center gap-1">
+              <Shield className="w-3 h-3 text-brand-cyan shrink-0" />
+              <span>{activeItem.historicalImpact}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Horizontal Carousel of Epicenters */}
+      <div className="space-y-1.5">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-1 block">
+          HITOS SÍSMICOS DE SAN JUAN:
+        </span>
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {SEISMIC_MARKERS.map((item) => {
+            const isSelected = item.id === selectedId;
+            return (
+              <button
+                key={item.id}
+                onClick={() => { sound.playClick(); setSelectedId(item.id); }}
+                className={`flex-shrink-0 p-2.5 rounded-2xl border transition-all text-left w-36 ${
+                  isSelected
+                    ? 'bg-navy-900 border-brand-cyan shadow-glow-cyan/30 scale-102'
+                    : 'bg-navy-950/80 border-white/10 hover:border-brand-cyan/40'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black" style={{ color: item.color }}>
+                    {item.label.split(' ')[0]}
+                  </span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-white">
+                    {item.type === 'fault' ? 'Falla' : `M${item.magnitude}`}
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-300 block truncate mt-1">
+                  {item.department}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
