@@ -71,25 +71,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
           </div>
 
-          {/* Glowing San Juan Map Silhouette on the Right */}
-          <div className="w-36 h-36 relative shrink-0 -mr-2">
-            <svg
-              className="w-full h-full filter drop-shadow-[0_0_18px_rgba(0,184,255,0.6)]"
-              viewBox="0 0 320 340"
-            >
-              <path
-                d="M 105,18 L 165,30 L 215,48 L 255,100 L 272,165 L 262,230 L 235,278 L 190,305 L 135,315 L 85,282 L 58,225 L 48,155 L 65,85 Z"
-                fill="#082346"
-                fillOpacity="0.85"
-                stroke="#22D3EE"
-                strokeWidth="2.8"
-              />
-              <g transform="translate(180, 185)">
-                <circle cx="0" cy="0" r="14" fill="none" stroke="#22D3EE" strokeWidth="2" opacity="0.9" className="animate-ping" style={{ animationDuration: '2.5s' }} />
-                <circle cx="0" cy="0" r="26" fill="none" stroke="#00B8FF" strokeWidth="1.5" opacity="0.6" className="animate-ping" style={{ animationDuration: '3.5s' }} />
-                <circle cx="0" cy="0" r="5" fill="#00B8FF" />
-              </g>
-            </svg>
+          {/* Glowing San Juan Map Silhouette with Pulsing Epicenter */}
+          <div className="w-36 h-36 relative shrink-0 -mr-2 flex items-center justify-center">
+            <img
+              src="/images/sanjuanforma.png"
+              alt="Mapa de San Juan"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_18px_rgba(0,184,255,0.75)]"
+            />
+            {/* Animated Epicenter Radar Rings */}
+            <div className="absolute top-[52%] left-[53%] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+              <span className="absolute -inset-2.5 rounded-full border-2 border-brand-cyan opacity-80 animate-ping" style={{ animationDuration: '2.2s' }} />
+              <span className="absolute -inset-5 rounded-full border border-brand-electric opacity-50 animate-ping" style={{ animationDuration: '3.2s' }} />
+              <span className="relative block w-4 h-4 rounded-full bg-brand-cyan shadow-glow-cyan border-2 border-white" />
+            </div>
           </div>
         </div>
 
