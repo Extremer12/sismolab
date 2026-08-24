@@ -19,7 +19,7 @@ export const MythOrRealityGame: React.FC<MythOrRealityGameProps> = ({
   onNavigate
 }) => {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
-  const [statements, setStatements] = useState<MythStatement[]>(() => getRandomMyths(5));
+  const [statements, setStatements] = useState<MythStatement[]>(() => getRandomMyths(5, userMode));
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [userChoice, setUserChoice] = useState<boolean | null>(null);
@@ -109,7 +109,7 @@ export const MythOrRealityGame: React.FC<MythOrRealityGameProps> = ({
   };
 
   const handleReplay = () => {
-    setStatements(getRandomMyths(5));
+    setStatements(getRandomMyths(5, userMode));
     setCurrentIdx(0);
     setUserChoice(null);
     setIsAnswered(false);

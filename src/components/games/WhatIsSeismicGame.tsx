@@ -18,9 +18,11 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const timerLimit = userMode === 'kids' ? 20 : 15;
+
   // Game States: 'intro' | 'playing' | 'result'
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
-  const [activeQuestions, setActiveQuestions] = useState<Question[]>(() => getRandomQuestions(5));
+  const [activeQuestions, setActiveQuestions] = useState<Question[]>(() => getRandomQuestions(5, userMode));
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [totalSpeedBonus, setTotalSpeedBonus] = useState(0);
-  const [questionTimer, setQuestionTimer] = useState(15);
+  const [questionTimer, setQuestionTimer] = useState(timerLimit);
   const [speedBonusAwarded, setSpeedBonusAwarded] = useState(0);
 
   const question = activeQuestions[currentIdx] || activeQuestions[0];
@@ -64,16 +66,14 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
       setStreak(newStreak);
       if (newStreak > maxStreak) setMaxStreak(newStreak);
 
-      // Speed bonus if answered in >= 10s remaining (<= 5s elapsed)
-      const speedBonus = questionTimer >= 10 ? 50 : questionTimer >= 6 ? 25 : 0;
+      const baseScore = question.points || 100;
+      const speedBonus = questionTimer > (timerLimit / 2) ? Math.round(questionTimer * (userMode === 'kids' ? 3 : 5)) : 0;
+      const streakBonus = newStreak > 1 ? 25 * (newStreak - 1) : 0;
+      const roundScore = baseScore + speedBonus + streakBonus;
+
       setSpeedBonusAwarded(speedBonus);
       setTotalSpeedBonus(prev => prev + speedBonus);
-
-      // Streak multiplier bonus
-      const streakBonus = (newStreak - 1) * 30;
-      const totalQuestionPoints = question.points + speedBonus + streakBonus;
-
-      setEarnedScore(prev => prev + totalQuestionPoints);
+      setEarnedScore(prev => prev + roundScore);
       setCorrectCount(prev => prev + 1);
 
       if (newStreak >= 2) {
@@ -94,7 +94,7 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
       setCurrentIdx(prev => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
-      setQuestionTimer(15);
+      setQuestionTimer(timerLimit);
       setSpeedBonusAwarded(0);
     } else {
       setGameState('result');
@@ -102,7 +102,7 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
   };
 
   const handleReplay = () => {
-    setActiveQuestions(getRandomQuestions(5));
+    setActiveQuestions(getRandomQuestions(5, userMode));
     setCurrentIdx(0);
     setSelectedOption(null);
     setIsAnswered(false);
@@ -111,7 +111,7 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
     setStreak(0);
     setMaxStreak(0);
     setTotalSpeedBonus(0);
-    setQuestionTimer(15);
+    setQuestionTimer(timerLimit);
     setGameState('intro');
   };
 

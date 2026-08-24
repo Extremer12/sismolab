@@ -6,7 +6,8 @@ import {
   MythStatement,
   HistoricalEvent,
   SeismicEvent,
-  Achievement
+  Achievement,
+  UserMode
 } from '../types';
 
 // ==========================================
@@ -183,8 +184,124 @@ export const WHAT_IS_SEISMIC_QUESTIONS: Question[] = [
   }
 ];
 
-export function getRandomQuestions(count: number = 5): Question[] {
-  const shuffled = [...WHAT_IS_SEISMIC_QUESTIONS].sort(() => 0.5 - Math.random());
+export const KIDS_SEISMIC_QUESTIONS: Question[] = [
+  {
+    id: 'kq1',
+    game_id: 'what-is',
+    question: '¿Qué es un sismo o temblor?',
+    option_a: 'Un viento muy frío de invierno',
+    option_b: 'Una lluvia de estrellas fugaces',
+    option_c: 'Cuando la Tierra se sacude porque se acomodan capas de roca debajo del suelo',
+    option_d: 'Un trueno que suena fuerte en el cielo',
+    correct_option: 'c',
+    explanation: '¡Muy bien! Debajo del suelo hay capas de roca gigantes que a veces se mueven y hacen que sintamos la vibración.',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 1
+  },
+  {
+    id: 'kq2',
+    game_id: 'what-is',
+    question: 'Si empieza a temblar en la escuela o en casa, ¿qué debemos hacer primero?',
+    option_a: 'Salir corriendo a los gritos por el pasillo',
+    option_b: '¡Agacharnos, cubrirnos la cabeza bajo una mesa firme y sujetarnos!',
+    option_c: 'Subirnos a una silla para mirar',
+    option_d: 'Asomarnos a la ventana',
+    correct_option: 'b',
+    explanation: '¡Excelente! Meterte debajo de una mesa fuerte protege tu cabeza de cosas que se puedan caer.',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 2
+  },
+  {
+    id: 'kq3',
+    game_id: 'what-is',
+    question: '¿Cómo se llama el equipo de científicos de San Juan que cuida y estudia los sismos?',
+    option_a: 'INPRES (Instituto Nacional de Prevención Sísmica)',
+    option_b: 'El Club de los Astronautas',
+    option_c: 'La patrulla de bomberos del espacio',
+    option_d: 'Los exploradores del bosque',
+    correct_option: 'a',
+    explanation: '¡Genial! El INPRES tiene su sede central en San Juan y cuenta con equipos especiales que registran cada movimiento.',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 3
+  },
+  {
+    id: 'kq4',
+    game_id: 'what-is',
+    question: '¿Qué aparato usan los científicos para medir y dibujar las ondas de un temblor?',
+    option_a: 'Un microscopio para ver bichos',
+    option_b: 'Un telescopio espacial',
+    option_c: 'Un sismógrafo',
+    option_d: 'Un reloj despertador',
+    correct_option: 'c',
+    explanation: '¡Exacto! El sismógrafo dibuja líneas con onditas que muestran qué tan fuerte se movió la Tierra.',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 4
+  },
+  {
+    id: 'kq5',
+    game_id: 'what-is',
+    question: '¿Por qué la superficie de la Tierra se parece a un rompecabezas gigante?',
+    option_a: 'Porque está formada por grandes piezas llamadas "placas tectónicas" que se mueven muy despacito',
+    option_b: 'Porque alguien la cortó con una tijera mágica',
+    option_c: 'Porque está hecha de bloques de hielo flotante',
+    option_d: 'No es un rompecabezas, es una sola piedra lisa',
+    correct_option: 'a',
+    explanation: '¡Muy bien! Las placas tectónicas flotan y se mueven apenas unos centímetros por año, ¡al ritmo que crecen tus uñas!',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 5
+  },
+  {
+    id: 'kq6',
+    game_id: 'what-is',
+    question: 'En San Juan, ¿por qué es tan importante construir casas sismorresistentes?',
+    option_a: 'Para que no entre el calor en verano',
+    option_b: 'Para que las columnas de hormigón y hierro resistan el movimiento sin caerse',
+    option_c: 'Para pintar las paredes de colores brillantes',
+    option_d: 'Para que sean más altas que las montañas',
+    correct_option: 'b',
+    explanation: '¡Correcto! En San Juan todas las casas se construyen con columnas y vigas de hormigón armado para proteger a todas las familias.',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 6
+  },
+  {
+    id: 'kq7',
+    game_id: 'what-is',
+    question: '¿Qué debemos hacer cuando termina de temblar para salir con seguridad?',
+    option_a: 'Prender fósforos para iluminar la pieza',
+    option_b: 'Correr descalzo por toda la casa',
+    option_c: 'Ponerse zapatillas firmes y salir con calma hacia un lugar abierto con la mochila de emergencia',
+    option_d: 'Prender la tele para jugar videojuegos',
+    correct_option: 'c',
+    explanation: '¡Perfecto! Siempre salimos tranquilos, con calzado puesto para no lastimarnos y llevando la mochila de emergencia.',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 7
+  },
+  {
+    id: 'kq8',
+    game_id: 'what-is',
+    question: '¿Por qué los perritos y gatitos a veces se despiertan antes de que empiece a sacudirse todo?',
+    option_a: 'Porque tienen poderes de magia pura',
+    option_b: 'Porque escuchan y sienten las primeras vibraciones suaves que los humanos no notamos',
+    option_c: 'Porque tienen hambre a toda hora',
+    option_d: 'Es solo una casualidad',
+    correct_option: 'b',
+    explanation: '¡Genial! Los animales tienen un oído y patitas muy sensibles que perciben las ondas rápidas del sismo antes que nosotros.',
+    points: 100,
+    difficulty: 'easy',
+    sort_order: 8
+  }
+];
+
+export function getRandomQuestions(count: number = 5, userMode: UserMode = 'kids'): Question[] {
+  const pool = userMode === 'kids' ? KIDS_SEISMIC_QUESTIONS : WHAT_IS_SEISMIC_QUESTIONS;
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
 
@@ -376,8 +493,57 @@ export const SCENARIO_CHOICES: ScenarioChoice[] = [
   }
 ];
 
-export function getRandomScenarios(count: number = 4): ScenarioChoice[] {
-  const shuffled = [...SCENARIO_CHOICES].sort(() => 0.5 - Math.random());
+export const KIDS_SCENARIO_CHOICES: ScenarioChoice[] = [
+  {
+    id: 'ksc_school',
+    scenarioTitle: 'En la Escuela o el Aula',
+    context: 'escuela',
+    icon: '🏫',
+    situation: '¡La seño avisa que está temblando y el piso se mueve!',
+    options: [
+      { id: 'a', text: '🪑 Me meto rápido debajo de mi banco, me cubro la cabeza y me sujeto con las dos manos.', isCorrect: true, feedback: '¡Excelente! Tu banco te protege como un escudo de cualquier cosa que caiga del techo.' },
+      { id: 'b', text: '🏃 Salgo corriendo solo por el pasillo empujando la puerta.', isCorrect: false, feedback: 'Correr y empujar es muy peligroso porque podés tropezar y lastimarte.' },
+      { id: 'c', text: '🪟 Corro a la ventana para ver los árboles.', isCorrect: false, feedback: '¡Cuidado! Los vidrios pueden romperse si la pared se sacude.' }
+    ]
+  },
+  {
+    id: 'ksc_park',
+    scenarioTitle: 'Jugando en la Plaza o el Patio',
+    context: 'calle',
+    icon: '🌳',
+    situation: 'Estás jugando a la pelota al aire libre y empieza a vibrar el suelo.',
+    options: [
+      { id: 'a', text: '🌳 Me quedo en el centro despejado de la plaza, lejos de postes y cables.', isCorrect: true, feedback: '¡Genial! Al aire libre en el pasto estás en el lugar más seguro del mundo.' },
+      { id: 'b', text: '🏢 Me meto debajo del techo de chapa de un quiosco.', isCorrect: false, feedback: 'Los techos sueltos y carteles pueden soltarse; mejor quedarse a cielo abierto.' }
+    ]
+  },
+  {
+    id: 'ksc_home_bed',
+    scenarioTitle: 'De Noche en tu Cama',
+    context: 'casa',
+    icon: '🛏️',
+    situation: 'Un temblor te despierta en mitad de la noche y está todo oscuro.',
+    options: [
+      { id: 'a', text: '🛌 Me quedo en la cama boca abajo y me tapo bien la cabeza con la almohada.', isCorrect: true, feedback: '¡Perfecto! La almohada y el colchón te cuidan de cualquier revoque o adorno.' },
+      { id: 'b', text: '🏃 Me levanto corriendo descalzo en la oscuridad.', isCorrect: false, feedback: 'Caminar a oscuras con el suelo moviéndose puede hacer que pises adornos rotos.' }
+    ]
+  },
+  {
+    id: 'ksc_supermarket',
+    scenarioTitle: 'De Compras con tu Familia',
+    context: 'lugar_publico',
+    icon: '🛒',
+    situation: 'Estás en el supermercado y empiezan a sonar y tambalearse las latas en los estantes.',
+    options: [
+      { id: 'a', text: '🛡️ Me alejo de los estantes altos con frascos de vidrio y me quedo junto a mi familia.', isCorrect: true, feedback: '¡Muy bien! Las botellas pueden caerse; alejarse de los estantes es lo más inteligente.' },
+      { id: 'b', text: '🏃 Salgo corriendo solo hacia la calle.', isCorrect: false, feedback: 'Nunca te separes de tu familia y nunca corras en lugares llenos de gente.' }
+    ]
+  }
+];
+
+export function getRandomScenarios(count: number = 4, userMode: UserMode = 'kids'): ScenarioChoice[] {
+  const pool = userMode === 'kids' ? KIDS_SCENARIO_CHOICES : SCENARIO_CHOICES;
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
 
@@ -471,8 +637,68 @@ export const MYTH_STATEMENTS: MythStatement[] = [
   }
 ];
 
-export function getRandomMyths(count: number = 5): MythStatement[] {
-  const shuffled = [...MYTH_STATEMENTS].sort(() => 0.5 - Math.random());
+export const KIDS_MYTH_STATEMENTS: MythStatement[] = [
+  {
+    id: 'km1',
+    statement: 'El viento zonda o los días de mucho calor provocan terremotos.',
+    isReality: false,
+    explanation: '¡MITO! Los sismos se originan a muchos kilómetros de profundidad en la roca, donde el clima o el aire de afuera no tienen nada que ver.',
+    category: 'Mitos Populares'
+  },
+  {
+    id: 'km2',
+    statement: 'El mejor lugar durante un temblor es meterse abajo de una mesa firme y agarrarse.',
+    isReality: true,
+    explanation: '¡REALIDAD! La mesa te protege como un techo protector de cualquier objeto que se caiga.',
+    category: 'Autoprotección'
+  },
+  {
+    id: 'km3',
+    statement: 'Los científicos ya pueden saber el día y la hora exacta del próximo terremoto.',
+    isReality: false,
+    explanation: '¡MITO! Nadie en el mundo puede predecir el día exacto. Por eso lo más importante es estar siempre preparados.',
+    category: 'Ciencia'
+  },
+  {
+    id: 'km4',
+    statement: 'Los animales sienten las primeras vibraciones suaves antes que las personas.',
+    isReality: true,
+    explanation: '¡REALIDAD! Tienen sentidos muy sensibles y perciben las ondas rápidas del sismo antes de la sacudida fuerte.',
+    category: 'Naturaleza'
+  },
+  {
+    id: 'km5',
+    statement: 'En un temblor hay que salir corriendo a los gritos por las escaleras.',
+    isReality: false,
+    explanation: '¡MITO PELIGROSO! Correr por escaleras mientras se mueve el piso causa caídas y golpes. Hay que quedarse en un lugar seguro.',
+    category: 'Seguridad'
+  },
+  {
+    id: 'km6',
+    statement: 'En San Juan la Tierra tiembla todos los días, aunque casi siempre son temblores tan chiquitos que no se sienten.',
+    isReality: true,
+    explanation: '¡REALIDAD! La Tierra libera energía despacito todo el tiempo, y los sismógrafos del INPRES registran cada uno.',
+    category: 'San Juan'
+  },
+  {
+    id: 'km7',
+    statement: 'Pararse abajo del marco de cualquier puerta es lo más seguro de la casa.',
+    isReality: false,
+    explanation: '¡MITO! Las puertas se pueden cerrar de golpe y lastimarte los dedos. Es mucho más seguro estar debajo de una mesa.',
+    category: 'Autoprotección'
+  },
+  {
+    id: 'km8',
+    statement: 'Una linterna a pilas y agua potable son cosas indispensables en la mochila de emergencia.',
+    isReality: true,
+    explanation: '¡REALIDAD! La linterna nos da luz segura sin prender fuego, y el agua nos mantiene hidratados.',
+    category: 'Prevención'
+  }
+];
+
+export function getRandomMyths(count: number = 5, userMode: UserMode = 'kids'): MythStatement[] {
+  const pool = userMode === 'kids' ? KIDS_MYTH_STATEMENTS : MYTH_STATEMENTS;
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
 

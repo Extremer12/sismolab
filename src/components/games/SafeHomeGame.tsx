@@ -100,23 +100,87 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
   }
 ];
 
+export const KIDS_REFLEX_SCENARIOS: ReflexScenario[] = [
+  {
+    id: 'kr1',
+    contextTag: 'EN LA ESCUELA',
+    icon: '🏫',
+    situation: '¡Empieza a temblar el piso del aula!',
+    optionSafe: '🛡️ ¡Me meto abajo del banco y me agarro!',
+    optionDanger: '🏃 ¡Salgo corriendo empujando a todos!',
+    safeExplanation: '¡Genial! Tu banco te protege como un escudo de cualquier cosa.',
+    dangerExplanation: '¡Peligro! Correr y empujar causa caídas y golpes feos.'
+  },
+  {
+    id: 'kr2',
+    contextTag: 'EN CASA A OSCURAS',
+    icon: '🔦',
+    situation: 'Terminó el temblor y se cortó la luz.',
+    optionSafe: '🔦 ¡Prendo una linterna a pilas con cuidado!',
+    optionDanger: '🕯️ ¡Prendo fuego una vela con fósforos!',
+    safeExplanation: '¡Muy bien! Las linternas dan luz segura sin peligro.',
+    dangerExplanation: '¡Peligro! El fuego de la vela puede encender fugas de gas.'
+  },
+  {
+    id: 'kr3',
+    contextTag: 'EN LA PLAZA O EL PATIO',
+    icon: '🌳',
+    situation: 'Estás jugando afuera y se sacude el suelo.',
+    optionSafe: '🌳 ¡Me quedo en el pasto, lejos de postes y cables!',
+    optionDanger: '🏢 ¡Me pego a la pared abajo de un cartel gigante!',
+    safeExplanation: '¡Perfecto! Al aire libre en el pasto estás súper seguro.',
+    dangerExplanation: '¡Cuidado! Los carteles y vidrios pueden caer de las paredes.'
+  },
+  {
+    id: 'kr4',
+    contextTag: 'DE NOCHE EN TU PIEZA',
+    icon: '🛌',
+    situation: '¡Un temblor fuerte te despierta en tu cama!',
+    optionSafe: '🛌 ¡Me tapo bien la cabeza con la almohada en la cama!',
+    optionDanger: '🏃 ¡Salgo corriendo descalzo en la oscuridad!',
+    safeExplanation: '¡Excelente reflejo! La almohada cuida tu cabeza.',
+    dangerExplanation: '¡Cuidado! Correr a oscuras puede hacer que pises cosas rotas.'
+  },
+  {
+    id: 'kr5',
+    contextTag: 'SALIR DE CASA',
+    icon: '🎒',
+    situation: 'Vamos a salir con la familia al punto seguro.',
+    optionSafe: '🎒 ¡Zapatillas puestas y la mochila de emergencia!',
+    optionDanger: '🎮 ¡Quedarme a guardar la Play y los juguetes!',
+    safeExplanation: '¡Prioridad correcta! La mochila tiene agua y cosas vitales.',
+    dangerExplanation: '¡No! Lo más valioso sos vos, los juguetes se quedan.'
+  },
+  {
+    id: 'kr6',
+    contextTag: 'EN EL AUTO',
+    icon: '🚗',
+    situation: 'Vamos en el auto y sentimos que tiembla el camino.',
+    optionSafe: '🛑 ¡Frenar despacito y esperar adentro del auto!',
+    optionDanger: '⚡ ¡Acelerar a fondo para ir a toda velocidad!',
+    safeExplanation: '¡Muy bien! Adentro del auto estamos protegidos.',
+    dangerExplanation: '¡Peligro! Acelerar en un sismo hace perder el control.'
+  }
+];
+
 interface SafeHomeGameProps {
   userMode?: UserMode;
   onFinishGame: (earnedScore: number, securedCount: number, totalCount: number, gameId?: string) => void;
   onNavigate: (screen: ScreenId) => void;
 }
 
-const ROUND_TIME_SEC = 4.0;
-
 export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
   userMode = 'kids',
   onFinishGame,
   onNavigate
 }) => {
+  const roundTimeSec = userMode === 'kids' ? 6.5 : 4.0;
+  const scenarios = userMode === 'kids' ? KIDS_REFLEX_SCENARIOS : REFLEX_SCENARIOS;
+
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'feedback' | 'result'>('intro');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [lives, setLives] = useState<number>(3);
-  const [timeLeft, setTimeLeft] = useState<number>(ROUND_TIME_SEC);
+  const [timeLeft, setTimeLeft] = useState<number>(roundTimeSec);
   const [streak, setStreak] = useState<number>(0);
   const [maxStreak, setMaxStreak] = useState<number>(0);
   const [correctCount, setCorrectCount] = useState<number>(0);
@@ -125,7 +189,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
   const [isTimeOut, setIsTimeOut] = useState<boolean>(false);
   const [shuffledOptions, setShuffledOptions] = useState<{ isSafe: boolean; text: string }[]>([]);
 
-  const currentScenario = REFLEX_SCENARIOS[currentIndex];
+  const currentScenario = scenarios[currentIndex] || scenarios[0];
 
   // Shuffle button options on new round
   useEffect(() => {
@@ -135,10 +199,10 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
       { isSafe: false, text: currentScenario.optionDanger }
     ].sort(() => Math.random() - 0.5);
     setShuffledOptions(opts);
-    setTimeLeft(ROUND_TIME_SEC);
+    setTimeLeft(roundTimeSec);
     setIsTimeOut(false);
     setLastAnswerCorrect(null);
-  }, [currentIndex]);
+  }, [currentIndex, roundTimeSec]);
 
   // Fast countdown timer
   useEffect(() => {
@@ -211,7 +275,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
     setGameState('intro');
   };
 
-  const timePercent = (timeLeft / ROUND_TIME_SEC) * 100;
+  const timePercent = (timeLeft / roundTimeSec) * 100;
 
   return (
     <div

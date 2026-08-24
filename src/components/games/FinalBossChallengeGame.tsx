@@ -23,13 +23,14 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const bossTimeLimit = userMode === 'kids' ? 16 : 12;
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
 
   // Build a 6-step final gauntlet: 2 Science + 2 Myths + 2 Crisis Scenarios
   const [steps, setSteps] = useState<ChallengeStep[]>(() => {
-    const q = getRandomQuestions(2);
-    const m = getRandomMyths(2);
-    const s = getRandomScenarios(2);
+    const q = getRandomQuestions(2, userMode);
+    const m = getRandomMyths(2, userMode);
+    const s = getRandomScenarios(2, userMode);
     return [
       { type: 'quiz', data: q[0] },
       { type: 'myth', data: m[0] },
@@ -47,7 +48,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
   const [correctCount, setCorrectCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
-  const [timer, setTimer] = useState(12);
+  const [timer, setTimer] = useState(bossTimeLimit);
 
   const step = steps[currentIdx];
   const progressPercent = ((currentIdx + 1) / steps.length) * 100;
@@ -110,16 +111,16 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
       setCurrentIdx(prev => prev + 1);
       setSelectedChoice(null);
       setIsAnswered(false);
-      setTimer(12);
+      setTimer(bossTimeLimit);
     } else {
       setGameState('result');
     }
   };
 
   const handleReplay = () => {
-    const q = getRandomQuestions(2);
-    const m = getRandomMyths(2);
-    const s = getRandomScenarios(2);
+    const q = getRandomQuestions(2, userMode);
+    const m = getRandomMyths(2, userMode);
+    const s = getRandomScenarios(2, userMode);
     setSteps([
       { type: 'quiz', data: q[0] },
       { type: 'myth', data: m[0] },
@@ -135,7 +136,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
     setCorrectCount(0);
     setStreak(0);
     setMaxStreak(0);
-    setTimer(12);
+    setTimer(bossTimeLimit);
     setGameState('intro');
   };
 

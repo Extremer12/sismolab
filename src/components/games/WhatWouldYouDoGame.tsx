@@ -19,7 +19,7 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
   onNavigate
 }) => {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
-  const [scenarios, setScenarios] = useState<ScenarioChoice[]>(() => getRandomScenarios(4));
+  const [scenarios, setScenarios] = useState<ScenarioChoice[]>(() => getRandomScenarios(4, userMode));
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
   };
 
   const handleReplay = () => {
-    setScenarios(getRandomScenarios(4));
+    setScenarios(getRandomScenarios(4, userMode));
     setCurrentIdx(0);
     setSelectedOptionId(null);
     setIsAnswered(false);
