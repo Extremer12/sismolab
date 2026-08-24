@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Calendar, MapPin } from 'lucide-react';
+import { ArrowRight, ChevronRight, Calendar } from 'lucide-react';
 import { UserProfile, ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
 
@@ -27,14 +27,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   return (
-    <div className="relative min-h-screen select-none font-sans overflow-x-hidden">
-      {/* 1. Fullscreen Fixed Background Image fondoinicio.png */}
-      <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0 scale-100"
-        style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
-      />
-      {/* Subtle overlay to guarantee crisp contrast for cards */}
-      <div className="fixed inset-0 bg-navy-950/40 pointer-events-none z-0" />
+    <div
+      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 overflow-x-hidden"
+      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+    >
+      {/* Background Dark Overlay */}
+      <div className="fixed inset-0 bg-navy-950/80 pointer-events-none z-0" />
 
       {/* Main Content Layout */}
       <div className="relative z-10 p-4 sm:p-5 space-y-4 pb-24 max-w-md mx-auto">
@@ -87,106 +85,80 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         </div>
 
-        {/* 3. Card 1: MODO NIÑOS (Text placed on the right 55% of the card, completely clear of the character) */}
+        {/* 2. Primary Game Mode: NIÑOS (Card 1) */}
         <button
           onClick={handleLaunchKids}
-          className="w-full relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left border-2 border-brand-cyan/60 shadow-[0_8px_30px_rgba(0,184,255,0.3)] flex items-center justify-between group active:scale-[0.98] transition-all bg-cover bg-left min-h-[140px]"
-          style={{
-            backgroundImage: `url('/images/fondocardniños.png')`,
-            backgroundPosition: 'left center',
-            backgroundSize: 'cover'
-          }}
+          className="relative w-full aspect-[16/7.5] sm:aspect-[16/7] rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-cyan/40 hover:border-brand-cyan transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-end p-4 sm:p-5 text-left bg-cover bg-center"
+          style={{ backgroundImage: `url('/images/fondocardniños.png')` }}
         >
-          {/* Right Content Area: Aligned to the right half */}
-          <div className="relative z-10 w-[55%] ml-auto pr-1 text-left space-y-0.5">
-            <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block drop-shadow-md">
-              AVENTURA
-            </span>
-            <h2 className="font-black text-lg sm:text-xl text-white tracking-tight leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-              MODO <span className="text-brand-cyan">NIÑOS</span>
-            </h2>
-            <p className="text-xs text-slate-100 font-medium leading-snug drop-shadow-md">
-              Desafíos y juegos.
-            </p>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-900/40 to-transparent z-0" />
+          
+          <div className="relative z-10 space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="px-3 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[10px] uppercase tracking-wider">
+                DE 6 A 12 AÑOS
+              </span>
+              <span className="w-8 h-8 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center font-bold text-sm shadow-glow-cyan group-hover:translate-x-1 transition-transform">
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            </div>
 
-          {/* Circular Action Arrow Button */}
-          <div className="relative z-10 w-11 h-11 rounded-full bg-navy-950/85 border-2 border-brand-cyan text-brand-cyan flex items-center justify-center shadow-glow-cyan group-hover:bg-brand-cyan group-hover:text-navy-950 transition-all shrink-0 ml-1">
-            <ArrowRight className="w-5 h-5 stroke-[2.8]" />
+            <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight leading-none drop-shadow-md">
+              MODO NIÑOS
+            </h2>
+            <p className="text-xs text-slate-200 font-medium leading-tight">
+              Misiones divertidas, mochila de emergencia y trivias interactivas.
+            </p>
           </div>
         </button>
 
-        {/* 4. Card 2: JÓVENES Y ADULTOS (Text placed on the right 55% of the card, completely clear of the character) */}
+        {/* 3. Secondary Game Mode: JÓVENES Y ADULTOS (Card 2) */}
         <button
           onClick={handleLaunchAdults}
-          className="w-full relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left border-2 border-brand-purple/70 shadow-[0_8px_30px_rgba(124,58,237,0.35)] flex items-center justify-between group active:scale-[0.98] transition-all bg-cover bg-left min-h-[140px]"
-          style={{
-            backgroundImage: `url('/images/fondocardjovenesyadultos.png')`,
-            backgroundPosition: 'left center',
-            backgroundSize: 'cover'
-          }}
+          className="relative w-full aspect-[16/7.5] sm:aspect-[16/7] rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-purple/40 hover:border-brand-purple transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-end p-4 sm:p-5 text-left bg-cover bg-center"
+          style={{ backgroundImage: `url('/images/fondocardjovenesyadultos.png')` }}
         >
-          {/* Right Content Area: Aligned to the right half */}
-          <div className="relative z-10 w-[55%] ml-auto pr-1 text-left space-y-0.5">
-            <span className="text-[10px] font-black text-purple-300 uppercase tracking-widest block drop-shadow-md">
-              CIENCIA
-            </span>
-            <h2 className="font-black text-lg sm:text-xl text-white tracking-tight leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-              JÓVENES Y <span className="text-purple-300">ADULTOS</span>
-            </h2>
-            <p className="text-xs text-slate-100 font-medium leading-snug drop-shadow-md">
-              Datos y prevención.
-            </p>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-purple-950/40 to-transparent z-0" />
+          
+          <div className="relative z-10 space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="px-3 py-0.5 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-purple-300 font-black text-[10px] uppercase tracking-wider">
+                +13 AÑOS Y FAMILIAS
+              </span>
+              <span className="w-8 h-8 rounded-full bg-brand-purple text-white flex items-center justify-center font-bold text-sm shadow-glow-purple group-hover:translate-x-1 transition-transform">
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            </div>
 
-          {/* Circular Action Arrow Button */}
-          <div className="relative z-10 w-11 h-11 rounded-full bg-navy-950/85 border-2 border-brand-purple text-purple-300 flex items-center justify-center shadow-glow-purple group-hover:bg-brand-purple group-hover:text-white transition-all shrink-0 ml-1">
-            <ArrowRight className="w-5 h-5 stroke-[2.8]" />
+            <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight leading-none drop-shadow-md">
+              JÓVENES Y ADULTOS
+            </h2>
+            <p className="text-xs text-slate-200 font-medium leading-tight">
+              Sismología, mitos, reflejos de supervivencia y desafío final.
+            </p>
           </div>
         </button>
 
-        {/* 5. Quick Access Cards Grid */}
-        <div className="grid grid-cols-2 gap-3 pt-1">
-          {/* Historia San Juan */}
+        {/* 4. Quick Access: Historia de San Juan (Full Width Banner) */}
+        <div className="pt-1">
           <button
             onClick={() => { sound.playClick(); onNavigate('history'); }}
-            className="sismo-card p-3.5 rounded-2xl border border-brand-cyan/20 bg-navy-950/80 backdrop-blur-md flex items-center justify-between hover:border-brand-cyan/50 transition-all active:scale-[0.98] group"
+            className="w-full sismo-card p-4 rounded-2xl border border-brand-cyan/30 bg-navy-950/85 backdrop-blur-md flex items-center justify-between hover:border-brand-cyan/60 transition-all active:scale-[0.98] group"
           >
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-navy-900 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shrink-0">
-                <Calendar className="w-4 h-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-navy-900 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shrink-0 shadow-sm">
+                <Calendar className="w-5 h-5" />
               </div>
               <div className="text-left leading-tight">
-                <h3 className="font-bold text-xs text-white group-hover:text-brand-cyan transition-colors">
-                  HISTORIA DE SAN JUAN
+                <h3 className="font-black text-sm text-white group-hover:text-brand-cyan transition-colors">
+                  HISTORIA SÍSMICA DE SAN JUAN
                 </h3>
-                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
-                  1894, 1944 y 1977
+                <span className="text-xs text-slate-300 font-medium block mt-0.5">
+                  Conocé los terremotos de 1894, 1944, 1977 y 2021
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-cyan shrink-0 ml-1" />
-          </button>
-
-          {/* Mapa de Sismos */}
-          <button
-            onClick={() => { sound.playClick(); onNavigate('seismic-map'); }}
-            className="sismo-card p-3.5 rounded-2xl border border-brand-cyan/20 bg-navy-950/80 backdrop-blur-md flex items-center justify-between hover:border-brand-cyan/50 transition-all active:scale-[0.98] group"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-navy-900 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shrink-0">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <div className="text-left leading-tight">
-                <h3 className="font-bold text-xs text-white group-hover:text-brand-cyan transition-colors">
-                  MAPA DE SISMOS
-                </h3>
-                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
-                  Epicentros y fallas
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-cyan shrink-0 ml-1" />
+            <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-brand-cyan shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>

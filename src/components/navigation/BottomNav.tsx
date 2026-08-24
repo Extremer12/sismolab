@@ -31,7 +31,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   const navItems = [
     { id: 'home' as ScreenId, label: 'Inicio', icon: Home, matches: ['home'] },
-    { id: 'history' as ScreenId, label: 'Explorar', icon: Compass, matches: ['history', 'seismic-map'] },
+    { id: 'history' as ScreenId, label: 'Historia', icon: Compass, matches: ['history'] },
     { id: playScreen as ScreenId, label: 'Jugar', icon: Gamepad2, matches: ['kids', 'adults'] },
     { id: 'ranking' as ScreenId, label: 'Ranking', icon: Trophy, matches: ['ranking'] },
     { id: 'profile' as ScreenId, label: 'Perfil', icon: User, matches: ['profile'] },

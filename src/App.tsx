@@ -15,7 +15,6 @@ import { HomeScreen } from './pages/Home/HomeScreen';
 import { KidsAdventurePage } from './pages/Kids/KidsAdventurePage';
 import { AdultsDashboardPage } from './pages/Adults/AdultsDashboardPage';
 import { HistoryPage } from './pages/History/HistoryPage';
-import { SeismicMapPage } from './pages/SeismicMap/SeismicMapPage';
 import { RankingPage } from './pages/Ranking/RankingPage';
 import { ProfilePage } from './pages/Profile/ProfilePage';
 import { AdminDashboardPage } from './pages/Admin/AdminDashboardPage';
@@ -110,7 +109,7 @@ export function App() {
     setActiveScreen('ranking');
   };
 
-  const showTopBar = activeScreen !== 'splash' && !activeScreen.startsWith('game-') && activeScreen !== 'history' && activeScreen !== 'seismic-map';
+  const showTopBar = activeScreen !== 'splash' && !activeScreen.startsWith('game-') && activeScreen !== 'history';
 
   return (
     <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950">
@@ -206,13 +205,6 @@ export function App() {
           <HistoryPage
             onNavigate={setActiveScreen}
             onExperienceChange={setIsHistoryExperienceActive}
-            onFinishGame={handleFinishGame}
-          />
-        )}
-
-        {activeScreen === 'seismic-map' && (
-          <SeismicMapPage
-            onNavigate={setActiveScreen}
             onFinishGame={handleFinishGame}
           />
         )}
