@@ -15,13 +15,23 @@ interface EmergencyKitGameProps {
 
 const MAX_BACKPACK_CAPACITY = 12;
 
+// Robust Fisher-Yates shuffle to guarantee 100% uniform random mixing every time
+function getShuffledKitItems(): EmergencyKitItem[] {
+  const array = [...EMERGENCY_KIT_ITEMS];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   userMode = 'kids',
   onFinishGame,
   onNavigate
 }) => {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'evaluation' | 'result'>('intro');
-  const [shuffledItems, setShuffledItems] = useState<EmergencyKitItem[]>([]);
+  const [shuffledItems, setShuffledItems] = useState<EmergencyKitItem[]>(() => getShuffledKitItems());
   const [packedItemIds, setPackedItemIds] = useState<string[]>([]);
   const [isDragOverBackpack, setIsDragOverBackpack] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(45);
@@ -30,10 +40,18 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   const draggedItemId = useRef<string | null>(null);
   const backpackRef = useRef<HTMLDivElement>(null);
 
-  // Initialize and shuffle items on start
-  useEffect(() => {
-    setShuffledItems([...EMERGENCY_KIT_ITEMS].sort(() => Math.random() - 0.5));
-  }, []);
+  // Re-shuffle items dynamically
+  const handleShuffleAvailable = () => {
+    sound.playClick();
+    setShuffledItems(getShuffledKitItems());
+  };
+
+  const handleStartGame = () => {
+    setShuffledItems(getShuffledKitItems());
+    setPackedItemIds([]);
+    setTimeLeft(45);
+    setGameState('playing');
+  };
 
   const essentialItems = EMERGENCY_KIT_ITEMS.filter(i => i.isEssential);
   const packedItems = EMERGENCY_KIT_ITEMS.filter(i => packedItemIds.includes(i.id));
@@ -147,7 +165,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   const finalScore = calculateFinalScore();
 
   const handleReplay = () => {
-    setShuffledItems([...EMERGENCY_KIT_ITEMS].sort(() => Math.random() - 0.5));
+    setShuffledItems(getShuffledKitItems());
     setPackedItemIds([]);
     setTimeLeft(45);
     setGameState('intro');
@@ -170,7 +188,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
           icon="🎒"
           rewardXp={500}
           timeLimitSec={45}
-          onStart={() => setGameState('playing')}
+          onStart={handleStartGame}
         />
       )}
 
@@ -287,7 +305,16 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
           <div className="relative z-10 space-y-2">
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 px-1">
               <span>ARTÍCULOS DISPONIBLES ({availableItems.length}):</span>
-              <span className="text-brand-cyan text-[10px]">TOCÁ O ARRASTRÁ</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleShuffleAvailable}
+                  className="px-2 py-0.5 rounded-lg bg-navy-900 border border-brand-cyan/30 text-[10px] text-brand-cyan hover:bg-navy-800 flex items-center gap-1 transition-all active:scale-95"
+                  title="Mezclar de nuevo"
+                >
+                  <span>🔀 Mezclar</span>
+                </button>
+                <span className="text-brand-cyan text-[10px]">TOCÁ O ARRASTRÁ</span>
+              </div>
             </div>
 
             {/* Scrollable grid of items */}
