@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Calendar } from 'lucide-react';
+import { ArrowRight, ChevronRight, Calendar, FileText } from 'lucide-react';
 import { UserProfile, ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
 
@@ -139,26 +139,48 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         </button>
 
-        {/* 4. Quick Access: Historia de San Juan (Full Width Banner) */}
-        <div className="pt-1">
+        {/* 4. Quick Access Grid: Historia Interactiva + Documento PDF */}
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          {/* Historia San Juan */}
           <button
             onClick={() => { sound.playClick(); onNavigate('history'); }}
-            className="w-full sismo-card p-4 rounded-2xl border border-brand-cyan/30 bg-navy-950/85 backdrop-blur-md flex items-center justify-between hover:border-brand-cyan/60 transition-all active:scale-[0.98] group"
+            className="sismo-card p-3.5 rounded-2xl border border-brand-cyan/25 bg-navy-950/85 backdrop-blur-md flex items-center justify-between hover:border-brand-cyan/60 transition-all active:scale-[0.98] group"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-navy-900 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shrink-0 shadow-sm">
-                <Calendar className="w-5 h-5" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-navy-900 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shrink-0">
+                <Calendar className="w-4.5 h-4.5" />
               </div>
               <div className="text-left leading-tight">
-                <h3 className="font-black text-sm text-white group-hover:text-brand-cyan transition-colors">
-                  HISTORIA SÍSMICA DE SAN JUAN
+                <h3 className="font-black text-xs text-white group-hover:text-brand-cyan transition-colors">
+                  HISTORIA
                 </h3>
-                <span className="text-xs text-slate-300 font-medium block mt-0.5">
-                  Conocé los terremotos de 1894, 1944, 1977 y 2021
+                <span className="text-[10px] text-slate-300 font-medium block mt-0.5">
+                  1894, 1944 y 1977
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-brand-cyan shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform" />
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-cyan shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+
+          {/* Documento PDF para Leer o Descargar */}
+          <button
+            onClick={() => { sound.playClick(); onNavigate('pdf-history'); }}
+            className="sismo-card p-3.5 rounded-2xl border border-brand-gold/30 bg-navy-950/85 backdrop-blur-md flex items-center justify-between hover:border-brand-gold/60 transition-all active:scale-[0.98] group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-navy-900 border border-brand-gold/40 flex items-center justify-center text-brand-gold shrink-0">
+                <FileText className="w-4.5 h-4.5" />
+              </div>
+              <div className="text-left leading-tight">
+                <h3 className="font-black text-xs text-brand-yellow group-hover:text-white transition-colors">
+                  DOCUMENTO PDF
+                </h3>
+                <span className="text-[10px] text-slate-300 font-medium block mt-0.5">
+                  Leer o Descargar
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-brand-gold group-hover:text-white shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>

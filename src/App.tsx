@@ -15,6 +15,7 @@ import { HomeScreen } from './pages/Home/HomeScreen';
 import { KidsAdventurePage } from './pages/Kids/KidsAdventurePage';
 import { AdultsDashboardPage } from './pages/Adults/AdultsDashboardPage';
 import { HistoryPage } from './pages/History/HistoryPage';
+import { PdfReaderPage } from './pages/PdfReader/PdfReaderPage';
 import { RankingPage } from './pages/Ranking/RankingPage';
 import { ProfilePage } from './pages/Profile/ProfilePage';
 import { AdminDashboardPage } from './pages/Admin/AdminDashboardPage';
@@ -205,6 +206,13 @@ export function App() {
           <HistoryPage
             onNavigate={setActiveScreen}
             onExperienceChange={setIsHistoryExperienceActive}
+            onFinishGame={handleFinishGame}
+          />
+        )}
+
+        {activeScreen === 'pdf-history' && (
+          <PdfReaderPage
+            onNavigate={setActiveScreen}
             onFinishGame={handleFinishGame}
           />
         )}

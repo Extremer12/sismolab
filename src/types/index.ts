@@ -20,6 +20,7 @@ export type ScreenId =
   | 'game-myth-reality'
   | 'game-final-challenge'
   | 'history'
+  | 'pdf-history'
   | 'ranking'
   | 'profile'
   | 'admin';
