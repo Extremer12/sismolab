@@ -1,5 +1,4 @@
 import React from 'react';
-import { Sparkles, Activity } from 'lucide-react';
 import { UserProfile, ScreenId } from '../../types';
 import { sound } from '../../lib/sound';
 

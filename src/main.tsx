@@ -3,13 +3,11 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 
-// Registrar Service Worker para soporte PWA offline
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
-      console.log('SW registration error:', err);
-    });
-  });
+import { registerSW } from 'virtual:pwa-register';
+
+// Registrar Service Worker automático para soporte PWA offline
+if (typeof window !== 'undefined') {
+  registerSW({ immediate: true });
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

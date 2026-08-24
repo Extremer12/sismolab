@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Gamepad2, Award, BarChart3, PieChart, ShieldAlert, Sparkles, Download, Check } from 'lucide-react';
+import { ArrowLeft, Users, Gamepad2, Award, BarChart3, PieChart, ShieldAlert, Download, Check, Lock, KeyRound } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { sound } from '../../lib/sound';
@@ -9,14 +9,91 @@ interface AdminDashboardPageProps {
 }
 
 export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate }) => {
-  const [demoMode, setDemoMode] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+
+  const handlePinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput === '1944' || pinInput === 'inpres') {
+      sound.playCorrect();
+      setIsAuthenticated(true);
+      setPinError(false);
+    } else {
+      sound.playWrong();
+      setPinError(true);
+      setPinInput('');
+    }
+  };
 
   const handleExportData = () => {
     sound.playClick();
     setExportSuccess(true);
     setTimeout(() => setExportSuccess(false), 2500);
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[70vh] flex flex-col justify-center items-center p-4 max-w-sm mx-auto select-none">
+        <div className="sismo-card p-6 w-full text-center space-y-4 border-brand-purple/40 shadow-2xl">
+          <div className="w-14 h-14 rounded-2xl bg-brand-purple/20 border border-brand-purple/50 flex items-center justify-center text-purple-300 mx-auto shadow-glow-purple">
+            <Lock className="w-7 h-7" />
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="font-black text-lg text-white uppercase tracking-tight">
+              Panel Administrativo
+            </h2>
+            <p className="text-xs text-slate-400">
+              Ingresá el PIN de acceso del equipo INPRES
+            </p>
+          </div>
+
+          <form onSubmit={handlePinSubmit} className="space-y-3">
+            <div className="relative">
+              <input
+                type="password"
+                maxLength={8}
+                value={pinInput}
+                onChange={(e) => { setPinInput(e.target.value); setPinError(false); }}
+                placeholder="PIN de acceso (ej: 1944)"
+                className={`w-full bg-navy-950 border ${pinError ? 'border-accent-error' : 'border-brand-purple/50'} focus:border-brand-purple rounded-2xl px-4 py-3 text-center text-sm font-black text-white tracking-widest outline-none shadow-inner`}
+                autoFocus
+              />
+              <KeyRound className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
+            </div>
+
+            {pinError && (
+              <p className="text-[11px] font-bold text-accent-error animate-shake">
+                PIN incorrecto. Reintentá.
+              </p>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => { sound.playClick(); onNavigate('profile'); }}
+              >
+                Volver
+              </Button>
+              <Button
+                type="submit"
+                variant="purple"
+                size="sm"
+                className="flex-1"
+              >
+                Acceder
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-5 space-y-5 pb-28 max-w-lg mx-auto select-none">

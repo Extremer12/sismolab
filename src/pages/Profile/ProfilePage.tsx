@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Trophy, Award, Lock, Sparkles, Shield, User, Settings } from 'lucide-react';
-import { ScreenId, UserProfile, UserMode } from '../../types';
+import { ArrowLeft, Edit3, Check, Lock, Settings } from 'lucide-react';
+import { ScreenId, UserProfile } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
 import { sound } from '../../lib/sound';
 import { Modal } from '../../components/ui/Modal';

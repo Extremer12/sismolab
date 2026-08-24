@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Calendar, MapPin, Smartphone } from 'lucide-react';
+import { ArrowRight, ChevronRight, Calendar, MapPin } from 'lucide-react';
 import { UserProfile, ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
 

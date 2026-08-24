@@ -14,16 +14,16 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
   const [leaderboard, setLeaderboard] = useState<RankEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     setIsLoading(true);
     const data = await fetchLeaderboard(filterMode);
     setLeaderboard(data);
     setIsLoading(false);
-  };
+  }, [filterMode]);
 
   useEffect(() => {
     loadData();
-  }, [filterMode]);
+  }, [loadData]);
 
   const userRank = calculateUserRank(user.total_score, leaderboard);
 
