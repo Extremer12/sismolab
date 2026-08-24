@@ -6,6 +6,7 @@ import { sound } from '../../lib/sound';
 interface HistoryPageProps {
   onNavigate: (screen: ScreenId) => void;
   onExperienceChange?: (isActive: boolean) => void;
+  onFinishGame?: (earnedScore: number, correctCount: number, totalCount: number, gameId?: string) => void;
 }
 
 interface SlideEvent {
@@ -74,7 +75,7 @@ const HISTORICAL_SLIDES: SlideEvent[] = [
   }
 ];
 
-export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperienceChange }) => {
+export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperienceChange, onFinishGame }) => {
   const [isExperienceActive, setIsExperienceActive] = useState<boolean>(false);
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
 
@@ -446,6 +447,26 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperien
                 <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-medium drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-sm">
                   {event.description}
                 </p>
+
+                {/* Final Completion CTA on Last Slide */}
+                {slideIndex === HISTORICAL_SLIDES.length && (
+                  <div className="pt-3 max-w-xs mx-auto">
+                    <button
+                      onClick={() => {
+                        sound.playWinFanfare();
+                        if (onFinishGame) {
+                          onFinishGame(300, 5, 5, 'history');
+                        } else {
+                          onNavigate('ranking');
+                        }
+                      }}
+                      className="w-full py-3.5 px-5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-navy-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-glow-gold hover:scale-105 active:scale-95 transition-all"
+                    >
+                      <Sparkles className="w-4 h-4 text-navy-950" />
+                      <span>Reclamar +300 XP y Ver Ranking</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Next Slide Arrow in Free Mode */}
                 {!isExperienceActive && slideIndex < HISTORICAL_SLIDES.length && (

@@ -6,6 +6,7 @@ import { sound } from '../../lib/sound';
 
 interface SeismicMapPageProps {
   onNavigate: (screen: ScreenId) => void;
+  onFinishGame?: (earnedScore: number, correctCount: number, totalCount: number, gameId?: string) => void;
 }
 
 const SEISMIC_MARKERS: (MapMarkerItem & {
@@ -102,12 +103,13 @@ const SEISMIC_MARKERS: (MapMarkerItem & {
   }
 ];
 
-export const SeismicMapPage: React.FC<SeismicMapPageProps> = ({ onNavigate }) => {
+export const SeismicMapPage: React.FC<SeismicMapPageProps> = ({ onNavigate, onFinishGame }) => {
   const [selectedId, setSelectedId] = useState<string>('ev_1944');
   const [filterType, setFilterType] = useState<'all' | 'major' | 'faults'>('all');
+  const [visitedIds, setVisitedIds] = useState<string[]>(['ev_1944']);
 
   const filteredMarkers = SEISMIC_MARKERS.filter(m => {
-    if (filterType === 'major') return m.magnitude && m.magnitude >= 7.0;
+    if (filterType === 'major') return m.type === 'quake' && (m.magnitude || 0) >= 7.0;
     if (filterType === 'faults') return m.type === 'fault';
     return true;
   });
@@ -117,6 +119,7 @@ export const SeismicMapPage: React.FC<SeismicMapPageProps> = ({ onNavigate }) =>
   const handleSelectMarker = (marker: MapMarkerItem) => {
     sound.playClick();
     setSelectedId(marker.id);
+    setVisitedIds(prev => prev.includes(marker.id) ? prev : [...prev, marker.id]);
   };
 
   return (
@@ -272,7 +275,11 @@ export const SeismicMapPage: React.FC<SeismicMapPageProps> = ({ onNavigate }) =>
             return (
               <button
                 key={item.id}
-                onClick={() => { sound.playClick(); setSelectedId(item.id); }}
+                onClick={() => {
+                  sound.playClick();
+                  setSelectedId(item.id);
+                  setVisitedIds(prev => prev.includes(item.id) ? prev : [...prev, item.id]);
+                }}
                 className={`flex-shrink-0 p-2.5 rounded-2xl border transition-all text-left w-36 ${
                   isSelected
                     ? 'bg-navy-900 border-brand-cyan shadow-glow-cyan/30 scale-102'
@@ -294,6 +301,41 @@ export const SeismicMapPage: React.FC<SeismicMapPageProps> = ({ onNavigate }) =>
             );
           })}
         </div>
+      </div>
+
+      {/* Exploration Mission Completion Card */}
+      <div className="p-4 rounded-3xl bg-gradient-to-r from-blue-950/90 via-navy-900/95 to-navy-950/95 border-2 border-brand-cyan shadow-glow-cyan/25 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📡</span>
+            <div>
+              <h3 className="font-black text-xs text-white uppercase tracking-wider">
+                Misión de Monitoreo INPRES
+              </h3>
+              <p className="text-[11px] text-slate-300 font-medium">
+                Has inspeccionado {visitedIds.length} de {SEISMIC_MARKERS.length} eventos sísmicos.
+              </p>
+            </div>
+          </div>
+          <span className="px-2 py-0.5 rounded-full bg-brand-cyan/20 text-brand-cyan font-black text-[10px]">
+            +300 XP
+          </span>
+        </div>
+
+        <button
+          onClick={() => {
+            sound.playWinFanfare();
+            if (onFinishGame) {
+              onFinishGame(300, visitedIds.length, SEISMIC_MARKERS.length, 'seismic-map');
+            } else {
+              onNavigate('ranking');
+            }
+          }}
+          className="w-full py-3 rounded-full bg-brand-cyan hover:bg-brand-electric text-navy-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-glow-cyan transition-all active:scale-95"
+        >
+          <span>¡Finalizar Exploración y Reclamar Puntos!</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

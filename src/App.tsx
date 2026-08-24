@@ -206,12 +206,14 @@ export function App() {
           <HistoryPage
             onNavigate={setActiveScreen}
             onExperienceChange={setIsHistoryExperienceActive}
+            onFinishGame={handleFinishGame}
           />
         )}
 
         {activeScreen === 'seismic-map' && (
           <SeismicMapPage
             onNavigate={setActiveScreen}
+            onFinishGame={handleFinishGame}
           />
         )}
 
