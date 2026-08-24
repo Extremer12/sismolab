@@ -30,19 +30,15 @@ interface SanJuanMapProps {
 const SAN_JUAN_CENTER: [number, number] = [-31.20, -68.50];
 const DEFAULT_ZOOM = 7.8;
 
-// Reliable tile providers
+// Reliable, 100% open tile providers without rate-limits or blocked domains
 const TILE_LAYERS = {
-  dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    options: { subdomains: 'abcd', maxZoom: 19, attribution: '&copy; CartoDB &copy; OpenStreetMap' }
-  },
-  esriDark: {
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    options: { maxZoom: 16, attribution: '&copy; Esri' }
-  },
-  osm: {
+  osmDark: {
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    options: { maxZoom: 19, attribution: '&copy; OpenStreetMap' }
+    options: { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    options: { maxZoom: 18, attribution: '&copy; Esri Earthstar Geographics' }
   }
 };
 
@@ -54,7 +50,9 @@ export const SanJuanMap: React.FC<SanJuanMapProps> = ({
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersGroupRef = useRef<L.LayerGroup | null>(null);
+  const [mapType, setMapType] = useState<'dark' | 'satellite'>('dark');
   const [mapReady, setMapReady] = useState(false);
 
   // Initialize Map
@@ -66,20 +64,14 @@ export const SanJuanMap: React.FC<SanJuanMapProps> = ({
         center: SAN_JUAN_CENTER,
         zoom: DEFAULT_ZOOM,
         minZoom: 6,
-        maxZoom: 14,
+        maxZoom: 15,
         zoomControl: false,
         attributionControl: false,
       });
 
-      // Dark theme tiles with fallback
-      const baseLayer = L.tileLayer(TILE_LAYERS.dark.url, TILE_LAYERS.dark.options);
-      
-      baseLayer.on('tileerror', () => {
-        // Fallback to Esri dark gray if cartocdn is slow
-        L.tileLayer(TILE_LAYERS.esriDark.url, TILE_LAYERS.esriDark.options).addTo(map);
-      });
-
-      baseLayer.addTo(map);
+      // Standard OSM Tile Layer with high-contrast Dark Matrix filter
+      const baseLayer = L.tileLayer(TILE_LAYERS.osmDark.url, TILE_LAYERS.osmDark.options).addTo(map);
+      tileLayerRef.current = baseLayer;
 
       // Add Zoom Control at top-right
       L.control.zoom({ position: 'topright' }).addTo(map);
@@ -177,6 +169,20 @@ export const SanJuanMap: React.FC<SanJuanMapProps> = ({
     }
   }, [markers, activeMarkerId, onMarkerClick, mapReady]);
 
+  // Handle Layer Toggle (Dark OSM vs Satellite)
+  const handleToggleMapType = () => {
+    const map = mapInstanceRef.current;
+    if (!map || !tileLayerRef.current) return;
+
+    const nextType = mapType === 'dark' ? 'satellite' : 'dark';
+    map.removeLayer(tileLayerRef.current);
+
+    const config = nextType === 'dark' ? TILE_LAYERS.osmDark : TILE_LAYERS.satellite;
+    const newLayer = L.tileLayer(config.url, config.options).addTo(map);
+    tileLayerRef.current = newLayer;
+    setMapType(nextType);
+  };
+
   const handleResetView = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo(SAN_JUAN_CENTER, DEFAULT_ZOOM, { duration: 0.8 });
@@ -185,10 +191,14 @@ export const SanJuanMap: React.FC<SanJuanMapProps> = ({
 
   return (
     <div className={`relative w-full h-[380px] select-none overflow-hidden rounded-3xl border-2 border-brand-cyan/40 shadow-[0_10px_35px_rgba(4,14,27,0.85)] bg-navy-950 ${className}`}>
-      {/* Real Map Canvas */}
+      {/* Real Map Canvas with high-contrast cyber dark filter when dark mode is on */}
       <div
         ref={mapContainerRef}
-        className="w-full h-full z-10 [&_.leaflet-container]:bg-[#08182b] [&_.leaflet-tile-pane]:opacity-90 [&_.leaflet-control-zoom]:border-none [&_.leaflet-control-zoom-in]:bg-navy-900/90 [&_.leaflet-control-zoom-in]:text-brand-cyan [&_.leaflet-control-zoom-out]:bg-navy-900/90 [&_.leaflet-control-zoom-out]:text-brand-cyan [&_.leaflet-control-zoom]:rounded-2xl [&_.leaflet-control-zoom]:overflow-hidden [&_.leaflet-control-zoom]:shadow-lg [&_.leaflet-control-zoom]:border [&_.leaflet-control-zoom]:border-brand-cyan/30"
+        className={`w-full h-full z-10 [&_.leaflet-container]:bg-[#08182b] [&_.leaflet-control-zoom]:border-none [&_.leaflet-control-zoom-in]:bg-navy-900/95 [&_.leaflet-control-zoom-in]:text-brand-cyan [&_.leaflet-control-zoom-out]:bg-navy-900/95 [&_.leaflet-control-zoom-out]:text-brand-cyan [&_.leaflet-control-zoom]:rounded-2xl [&_.leaflet-control-zoom]:overflow-hidden [&_.leaflet-control-zoom]:shadow-lg [&_.leaflet-control-zoom]:border [&_.leaflet-control-zoom]:border-brand-cyan/30 ${
+          mapType === 'dark'
+            ? '[&_.leaflet-tile-pane]:invert-[0.94] [&_.leaflet-tile-pane]:hue-rotate-[195deg] [&_.leaflet-tile-pane]:brightness-[0.82] [&_.leaflet-tile-pane]:contrast-[1.25] [&_.leaflet-tile-pane]:saturate-[0.55]'
+            : '[&_.leaflet-tile-pane]:contrast-[1.1] [&_.leaflet-tile-pane]:brightness-[0.95]'
+        }`}
       />
 
       {/* Header Overlay Pill */}
@@ -197,15 +207,28 @@ export const SanJuanMap: React.FC<SanJuanMapProps> = ({
         <span>MAPA CARTOGRÁFICO INPRES · SAN JUAN</span>
       </div>
 
-      {/* Reset Center Button */}
-      <button
-        onClick={handleResetView}
-        className="absolute bottom-3 right-3 z-20 w-10 h-10 rounded-2xl bg-navy-950/90 backdrop-blur-md border border-brand-cyan/50 text-brand-cyan flex items-center justify-center hover:bg-navy-900 hover:scale-105 active:scale-95 transition-all shadow-xl"
-        title="Centrar provincia de San Juan"
-        aria-label="Centrar mapa"
-      >
-        <RotateCcw className="w-4.5 h-4.5" />
-      </button>
+      {/* Bottom Floating Controls (Reset + Satellite Switch) */}
+      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2">
+        {/* Toggle Dark / Satellite */}
+        <button
+          onClick={handleToggleMapType}
+          className="px-2.5 py-2 rounded-2xl bg-navy-950/90 backdrop-blur-md border border-brand-cyan/50 text-brand-cyan text-[10px] font-black flex items-center gap-1.5 hover:bg-navy-900 hover:scale-105 active:scale-95 transition-all shadow-xl"
+          title="Alternar entre mapa oscuro y satelital"
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>{mapType === 'dark' ? '🛰️ SATÉLITE' : '🗺️ OSCURO'}</span>
+        </button>
+
+        {/* Reset Center Button */}
+        <button
+          onClick={handleResetView}
+          className="w-10 h-10 rounded-2xl bg-navy-950/90 backdrop-blur-md border border-brand-cyan/50 text-brand-cyan flex items-center justify-center hover:bg-navy-900 hover:scale-105 active:scale-95 transition-all shadow-xl"
+          title="Centrar provincia de San Juan"
+          aria-label="Centrar mapa"
+        >
+          <RotateCcw className="w-4.5 h-4.5" />
+        </button>
+      </div>
     </div>
   );
 };
