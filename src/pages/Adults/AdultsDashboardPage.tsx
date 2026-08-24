@@ -42,8 +42,8 @@ const ADULT_MISSIONS: AdultMissionItem[] = [
   {
     id: 'a3',
     numberStr: '03',
-    title: 'SEGURIDAD & HOGAR',
-    subtitle: 'Mitigación de riesgos no estructurales.',
+    title: 'REFLEJOS DE SUPERVIVENCIA',
+    subtitle: 'Protocolos de respuesta inmediata y decisiones en 4s.',
     xpReward: 600,
     screenId: 'game-safe-home',
     visualType: 'safety',

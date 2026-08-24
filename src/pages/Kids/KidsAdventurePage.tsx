@@ -42,8 +42,8 @@ const MISSIONS: MissionCardItem[] = [
   {
     id: 'm3',
     numberStr: '03',
-    title: 'CASA SEGURA',
-    subtitle: 'Identificá los peligros en la habitación.',
+    title: 'REFLEJOS DE SUPERVIVENCIA',
+    subtitle: 'Decisiones críticas en 4 segundos ante el sismo.',
     xpReward: 600,
     screenId: 'game-safe-home',
     visualType: 'house',
