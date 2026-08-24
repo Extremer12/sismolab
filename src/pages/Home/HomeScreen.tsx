@@ -88,26 +88,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* 2. Primary Game Mode: NIÑOS (Card 1) */}
         <button
           onClick={handleLaunchKids}
-          className="relative w-full aspect-[16/7.5] sm:aspect-[16/7] rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-cyan/40 hover:border-brand-cyan transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-end p-4 sm:p-5 text-left bg-cover bg-center"
+          className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-cyan/40 hover:border-brand-cyan transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex items-center justify-between p-4 sm:p-5 text-left bg-cover bg-left min-h-[140px] sm:min-h-[155px]"
           style={{ backgroundImage: `url('/images/fondocardniños.png')` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-900/40 to-transparent z-0" />
-          
-          <div className="relative z-10 space-y-0.5">
+          {/* Subtle gradient on the right side to ensure optimal text contrast */}
+          <div className="absolute inset-y-0 right-0 w-3/5 bg-gradient-to-l from-navy-950/85 via-navy-950/40 to-transparent z-0 pointer-events-none" />
+
+          {/* Right Content Area: Perfectly placed on the right 56% of the card */}
+          <div className="relative z-10 w-[56%] ml-auto flex flex-col justify-center text-left space-y-1">
             <div className="flex items-center justify-between">
-              <span className="px-3 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[10px] uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[9.5px] uppercase tracking-wider">
                 DE 6 A 12 AÑOS
               </span>
-              <span className="w-8 h-8 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center font-bold text-sm shadow-glow-cyan group-hover:translate-x-1 transition-transform">
-                <ArrowRight className="w-4 h-4" />
+              <span className="w-7 h-7 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center font-bold text-xs shadow-glow-cyan group-hover:translate-x-1 transition-transform shrink-0 ml-1">
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
               </span>
             </div>
 
-            <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight leading-none drop-shadow-md">
-              MODO NIÑOS
+            <h2 className="font-black text-xl sm:text-2xl text-white tracking-tight leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              MODO <span className="text-brand-cyan">NIÑOS</span>
             </h2>
-            <p className="text-xs text-slate-200 font-medium leading-tight">
-              Misiones divertidas, mochila de emergencia y trivias interactivas.
+            <p className="text-[11px] sm:text-xs text-slate-200 font-medium leading-tight drop-shadow-md">
+              Misiones divertidas, mochila y trivias interactivas.
             </p>
           </div>
         </button>
@@ -115,26 +117,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* 3. Secondary Game Mode: JÓVENES Y ADULTOS (Card 2) */}
         <button
           onClick={handleLaunchAdults}
-          className="relative w-full aspect-[16/7.5] sm:aspect-[16/7] rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-purple/40 hover:border-brand-purple transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-end p-4 sm:p-5 text-left bg-cover bg-center"
+          className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-purple/40 hover:border-brand-purple transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex items-center justify-between p-4 sm:p-5 text-left bg-cover bg-left min-h-[140px] sm:min-h-[155px]"
           style={{ backgroundImage: `url('/images/fondocardjovenesyadultos.png')` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-purple-950/40 to-transparent z-0" />
-          
-          <div className="relative z-10 space-y-0.5">
+          {/* Subtle gradient on the right side to ensure optimal text contrast */}
+          <div className="absolute inset-y-0 right-0 w-3/5 bg-gradient-to-l from-navy-950/85 via-purple-950/40 to-transparent z-0 pointer-events-none" />
+
+          {/* Right Content Area: Perfectly placed on the right 56% of the card */}
+          <div className="relative z-10 w-[56%] ml-auto flex flex-col justify-center text-left space-y-1">
             <div className="flex items-center justify-between">
-              <span className="px-3 py-0.5 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-purple-300 font-black text-[10px] uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-purple-300 font-black text-[9.5px] uppercase tracking-wider">
                 +13 AÑOS Y FAMILIAS
               </span>
-              <span className="w-8 h-8 rounded-full bg-brand-purple text-white flex items-center justify-center font-bold text-sm shadow-glow-purple group-hover:translate-x-1 transition-transform">
-                <ArrowRight className="w-4 h-4" />
+              <span className="w-7 h-7 rounded-full bg-brand-purple text-white flex items-center justify-center font-bold text-xs shadow-glow-purple group-hover:translate-x-1 transition-transform shrink-0 ml-1">
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
               </span>
             </div>
 
-            <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight leading-none drop-shadow-md">
-              JÓVENES Y ADULTOS
+            <h2 className="font-black text-xl sm:text-2xl text-white tracking-tight leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              JÓVENES Y <span className="text-purple-300">ADULTOS</span>
             </h2>
-            <p className="text-xs text-slate-200 font-medium leading-tight">
-              Sismología, mitos, reflejos de supervivencia y desafío final.
+            <p className="text-[11px] sm:text-xs text-slate-200 font-medium leading-tight drop-shadow-md">
+              Sismología, mitos, reflejos y desafío final.
             </p>
           </div>
         </button>
