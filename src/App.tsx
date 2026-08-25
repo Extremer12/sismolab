@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenId, UserMode, UserProfile } from './types';
+import { supabase } from './services/supabase';
 import { loadLocalProfile, createGuestProfile, saveLocalProfile, syncProfileWithSupabase } from './services/authService';
 import { saveUserScoreLocally, submitGameScoreToSupabase } from './services/scoresService';
 import { sound } from './lib/sound';
@@ -29,12 +30,22 @@ import { MythOrRealityGame } from './components/games/MythOrRealityGame';
 import { FinalBossChallengeGame } from './components/games/FinalBossChallengeGame';
 
 export function App() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('splash');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('access_token') || hash.includes('refresh_token') || search.includes('code=')) {
+        return 'home';
+      }
+    }
+    return 'splash';
+  });
   const [isHistoryExperienceActive, setIsHistoryExperienceActive] = useState(false);
   
   const [user, setUser] = useState<UserProfile>(() => {
     return loadLocalProfile() || createGuestProfile();
   });
+
 
   // Sync profile when state updates
   useEffect(() => {
@@ -43,35 +54,68 @@ export function App() {
     syncProfileWithSupabase(user);
   }, [user]);
 
-  // Listen to Supabase OAuth login
+  // Check active session & listen to Supabase OAuth login
   useEffect(() => {
-    const { data: { subscription } } = (async () => {
-      const { supabase } = await import('./services/supabase');
-      return supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session?.user) {
-          const meta = session.user.user_metadata || {};
-          const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
-          const avatarUrl = meta.avatar_url || meta.picture;
+    let isMounted = true;
 
-          setUser(prev => ({
-            ...prev,
-            id: session.user.id,
-            nickname: prev.nickname.startsWith('Explorador') || prev.nickname.startsWith('Cóndor') ? googleName : prev.nickname,
-            display_name: googleName,
-            avatar_url: avatarUrl || prev.avatar_url
-          }));
+    // 1. Check current session immediately on mount (for OAuth redirects and persistent logins)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      if (session?.user) {
+        const meta = session.user.user_metadata || {};
+        const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
+        const avatarUrl = meta.avatar_url || meta.picture;
 
-          if (activeScreen === 'splash') {
-            setActiveScreen('home');
-          }
+        setUser(prev => ({
+          ...prev,
+          id: session.user.id,
+          auth_user_id: session.user.id,
+          nickname: (prev.nickname.startsWith('Explorador') || prev.nickname.startsWith('Cóndor') || prev.nickname.startsWith('Guanaco') || prev.nickname.startsWith('Puma') || prev.nickname.startsWith('Zorro')) ? googleName : prev.nickname,
+          display_name: googleName,
+          avatar_url: avatarUrl || prev.avatar_url
+        }));
+
+        setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
+
+        // Clean up OAuth hash parameters from URL if present
+        if (typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
+          window.history.replaceState(null, '', window.location.pathname);
         }
-      });
-    })() as unknown as { data: { subscription: { unsubscribe: () => void } } };
+      }
+    });
+
+    // 2. Listen for auth changes (SIGNED_IN, TOKEN_REFRESHED, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED')) {
+        const meta = session.user.user_metadata || {};
+        const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
+        const avatarUrl = meta.avatar_url || meta.picture;
+
+        setUser(prev => ({
+          ...prev,
+          id: session.user.id,
+          auth_user_id: session.user.id,
+          nickname: (prev.nickname.startsWith('Explorador') || prev.nickname.startsWith('Cóndor') || prev.nickname.startsWith('Guanaco') || prev.nickname.startsWith('Puma') || prev.nickname.startsWith('Zorro')) ? googleName : prev.nickname,
+          display_name: googleName,
+          avatar_url: avatarUrl || prev.avatar_url
+        }));
+
+        setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
+
+        // Clean up OAuth hash parameters from URL
+        if (typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+    });
 
     return () => {
-      subscription?.unsubscribe();
+      isMounted = false;
+      subscription.unsubscribe();
     };
   }, []);
+
 
   // Handler for login/nickname from Splash
   const handleLoginSuccess = (nickname: string) => {

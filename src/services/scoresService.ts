@@ -72,7 +72,7 @@ export async function submitGameScoreToSupabase(
 
   try {
     // 1. Sync / Upsert User in Supabase
-    await supabase.from('profiles').upsert({
+    const { data: upsertData, error: upsertError } = await supabase.from('profiles').upsert({
       id: user.id.length === 36 ? user.id : undefined, // Ensure valid UUID or let supabase generate
       nickname: user.nickname,
       display_name: user.display_name || user.nickname,
@@ -80,15 +80,23 @@ export async function submitGameScoreToSupabase(
       avatar_url: user.avatar_url,
       mode: user.mode,
       total_score: user.total_score,
+      level: user.level,
       games_played: user.games_played,
       correct_answers: user.correct_answers_count,
       total_answers: user.total_answers_count,
-      completed_game_ids: user.completed_game_ids,
+      completed_game_ids: user.completed_game_ids || [],
+      is_active: true,
+      last_active_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    }, { onConflict: 'nickname' });
+    }, { onConflict: 'nickname' }).select('id').maybeSingle();
+
+    if (upsertError) {
+      console.warn('Profile upsert warning:', upsertError);
+    }
 
     // 2. Log Game Session
     await supabase.from('game_sessions').insert({
+      player_id: upsertData?.id || (user.id.length === 36 ? user.id : null),
       game_id: gameId,
       mode: user.mode,
       score: earnedScore,
@@ -96,7 +104,8 @@ export async function submitGameScoreToSupabase(
       total_count: totalCount,
       metadata: {
         nickname: user.nickname,
-        avatar: user.avatar_emoji
+        avatar: user.avatar_emoji,
+        completed_at: new Date().toISOString()
       }
     });
   } catch (err) {
@@ -137,10 +146,70 @@ export function saveUserScoreLocally(user: UserProfile): void {
   }
 }
 
+// SECURE SERVER-SIDE PIN VALIDATION
+export async function verifyAdminPin(adminPin: string): Promise<{ valid: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase.rpc('admin_verify_pin', {
+      p_admin_pin: adminPin.trim()
+    });
+
+    if (error) throw error;
+    return {
+      valid: Boolean(data?.valid),
+      error: data?.error
+    };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Error al conectar con la base de datos';
+    return { valid: false, error: errorMsg };
+  }
+}
+
+// REAL LIVE METRICS FETCHING
+export interface LiveAdminMetrics {
+  total_visitors: number;
+  total_games: number;
+  avg_score: number;
+  kids_count: number;
+  adults_count: number;
+  popular_games: { game_id: string; session_count: number }[];
+  profiles: {
+    id: string;
+    nickname: string;
+    display_name: string;
+    mode: string;
+    total_score: number;
+    games_played: number;
+    correct_answers: number;
+    total_answers: number;
+    updated_at: string;
+  }[];
+}
+
+export async function fetchAdminMetrics(adminPin: string): Promise<{ success: boolean; data?: LiveAdminMetrics; error?: string }> {
+  try {
+    const { data, error } = await supabase.rpc('admin_get_metrics', {
+      p_admin_pin: adminPin.trim()
+    });
+
+    if (error) throw error;
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'PIN no autorizado' };
+    }
+
+    return {
+      success: true,
+      data: data as LiveAdminMetrics
+    };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Error al obtener métricas del servidor';
+    return { success: false, error: errorMsg };
+  }
+}
+
 export async function resetStandLeaderboard(adminPin: string): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
     const { data, error } = await supabase.rpc('admin_reset_leaderboard', {
-      p_admin_pin: adminPin
+      p_admin_pin: adminPin.trim()
     });
 
     if (error) throw error;
