@@ -230,8 +230,21 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
           {/* Dynamic Content based on step type */}
           <div className="relative z-10 my-auto space-y-3.5 py-2">
             {/* Step Card */}
-            <div className="sismo-card p-5 space-y-2 border-2 border-brand-gold/60 bg-navy-950/85 backdrop-blur-xl shadow-glow-gold/20">
-              <span className="text-[10px] font-black text-brand-yellow uppercase tracking-widest block">
+            <div className="sismo-card p-4 sm:p-5 space-y-2 border-2 border-brand-gold/60 bg-navy-950/90 backdrop-blur-xl shadow-glow-gold/20">
+              {step.type === 'quiz' && step.data.image_url && (
+                <div className="relative w-full aspect-[16/8.5] sm:aspect-[16/8] rounded-2xl overflow-hidden border border-brand-gold/30 shadow-md bg-navy-900 flex items-center justify-center">
+                  <img
+                    src={step.data.image_url}
+                    alt={step.data.question}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-navy-950/80 border border-brand-gold/40 text-brand-yellow font-black text-[9px] uppercase tracking-wider backdrop-blur-md">
+                    DESAFÍO FINAL
+                  </div>
+                </div>
+              )}
+
+              <span className="text-[10px] font-black text-brand-yellow uppercase tracking-widest block pt-0.5">
                 {getStepTitle()}
               </span>
               <h2 className="font-black text-base sm:text-lg text-white leading-snug">

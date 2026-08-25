@@ -213,9 +213,24 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
           {/* Center Question & Options */}
           <div className="relative z-10 my-auto space-y-3.5 py-2">
             {/* Question Card */}
-            <div className="sismo-card p-5 space-y-1.5 border-2 border-brand-cyan/40 bg-navy-950/85 backdrop-blur-xl shadow-glow-cyan/20">
-              <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block">
-                CIENCIA SÍSMICA · NIVEL {question.difficulty.toUpperCase()}
+            <div className="sismo-card p-4 sm:p-5 space-y-2 border-2 border-brand-cyan/40 bg-navy-950/90 backdrop-blur-xl shadow-glow-cyan/20">
+              {/* Question Image (if present) */}
+              {question.image_url && (
+                <div className="relative w-full aspect-[16/8.5] sm:aspect-[16/8] rounded-2xl overflow-hidden border border-brand-cyan/30 shadow-md bg-navy-900 flex items-center justify-center">
+                  <img
+                    src={question.image_url}
+                    alt={question.question}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    loading="eager"
+                  />
+                  <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-navy-950/80 border border-brand-cyan/40 text-brand-cyan font-black text-[9px] uppercase tracking-wider backdrop-blur-md">
+                    {userMode === 'kids' ? 'MODO NIÑOS' : 'INPRES'}
+                  </div>
+                </div>
+              )}
+
+              <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block pt-0.5">
+                {userMode === 'kids' ? 'DESAFÍO SÍSMICO' : 'CIENCIA SÍSMICA'} · NIVEL {question.difficulty.toUpperCase()}
               </span>
               <h2 className="font-black text-base sm:text-lg text-white leading-snug">
                 {question.question}
