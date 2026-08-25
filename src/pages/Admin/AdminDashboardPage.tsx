@@ -238,7 +238,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
       </div>
 
       {/* Export & Controls */}
-      <div className="flex gap-2">
+      <div className="space-y-2">
         <Button
           variant="secondary"
           size="md"
@@ -248,6 +248,23 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
         >
           <span>{exportSuccess ? '¡Datos Exportados (CSV)!' : 'Exportar Métricas INPRES'}</span>
         </Button>
+
+        <button
+          onClick={async () => {
+            if (window.confirm('¿Estás seguro de reiniciar el ranking y puntajes de la feria para un nuevo turno/evento?')) {
+              sound.playClick();
+              const res = await (await import('../../services/scoresService')).resetStandLeaderboard(pinInput);
+              if (res.success) {
+                alert('¡Ranking de la feria reiniciado con éxito!');
+              } else {
+                alert(res.error || 'Error al reiniciar el ranking');
+              }
+            }
+          }}
+          className="w-full py-3 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-300 font-bold text-xs uppercase tracking-wider hover:bg-rose-900/80 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+        >
+          <span>Reiniciar Ranking de la Feria (Stand)</span>
+        </button>
       </div>
     </div>
   );

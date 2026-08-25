@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenId, UserMode, UserProfile } from './types';
 import { loadLocalProfile, createGuestProfile, saveLocalProfile, syncProfileWithSupabase } from './services/authService';
-import { saveUserScoreLocally } from './services/scoresService';
+import { saveUserScoreLocally, submitGameScoreToSupabase } from './services/scoresService';
 import { sound } from './lib/sound';
 
 // Navigation Components
@@ -94,7 +94,7 @@ export function App() {
       const newScore = prev.total_score + addedScore;
       const newLevel = Math.floor(newScore / 400) + 1;
 
-      return {
+      const updatedProfile = {
         ...prev,
         total_score: newScore,
         level: newLevel,
@@ -104,6 +104,11 @@ export function App() {
         correct_answers_count: prev.correct_answers_count + correctCount,
         total_answers_count: prev.total_answers_count + totalCount
       };
+
+      // Asynchronously submit score to live Supabase backend
+      submitGameScoreToSupabase(updatedProfile, id, earnedScore, correctCount, totalCount);
+
+      return updatedProfile;
     });
 
     // Navigate to ranking so user sees their new position

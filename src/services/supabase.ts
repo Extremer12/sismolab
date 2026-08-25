@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
 const env = (import.meta as unknown as { env?: Record<string, string> }).env || {};
-const supabaseUrl = env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = env.VITE_SUPABASE_URL || 'https://lgesqffvrvahrqkntzov.supabase.co';
+const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnZXNxZmZ2cnZhaHJxa250em92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NTU0NjksImV4cCI6MjA3OTUzMTQ2OX0.JgFv3e_Fa9wIMKpdBF5sB06d14H8sw3rA7wk-8HjItE';
 
-export const supabase = (supabaseUrl && supabaseAnonKey)
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
