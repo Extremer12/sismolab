@@ -31,7 +31,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Outfit', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        display: ['Syne', 'Outfit', 'sans-serif'],
+        tech: ['"Space Grotesk"', 'sans-serif'],
       },
       boxShadow: {
         'glow-cyan': '0 0 25px rgba(34, 211, 238, 0.35)',
