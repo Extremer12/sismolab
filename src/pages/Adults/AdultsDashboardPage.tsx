@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Check, Lock, ChevronRight, Flame } from 'lucide-react';
+import { ArrowLeft, Check, Lock, ChevronRight, Sparkles, Play, ShieldCheck, Zap } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
 
@@ -8,75 +8,89 @@ interface AdultsDashboardPageProps {
   onNavigate: (screen: ScreenId) => void;
 }
 
-interface AdultMissionItem {
+interface AdultGameCard {
   id: string;
   numberStr: string;
   title: string;
-  subtitle: string;
+  category: string;
+  icon: string;
   xpReward: number;
   screenId: ScreenId;
-  visualType: 'science' | 'prevention' | 'safety' | 'history' | 'map' | 'final';
+  themeColor: 'purple' | 'cyan' | 'amber' | 'emerald' | 'rose' | 'gold';
+  gradientBg: string;
   unlockRequirement?: number;
 }
 
-const ADULT_MISSIONS: AdultMissionItem[] = [
+const ADULT_GAMES: AdultGameCard[] = [
   {
     id: 'a1',
     numberStr: '01',
-    title: 'ENTENDÉ EL SISMO',
-    subtitle: 'Física de ondas, placas tectónicas y registro INPRES.',
+    title: 'Física y Sismología',
+    category: 'CIENCIA INPRES',
+    icon: '🔬',
     xpReward: 400,
     screenId: 'game-what-is',
-    visualType: 'science',
+    themeColor: 'purple',
+    gradientBg: 'from-purple-950/80 via-indigo-950/60 to-navy-950/90',
   },
   {
     id: 'a2',
     numberStr: '02',
-    title: 'PREVENCIÓN & AUTONOMÍA',
-    subtitle: 'Mochila de 72 horas y protocolos de contingencia.',
+    title: 'Mochila de 72 Horas',
+    category: 'PLAN DE EMERGENCIA',
+    icon: '🎒',
     xpReward: 600,
     screenId: 'game-emergency-kit',
-    visualType: 'prevention',
+    themeColor: 'amber',
+    gradientBg: 'from-amber-950/80 via-orange-950/60 to-navy-950/90',
     unlockRequirement: 1,
   },
   {
     id: 'a3',
     numberStr: '03',
-    title: 'REFLEJOS DE SUPERVIVENCIA',
-    subtitle: 'Protocolos de respuesta inmediata y decisiones en 4s.',
+    title: 'Reflejos en 4 Segundos',
+    category: 'ACCIÓN Y DECISIÓN',
+    icon: '⚡',
     xpReward: 600,
     screenId: 'game-safe-home',
-    visualType: 'safety',
+    themeColor: 'emerald',
+    gradientBg: 'from-emerald-950/80 via-teal-950/60 to-navy-950/90',
     unlockRequirement: 2,
   },
   {
     id: 'a4',
     numberStr: '04',
-    title: 'PROTOCOLOS DE RESPUESTA',
-    subtitle: 'Decisiones críticas en calle, vehículo y lugares públicos.',
+    title: 'Protocolos de Respuesta',
+    category: 'ESCENARIOS REALES',
+    icon: '🚨',
     xpReward: 500,
     screenId: 'game-what-would-you-do',
-    visualType: 'history',
+    themeColor: 'rose',
+    gradientBg: 'from-rose-950/80 via-pink-950/60 to-navy-950/90',
     unlockRequirement: 3,
   },
   {
     id: 'a5',
     numberStr: '05',
-    title: 'DESMITIFICANDO LA CIENCIA',
-    subtitle: 'Mitos populares vs realidades sismológicas de San Juan.',
+    title: 'Mitos vs Realidades',
+    category: 'DESMITIFICANDO',
+    icon: '🧠',
     xpReward: 500,
     screenId: 'game-myth-reality',
-    visualType: 'map',
+    themeColor: 'cyan',
+    gradientBg: 'from-cyan-950/80 via-blue-950/60 to-navy-950/90',
     unlockRequirement: 4,
   },
   {
     id: 'a6',
     numberStr: '06',
-    title: 'EVALUACIÓN Y DESAFÍO INPRES',
-    subtitle: 'Validación técnica integral para graduarte de experto.',
+    title: 'Evaluación INPRES',
+    category: 'DESAFÍO SUPREMO',
+    icon: '🏆',
     xpReward: 1000,
     screenId: 'game-final-challenge',
-    visualType: 'final',
+    themeColor: 'gold',
+    gradientBg: 'from-yellow-950/85 via-amber-950/70 to-navy-950/90',
     unlockRequirement: 5,
   }
 ];
@@ -86,50 +100,9 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
   onNavigate
 }) => {
   const completedIds = user.completed_game_ids || [];
-  const completedMissionsCount = ADULT_MISSIONS.filter(m => completedIds.includes(m.screenId)).length;
-  const totalMissions = ADULT_MISSIONS.length;
-
-  const renderThumbnail = (type: AdultMissionItem['visualType']) => {
-    switch (type) {
-      case 'science':
-        return (
-          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-indigo-950 via-purple-950 to-navy-950 border border-purple-500/40 flex items-center justify-center relative overflow-hidden shadow-inner">
-            <div className="relative text-4xl">🔬</div>
-          </div>
-        );
-      case 'prevention':
-        return (
-          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-blue-950 via-cyan-950 to-navy-950 border border-cyan-500/40 flex items-center justify-center relative overflow-hidden shadow-inner">
-            <div className="relative text-4xl">🎒</div>
-          </div>
-        );
-      case 'safety':
-        return (
-          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-emerald-950 via-teal-950 to-navy-950 border border-emerald-500/40 flex items-center justify-center relative overflow-hidden shadow-inner">
-            <div className="relative text-4xl">🏢</div>
-          </div>
-        );
-      case 'history':
-        return (
-          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-amber-950 via-orange-950 to-navy-950 border border-amber-500/40 flex items-center justify-center relative overflow-hidden shadow-inner">
-            <div className="relative text-4xl">🏛️</div>
-          </div>
-        );
-      case 'map':
-        return (
-          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-cyan-950 via-navy-900 to-navy-950 border border-brand-cyan/40 flex items-center justify-center relative overflow-hidden shadow-inner">
-            <div className="relative text-4xl">🗺️</div>
-          </div>
-        );
-      case 'final':
-      default:
-        return (
-          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-rose-950 via-red-950 to-navy-950 border border-rose-500/40 flex items-center justify-center relative overflow-hidden shadow-inner">
-            <div className="relative text-4xl">⚡</div>
-          </div>
-        );
-    }
-  };
+  const completedCount = ADULT_GAMES.filter(g => completedIds.includes(g.screenId)).length;
+  const totalCount = ADULT_GAMES.length;
+  const progressPercent = Math.round((completedCount / totalCount) * 100);
 
   return (
     <div
@@ -137,213 +110,160 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
       style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
     >
       {/* Background Dark Overlay */}
-      <div className="fixed inset-0 bg-navy-950/75 pointer-events-none z-0" />
+      <div className="fixed inset-0 bg-navy-950/80 pointer-events-none z-0" />
 
-      {/* Main Content */}
+      {/* Main Container */}
       <div className="relative z-10 p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto">
-        {/* Top Header Bar */}
+        
+        {/* 1. Top Header */}
         <div className="flex items-center justify-between pt-1">
-          {/* Back Button + Mode Tag */}
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => { sound.playClick(); onNavigate('home'); }}
-              className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-purple/50 flex items-center justify-center text-purple-300 hover:bg-navy-800 transition-all shadow-glow-purple/20 active:scale-95"
-              aria-label="Volver a Inicio"
-            >
-              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
-            </button>
+          <button
+            onClick={() => { sound.playClick(); onNavigate('home'); }}
+            className="w-10 h-10 rounded-2xl bg-navy-900/90 border border-brand-purple/40 flex items-center justify-center text-purple-300 hover:bg-navy-800 active:scale-95 transition-all shadow-sm"
+            aria-label="Volver a Inicio"
+          >
+            <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
 
-            <div className="px-3.5 py-1.5 rounded-full bg-navy-900/90 border border-brand-purple/50 text-purple-300 font-black text-xs uppercase flex items-center gap-1.5 shadow-sm">
-              <span>JÓVENES Y ADULTOS</span>
-              <span className="text-sm">🔬</span>
-            </div>
+          <div className="px-3.5 py-1 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-purple-300 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+            <span>JÓVENES Y ADULTOS</span>
+            <span className="text-xs">🧑‍💼</span>
           </div>
 
-          {/* Points Pill */}
           <div className="px-3 py-1 rounded-2xl bg-navy-900/90 border border-brand-gold/40 flex items-center gap-1.5 shadow-sm">
-            <span className="text-brand-yellow text-sm">★</span>
-            <div className="text-left leading-tight">
-              <span className="font-black text-xs text-white tabular-nums block">
-                {user.total_score.toLocaleString()}
-              </span>
-              <span className="text-[8px] font-extrabold text-accent-gray tracking-wider uppercase block">
-                PUNTOS
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Header Title Section */}
-        <div className="text-center space-y-1 pt-2">
-          <span className="text-[10px] font-black text-purple-300 uppercase tracking-[0.25em] block drop-shadow-md">
-            MÓDULO CIENTÍFICO
-          </span>
-          <h1 className="font-black text-3xl sm:text-4xl text-white tracking-tight uppercase leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
-            DESAFÍO <span className="text-purple-400">SÍSMICO</span>
-          </h1>
-          <p className="text-xs text-slate-300 font-medium pt-0.5">
-            Ingeniería sismorresistente y prevención INPRES
-          </p>
-        </div>
-
-        {/* Segmented Glowing Progress Bar */}
-        <div className="space-y-1.5 pt-1">
-          <div className="flex gap-1.5 items-center justify-center">
-            {ADULT_MISSIONS.map((_, idx) => {
-              const isDone = idx < completedMissionsCount;
-              const isCurrent = idx === completedMissionsCount;
-
-              return (
-                <div
-                  key={idx}
-                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-                    isDone
-                      ? 'bg-purple-400 shadow-glow-purple'
-                      : isCurrent
-                      ? 'bg-brand-electric shadow-glow-electric animate-pulse'
-                      : 'bg-navy-900/90 border border-white/10'
-                  }`}
-                />
-              );
-            })}
-          </div>
-
-          <div className="text-right">
-            <span className="text-xs font-black text-white tabular-nums">
-              {Math.min(completedMissionsCount, totalMissions)}{' '}
-            </span>
-            <span className="text-xs text-slate-400 font-bold">
-              / {totalMissions} módulos completados
+            <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
+            <span className="font-black text-xs text-brand-yellow tabular-nums">
+              {user.total_score.toLocaleString()} XP
             </span>
           </div>
         </div>
 
-        {/* Summary Stats Box (2 Columns) */}
-        <div className="sismo-card p-4 rounded-2xl border border-brand-purple/30 bg-navy-950/85 backdrop-blur-xl grid grid-cols-2 gap-3 text-center">
-          <div className="flex items-center gap-3 pl-2">
-            <div className="text-2xl text-brand-gold">★</div>
-            <div className="text-left">
-              <span className="font-black text-base text-white tabular-nums block leading-tight">
-                {user.total_score.toLocaleString()} XP
+        {/* 2. Visual Title & Progress Header */}
+        <div className="p-4 rounded-3xl bg-gradient-to-r from-purple-950/90 via-navy-900/95 to-navy-950/95 border-2 border-brand-purple/40 shadow-glow-purple/20 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-black text-purple-300 uppercase tracking-widest block">
+                CENTRO DE ENTRENAMIENTO
               </span>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">
-                Puntos totales
+              <h1 className="font-black text-2xl text-white uppercase tracking-tight leading-none mt-0.5">
+                DESAFÍO <span className="text-purple-300">CIENTÍFICO</span>
+              </h1>
+            </div>
+
+            <div className="text-right">
+              <span className="text-xs font-black text-brand-yellow">
+                {completedCount}/{totalCount}
+              </span>
+              <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                Completados
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-            <div className="text-2xl text-orange-500">
-              <Flame className="w-7 h-7 text-orange-500 fill-orange-500" />
-            </div>
-            <div className="text-left">
-              <span className="font-black text-base text-white tabular-nums block leading-tight">
-                {Math.max(1, user.games_played)}
-              </span>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">
-                Racha actual
-              </span>
-            </div>
+          {/* Glowing Multi-step Progress Bar */}
+          <div className="w-full h-2.5 bg-navy-950 rounded-full p-0.5 border border-white/10 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-purple-600 via-brand-purple to-brand-cyan shadow-glow-purple transition-all duration-700"
+              style={{ width: `${Math.max(8, progressPercent)}%` }}
+            />
           </div>
         </div>
 
-        {/* Mission Cards List */}
-        <div className="space-y-3.5 pt-1">
-          {ADULT_MISSIONS.map((mission, idx) => {
-            const isCompleted = completedIds.includes(mission.screenId);
-            const reqCount = mission.unlockRequirement || 0;
-            const isPlayable = idx === 0 || completedMissionsCount >= reqCount || isCompleted;
+        {/* 3. Visual Game Cards List */}
+        <div className="space-y-3 pt-1">
+          {ADULT_GAMES.map((game, idx) => {
+            const isCompleted = completedIds.includes(game.screenId);
+            const reqCount = game.unlockRequirement || 0;
+            const isPlayable = idx === 0 || completedCount >= reqCount || isCompleted;
             const isLocked = !isPlayable;
 
-            let cardBorder = 'border-white/10 bg-navy-950/70 opacity-60';
-            let tagBg = 'bg-purple-950 border-purple-800 text-purple-300';
+            let borderStyle = 'border-white/15 hover:border-brand-purple/60';
+            let glowStyle = '';
 
             if (isCompleted) {
-              cardBorder = 'border-2 border-emerald-500/70 bg-gradient-to-r from-emerald-950/40 via-navy-950/80 to-navy-950/90 shadow-[0_4px_25px_rgba(16,185,129,0.2)]';
-              tagBg = 'bg-emerald-950 border-emerald-500 text-emerald-400';
+              borderStyle = 'border-2 border-emerald-400/80';
+              glowStyle = 'shadow-[0_4px_20px_rgba(16,185,129,0.25)]';
             } else if (isPlayable) {
-              cardBorder = 'border-2 border-brand-purple shadow-[0_4px_25px_rgba(124,58,237,0.35)] bg-gradient-to-r from-purple-950/50 via-navy-950/85 to-navy-950/90';
-              tagBg = 'bg-navy-900 border-brand-purple text-purple-300';
+              borderStyle = 'border-2 border-brand-purple/80';
+              glowStyle = 'shadow-[0_6px_25px_rgba(168,85,247,0.3)]';
             } else {
-              cardBorder = 'border border-indigo-900/60 bg-navy-950/80 opacity-70';
-              tagBg = 'bg-indigo-950 border-indigo-700 text-indigo-300';
+              borderStyle = 'border-white/10 opacity-60';
             }
 
             return (
               <div
-                key={mission.id}
-                className={`relative sismo-card rounded-3xl p-4 flex items-center gap-3.5 transition-all duration-200 ${cardBorder}`}
+                key={game.id}
+                onClick={() => {
+                  if (isPlayable) {
+                    sound.playClick();
+                    onNavigate(game.screenId);
+                  }
+                }}
+                className={`relative sismo-card rounded-3xl p-3.5 sm:p-4 bg-gradient-to-r ${game.gradientBg} border transition-all duration-300 flex items-center justify-between gap-3 ${borderStyle} ${glowStyle} ${
+                  isPlayable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : 'cursor-not-allowed'
+                }`}
               >
-                {/* Number Badge */}
-                <div
-                  className={`absolute -top-2.5 left-3 px-2 py-0.5 rounded-lg font-black text-[11px] border shadow-sm ${tagBg}`}
-                >
-                  {mission.numberStr}
-                </div>
-
-                {/* Left Thumbnail Illustration */}
-                <div className="w-18 h-18 sm:w-20 sm:h-20 shrink-0">
-                  {renderThumbnail(mission.visualType)}
-                </div>
-
-                {/* Middle Content */}
-                <div className="flex-1 space-y-0.5 pr-1 min-w-0">
-                  <h3 className="font-black text-sm sm:text-base text-white tracking-tight leading-snug uppercase truncate">
-                    {mission.title}
-                  </h3>
-                  <p className="text-[11px] text-slate-300 font-medium leading-snug line-clamp-2">
-                    {mission.subtitle}
-                  </p>
-
-                  {/* XP Reward or Lock Requirement */}
-                  {!isLocked ? (
-                    <div className="flex items-center gap-1 text-[11px] font-black text-brand-yellow pt-0.5">
-                      <span>★</span>
-                      <span>+{mission.xpReward} XP</span>
-                      {isCompleted && (
-                        <span className="text-[9px] font-bold text-emerald-400 ml-1">✓ Completada</span>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1 text-[9px] font-black text-purple-400 uppercase tracking-wider pt-0.5">
-                      <Lock className="w-2.5 h-2.5 shrink-0" />
-                      <span className="truncate">Completá {mission.unlockRequirement} módulo(s)</span>
+                {/* Left Visual Icon Badge */}
+                <div className="relative flex items-center justify-center shrink-0">
+                  <div className="w-14 h-14 rounded-2xl bg-navy-950/80 border border-white/15 flex items-center justify-center text-3xl shadow-lg group-hover:scale-105 transition-transform">
+                    {game.icon}
+                  </div>
+                  {isCompleted && (
+                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-emerald-500 border-2 border-navy-950 text-navy-950 flex items-center justify-center shadow-sm">
+                      <Check className="w-3 h-3 stroke-[3]" />
                     </div>
                   )}
                 </div>
 
-                {/* Right Action / Status */}
-                <div className="shrink-0 flex flex-col items-center justify-center">
+                {/* Middle Game Details */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-lg font-black text-[9px] uppercase tracking-wider border shadow-sm bg-navy-950/80 text-purple-300 border-purple-400/30">
+                      NIVEL {game.numberStr}
+                    </span>
+                    <span className="text-[9.5px] font-black text-slate-300 uppercase tracking-wide truncate">
+                      {game.category}
+                    </span>
+                  </div>
+
+                  <h2 className="font-black text-base sm:text-lg text-white leading-tight truncate">
+                    {game.title}
+                  </h2>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-brand-yellow flex items-center gap-1">
+                      <span>★</span>
+                      <span>+{game.xpReward} XP</span>
+                    </span>
+                    {isCompleted && (
+                      <span className="text-[10px] font-black text-emerald-400">
+                        • ¡Superado!
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Action Button / Lock */}
+                <div className="shrink-0">
                   {isCompleted ? (
                     <button
-                      onClick={() => {
-                        sound.playClick();
-                        onNavigate(mission.screenId);
-                      }}
-                      className="px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-400 text-emerald-300 font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-sm hover:bg-emerald-900 active:scale-95 transition-all"
+                      type="button"
+                      className="px-3.5 py-2 rounded-2xl bg-emerald-950/90 border border-emerald-400 text-emerald-300 font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-sm hover:bg-emerald-900 transition-all"
                     >
-                      <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-400" />
-                      <span>REJUGAR</span>
+                      <span>Rejugar</span>
+                      <Play className="w-3 h-3 fill-emerald-400 text-emerald-400" />
                     </button>
                   ) : isPlayable ? (
                     <button
-                      onClick={() => {
-                        sound.playClick();
-                        onNavigate(mission.screenId);
-                      }}
-                      className="px-4 py-2 rounded-full bg-gradient-to-r from-brand-purple to-indigo-500 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-glow-purple hover:scale-105 active:scale-95 transition-all"
+                      type="button"
+                      className="px-4 py-2.5 rounded-2xl bg-brand-purple hover:bg-purple-600 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-glow-purple transition-all group-hover:scale-105"
                     >
                       <span>JUGAR</span>
-                      <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
+                      <ChevronRight className="w-4 h-4 stroke-[3]" />
                     </button>
                   ) : (
-                    <div className="flex flex-col items-center gap-1 opacity-70">
-                      <div className="w-9 h-9 rounded-full border-2 border-purple-500/50 bg-purple-950/80 text-purple-300 flex items-center justify-center">
-                        <Lock className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="text-[9px] font-black text-purple-400 tracking-wider uppercase">
-                        BLOQUEADO
-                      </span>
+                    <div className="w-10 h-10 rounded-2xl bg-navy-950/90 border border-white/10 flex items-center justify-center text-slate-400">
+                      <Lock className="w-4 h-4" />
                     </div>
                   )}
                 </div>
@@ -351,6 +271,7 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
             );
           })}
         </div>
+
       </div>
     </div>
   );
