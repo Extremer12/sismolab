@@ -43,6 +43,36 @@ export function App() {
     syncProfileWithSupabase(user);
   }, [user]);
 
+  // Listen to Supabase OAuth login
+  useEffect(() => {
+    const { data: { subscription } } = (async () => {
+      const { supabase } = await import('./services/supabase');
+      return supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+          const meta = session.user.user_metadata || {};
+          const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
+          const avatarUrl = meta.avatar_url || meta.picture;
+
+          setUser(prev => ({
+            ...prev,
+            id: session.user.id,
+            nickname: prev.nickname.startsWith('Explorador') || prev.nickname.startsWith('Cóndor') ? googleName : prev.nickname,
+            display_name: googleName,
+            avatar_url: avatarUrl || prev.avatar_url
+          }));
+
+          if (activeScreen === 'splash') {
+            setActiveScreen('home');
+          }
+        }
+      });
+    })() as unknown as { data: { subscription: { unsubscribe: () => void } } };
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
   // Handler for login/nickname from Splash
   const handleLoginSuccess = (nickname: string) => {
     setUser(prev => ({
