@@ -32,7 +32,8 @@ export default {
       },
       fontFamily: {
         sans: ['Outfit', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-        display: ['Syne', 'Outfit', 'sans-serif'],
+        apache: ['"Aldo the Apache"', 'Outfit', 'sans-serif'],
+        display: ['"Aldo the Apache"', 'Outfit', 'sans-serif'],
         tech: ['"Space Grotesk"', 'sans-serif'],
       },
       boxShadow: {
