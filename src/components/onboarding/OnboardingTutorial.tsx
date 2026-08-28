@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, ArrowLeft, Sparkles, Shield, User, Trophy, BookOpen, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Shield, Trophy, AlertCircle, CheckCircle2, PackageCheck, Zap, Sparkles, Activity, Award } from 'lucide-react';
 import { UserMode, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -83,7 +83,6 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
           <button
             onClick={() => {
               sound.playClick();
-              // Jump straight to age slide if not visited, else finish
               if (currentSlide < 1) {
                 setCurrentSlide(1);
               } else {
@@ -109,10 +108,14 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             <div className="w-48 h-48 sm:w-56 sm:h-56 mx-auto rounded-3xl bg-gradient-to-br from-navy-900 via-navy-850 to-blue-950/60 border-2 border-brand-cyan/40 p-4 flex items-center justify-center shadow-[0_0_35px_rgba(0,184,255,0.25)] relative overflow-hidden group">
               <div className="absolute -inset-1 bg-gradient-to-tr from-brand-electric to-brand-cyan opacity-20 blur-xl group-hover:opacity-40 transition-opacity" />
               
-              {/* Native Android Graphic Icon Slot */}
+              {/* Zion Code Logo Graphic */}
               <div className="relative z-10 text-center space-y-2">
-                <div className="w-20 h-20 rounded-2xl bg-brand-cyan/20 border border-brand-cyan/50 flex items-center justify-center text-4xl mx-auto shadow-glow-cyan">
-                  🏛️
+                <div className="w-24 h-24 rounded-2xl bg-navy-950/80 border border-brand-cyan/50 flex items-center justify-center p-3 mx-auto shadow-glow-cyan/40">
+                  <img
+                    src="/images/logozioncode-sinfondo.png"
+                    alt="Zion Code"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <div className="flex justify-center gap-1.5 pt-1">
                   <span className="w-2 h-2 rounded-full bg-brand-cyan animate-ping" />
@@ -123,15 +126,15 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             </div>
 
             <div className="space-y-1.5 pt-2">
-              <span className="text-[11px] font-black text-brand-cyan uppercase tracking-widest">
-                INPRES & ZION CODE
+              <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block">
+                ZION CODE · ESCUELA POLICÍA FEDERAL ARGENTINA
               </span>
               <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase">
                 {language === 'es' ? '¡Bienvenido a SISMO LAB!' : 'Welcome to SISMO LAB!'}
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-sm mx-auto">
                 {language === 'es'
-                  ? 'La plataforma interactiva de prevención y ciencia sísmica diseñada para aprender jugando y salvar vidas ante un terremoto.'
+                  ? 'La plataforma interactiva de prevención sísmica y autoprotección diseñada para aprender jugando y salvar vidas ante un terremoto.'
                   : 'The interactive earthquake science and preparedness platform designed to save lives while learning through gaming.'}
               </p>
             </div>
@@ -141,8 +144,8 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
         {/* SLIDE 1: Age Selection (Crucial for Fair Mode Points) */}
         {currentSlide === 1 && (
           <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 rounded-3xl bg-brand-yellow/20 border border-brand-yellow/50 flex items-center justify-center text-4xl mx-auto shadow-glow-gold">
-              🎂
+            <div className="w-20 h-20 rounded-3xl bg-brand-yellow/20 border border-brand-yellow/50 flex items-center justify-center mx-auto shadow-glow-gold">
+              <Activity className="w-10 h-10 text-brand-gold" />
             </div>
 
             <div className="space-y-1">
@@ -187,7 +190,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                   ? 'bg-brand-cyan/15 border-brand-cyan text-brand-cyan'
                   : 'bg-brand-purple/20 border-brand-purple text-purple-300'
               }`}>
-                <span>{selectedAge < 13 ? '🧒 Modo Niños Asignado (6-12)' : '🔬 Modo Jóvenes y Adultos Asignado (+13)'}</span>
+                <span>{selectedAge < 13 ? 'Modo Niños Asignado (6 a 12 años)' : 'Modo Jóvenes y Adultos Asignado (+13 años)'}</span>
               </div>
             </div>
 
@@ -215,28 +218,31 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
           <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
             {/* SVG Illustration Container (Ready for animated SVGs) */}
             <div className="w-48 h-48 sm:w-56 sm:h-56 mx-auto rounded-3xl bg-gradient-to-br from-navy-900 via-navy-850 to-amber-950/40 border-2 border-brand-gold/40 p-4 flex items-center justify-center shadow-[0_0_35px_rgba(245,184,61,0.25)] relative overflow-hidden">
-              <div className="relative z-10 text-center space-y-2">
-                <div className="w-20 h-20 rounded-2xl bg-brand-gold/20 border border-brand-gold/50 flex items-center justify-center text-4xl mx-auto shadow-glow-gold">
-                  🎒
+              <div className="relative z-10 text-center space-y-3">
+                <div className="w-20 h-20 rounded-2xl bg-brand-gold/20 border border-brand-gold/50 flex items-center justify-center mx-auto shadow-glow-gold">
+                  <PackageCheck className="w-10 h-10 text-brand-gold" />
                 </div>
-                <div className="flex justify-center gap-2 text-2xl">
-                  <span>⚡</span>
-                  <span>🏠</span>
-                  <span>💡</span>
+                <div className="flex justify-center gap-2">
+                  <span className="p-2 rounded-xl bg-navy-950/80 border border-white/10 text-brand-yellow text-xs font-bold flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5" /> 4 Segundos
+                  </span>
+                  <span className="p-2 rounded-xl bg-navy-950/80 border border-white/10 text-brand-cyan text-xs font-bold flex items-center gap-1">
+                    <Shield className="w-3.5 h-3.5" /> 72 Horas
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-1.5 pt-2">
               <span className="text-[11px] font-black text-brand-yellow uppercase tracking-widest">
-                {language === 'es' ? 'ENTRENAMIENTO REAL' : 'REAL TRAINING'}
+                {language === 'es' ? 'ENTRENAMIENTO PRÁCTICO' : 'PRACTICAL TRAINING'}
               </span>
               <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase">
                 {language === 'es' ? 'Misiones & Reflejos en 4s' : 'Missions & 4s Reflexes'}
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-sm mx-auto">
                 {language === 'es'
-                  ? 'Armá tu mochila de supervivencia de 72 horas, asegurá peligros en el hogar y aprendé qué hacer al instante si tiembla.'
+                  ? 'Armá tu mochila de emergencia de 72 horas, asegurá peligros en el hogar y entrená decisiones rápidas ante sacudidas.'
                   : 'Pack your 72-hour emergency go-bag, secure home hazards and train quick survival decisions during shaking.'}
               </p>
             </div>
@@ -249,11 +255,12 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             {/* SVG Illustration Container (Ready for animated SVGs) */}
             <div className="w-48 h-48 sm:w-56 sm:h-56 mx-auto rounded-3xl bg-gradient-to-br from-navy-900 via-navy-850 to-purple-950/40 border-2 border-brand-purple/40 p-4 flex items-center justify-center shadow-[0_0_35px_rgba(168,85,247,0.25)] relative overflow-hidden">
               <div className="relative z-10 text-center space-y-2">
-                <div className="w-20 h-20 rounded-2xl bg-brand-purple/20 border border-brand-purple/50 flex items-center justify-center text-4xl mx-auto shadow-glow-purple">
-                  🏆
+                <div className="w-20 h-20 rounded-2xl bg-brand-purple/20 border border-brand-purple/50 flex items-center justify-center mx-auto shadow-glow-purple">
+                  <Trophy className="w-10 h-10 text-purple-300" />
                 </div>
                 <div className="flex justify-center items-center gap-1.5 text-xs font-black text-brand-yellow">
-                  <span>★ #1 PODIO SAN JUAN ★</span>
+                  <Award className="w-4 h-4 text-brand-gold" />
+                  <span>TABLA DE POSICIONES</span>
                 </div>
               </div>
             </div>
@@ -279,8 +286,8 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                   <AlertCircle className="w-4 h-4 text-brand-yellow shrink-0 mt-0.5" />
                   <p className="text-slate-300">
                     {language === 'es'
-                      ? 'Los adultos (+13) pueden jugar el Modo Niños para practicar o enseñar a sus hijos, pero sin sumar puntos oficiales de ranking.'
-                      : 'Adults (13+) can play Kids Mode for practice or teaching, but without official ranking score inflation.'}
+                      ? 'Los adultos (+13) pueden jugar el Modo Niños para practicar, pero sin sumar puntos oficiales de ranking para asegurar una competencia justa.'
+                      : 'Adults (13+) can play Kids Mode for practice, but without official ranking score inflation.'}
                   </p>
                 </div>
               </div>

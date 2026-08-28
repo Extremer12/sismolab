@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ShieldCheck, Lock, EyeOff, FileCheck, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Lock, EyeOff, FileCheck, CheckCircle2, Mail, ExternalLink } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { sound } from '../../lib/sound';
@@ -49,16 +49,16 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
         <div className="sismo-card p-4 space-y-2 border-brand-cyan/25">
           <div className="flex items-center gap-2 text-white font-black text-sm uppercase">
             <FileCheck className="w-4 h-4 text-brand-cyan" />
-            <h3>{language === 'es' ? '1. Responsable del Proyecto y Tratamiento' : '1. Project Lead & Data Controller'}</h3>
+            <h3>{language === 'es' ? '1. Responsable del Proyecto y Desarrollo' : '1. Project Lead & Development'}</h3>
           </div>
           <p>
             {language === 'es' ? (
               <>
-                La plataforma digital interactiva <strong>SISMO LAB</strong> es un software educativo desarrollado por la empresa de desarrollo de software <strong>Zion Code</strong> para la <strong>Escuela Policía Federal Argentina</strong>, en el marco de la divulgación científica del <strong>INPRES (Instituto Nacional de Prevención Sísmica)</strong> y en articulación con el <strong>Ministerio de Educación</strong>.
+                La plataforma digital interactiva <strong>SISMO LAB</strong> es un software educativo desarrollado por la empresa <strong>Zion Code</strong> para la <strong>Escuela Policía Federal Argentina</strong> (San Juan), con fines de innovación pedagógica, entrenamiento lúdico y concientización sobre la autoprotección ante sismos.
               </>
             ) : (
               <>
-                The interactive digital platform <strong>SISMO LAB</strong> is educational software engineered by <strong>Zion Code</strong> for <strong>Escuela Policía Federal Argentina</strong>, under the scientific framework of <strong>INPRES (National Institute for Seismic Prevention)</strong> in coordination with the <strong>Ministry of Education</strong>.
+                The interactive digital platform <strong>SISMO LAB</strong> is educational software engineered by <strong>Zion Code</strong> for <strong>Escuela Policía Federal Argentina</strong> (San Juan), focused on pedagogical innovation, interactive training, and civic earthquake safety awareness.
               </>
             )}
           </p>
@@ -73,11 +73,11 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
           <p>
             {language === 'es' ? (
               <>
-                Diseñada con un estricto principio de <strong>Privacidad por Diseño (Privacy by Design)</strong>. SISMO LAB no solicita ni almacena datos sensibles, números de documento (DNI), direcciones físicas, números de teléfono ni datos bancarios de los estudiantes. El acceso puede realizarse de forma totalmente anónima mediante un apodo de fantasía (nickname).
+                Diseñada con un estricto principio de <strong>Privacidad por Diseño (Privacy by Design)</strong>. SISMO LAB no solicita ni almacena datos sensibles, números de documento (DNI), direcciones físicas, números de teléfono ni datos financieros de los estudiantes. El acceso se realiza mediante autenticación segura para guardar progreso y ranking.
               </>
             ) : (
               <>
-                Built under strict <strong>Privacy by Design</strong> principles. SISMO LAB does not request or store sensitive personal data, national ID numbers, physical addresses, phone numbers or payment information. Access can be completed fully anonymously using a fictional game nickname.
+                Built under strict <strong>Privacy by Design</strong> principles. SISMO LAB does not request or store sensitive personal data, national ID numbers, physical addresses, phone numbers or payment information.
               </>
             )}
           </p>
@@ -90,8 +90,8 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
             <h3>{language === 'es' ? '3. Datos Técnicos y Finalidad Pedagógica' : '3. Technical Data & Pedagogical Purpose'}</h3>
           </div>
           <ul className="list-disc pl-4 space-y-1 text-slate-300">
-            <li><strong>{language === 'es' ? 'Puntajes y progreso de juego:' : 'Game scores and progress:'}</strong> {language === 'es' ? 'Puntos, nivel, misiones completadas y respuestas para calcular el ranking escolar y detectar brechas de aprendizaje en simulacros.' : 'Points, level, completed missions and answers to compute leaderboard ranks and detect learning gaps in drills.'}</li>
-            <li><strong>{language === 'es' ? 'Autenticación opcional Google OAuth:' : 'Optional Google OAuth login:'}</strong> {language === 'es' ? 'Únicamente el identificador único para persistir la partida entre distintos dispositivos.' : 'Only the unique session identifier to persist game progress across multiple devices.'}</li>
+            <li><strong>{language === 'es' ? 'Puntajes y progreso de juego:' : 'Game scores and progress:'}</strong> {language === 'es' ? 'Puntos, nivel, misiones completadas, edad y respuestas para calcular el ranking escolar y detectar conceptos a reforzar.' : 'Points, level, completed missions, age and answers to compute leaderboard ranks and diagnose learning areas.'}</li>
+            <li><strong>{language === 'es' ? 'Autenticación Google OAuth:' : 'Google OAuth login:'}</strong> {language === 'es' ? 'Nombre público de perfil y correo para persistir el progreso de juego en la nube.' : 'Public display name and email to persist gameplay progress across devices.'}</li>
             <li><strong>{language === 'es' ? 'Almacenamiento Local (PWA Offline):' : 'Local Storage (Offline PWA):'}</strong> {language === 'es' ? 'La aplicación guarda configuraciones y caché para funcionar sin conexión a internet en escuelas o zonas rurales.' : 'The application caches assets locally so it can run fully offline in schools or remote rural areas.'}</li>
           </ul>
         </div>
@@ -105,7 +105,7 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
           <p>
             {language === 'es' ? (
               <>
-                SISMO LAB es 100% libre de anuncios publicitarios comerciales y rastreadores de terceros (no tracking con fines comerciales). Los datos nunca serán vendidos, alquilados ni transferidos a empresas de marketing.
+                SISMO LAB es 100% libre de anuncios comerciales y rastreadores de terceros con fines publicitarios. Los datos jamás son comercializados, alquilados ni transferidos a terceros.
               </>
             ) : (
               <>
@@ -115,22 +115,47 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
           </p>
         </div>
 
-        {/* 5. Derechos del Usuario */}
-        <div className="sismo-card p-4 space-y-2 border-white/10">
+        {/* 5. Contacto Oficial de Privacidad */}
+        <div className="sismo-card p-4 space-y-2.5 border-brand-cyan/30 bg-navy-900/90">
           <h3 className="text-white font-black text-sm uppercase">
-            {language === 'es' ? '5. Derechos de Acceso, Rectificación y Supresión' : '5. User Rights & Data Deletion'}
+            {language === 'es' ? '5. Ejercicio de Derechos y Contacto Oficial' : '5. User Rights & Official Contact'}
           </h3>
           <p>
             {language === 'es' ? (
               <>
-                En cumplimiento del artículo 14 de la Ley 25.326, cualquier usuario o tutor legal puede solicitar la supresión inmediata de su apodo o registro en la base de datos escribiendo al canal oficial del equipo de desarrollo Zion Code.
+                En cumplimiento de la Ley 25.326 de Protección de Datos Personales, cualquier usuario o tutor legal puede solicitar la supresión de sus registros escribiendo directamente a la empresa desarrolladora <strong>Zion Code</strong>.
               </>
             ) : (
               <>
-                In compliance with international data regulations and Argentine Law 25.326, any user or legal guardian can request immediate deletion of their game nickname and records by contacting the development team at Zion Code.
+                Under Argentine Law 25.326, any user or legal guardian can request data deletion by contacting <strong>Zion Code</strong>.
               </>
             )}
           </p>
+
+          <div className="flex flex-col sm:flex-row gap-2 pt-1">
+            <a
+              href="mailto:zioncode25@gmail.com"
+              className="p-2.5 rounded-xl bg-navy-950 border border-white/10 hover:border-brand-yellow flex items-center justify-between text-xs text-slate-200 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-brand-yellow" />
+                <span>zioncode25@gmail.com</span>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </a>
+
+            <a
+              href="https://zion-code.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 rounded-xl bg-navy-950 border border-white/10 hover:border-brand-cyan flex items-center justify-between text-xs text-slate-200 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4 text-brand-cyan" />
+                <span>zion-code.vercel.app</span>
+              </div>
+            </a>
+          </div>
         </div>
 
       </div>
@@ -139,9 +164,10 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
       <div className="pt-2">
         <button
           onClick={() => { sound.playClick(); onNavigate('profile'); }}
-          className="w-full py-3 rounded-2xl bg-navy-900 border border-brand-cyan/40 text-brand-cyan font-bold text-xs uppercase tracking-wider hover:bg-navy-850 transition-all text-center"
+          className="w-full py-3 rounded-2xl bg-navy-900 border border-brand-cyan/40 text-brand-cyan font-bold text-xs uppercase tracking-wider hover:bg-navy-850 transition-all text-center flex items-center justify-center gap-2"
         >
-          {t.common.back}
+          <ShieldCheck className="w-4 h-4" />
+          <span>{t.common.back}</span>
         </button>
       </div>
     </div>

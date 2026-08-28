@@ -194,15 +194,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* 5. Institutional Credits Banner (Escuela Policía Federal Argentina & Zion Code) */}
         <button
           onClick={() => { sound.playClick(); onNavigate('credits'); }}
-          className="w-full p-3 rounded-2xl bg-navy-900/80 border border-brand-purple/30 hover:border-brand-purple/70 flex items-center justify-between text-xs text-slate-300 transition-all shadow-sm group active:scale-98"
+          className="w-full p-3 rounded-2xl bg-navy-900/90 border border-brand-cyan/30 hover:border-brand-cyan/70 flex items-center justify-between text-xs text-slate-300 transition-all shadow-sm group active:scale-98"
         >
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-300" />
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/images/logozioncode-sinfondo.png"
+              alt="Zion Code"
+              className="w-6 h-6 object-contain shrink-0 drop-shadow-[0_0_8px_rgba(0,184,255,0.4)]"
+            />
             <span className="font-bold text-slate-200 group-hover:text-white">
               {t.home.creditsButton}
             </span>
           </div>
-          <ChevronRight className="w-4 h-4 text-purple-300 group-hover:translate-x-0.5 transition-transform" />
+          <ChevronRight className="w-4 h-4 text-brand-cyan group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
     </div>

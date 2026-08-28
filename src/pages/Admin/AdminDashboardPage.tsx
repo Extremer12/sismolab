@@ -287,16 +287,25 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
         </div>
       </div>
 
-      {/* Official Header with School, Zion Code & INPRES Data */}
+      {/* Official Header with School & Zion Code Data */}
       <div className="sismo-card p-4 sm:p-5 rounded-3xl border-2 border-brand-cyan/40 bg-gradient-to-br from-navy-900 via-navy-950 to-blue-950/60 shadow-2xl space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
-          <div>
-            <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block">
-              ZION CODE · SOFTWARE DE PREVENCIÓN SÍSMICA
-            </span>
-            <h1 className="font-black text-xl sm:text-2xl text-white tracking-tight uppercase">
-              {t.admin.title}
-            </h1>
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-navy-900 border border-brand-cyan/40 flex items-center justify-center p-1.5 shadow-glow-cyan/20 shrink-0">
+              <img
+                src="/images/logozioncode-sinfondo.png"
+                alt="Zion Code"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div>
+              <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block">
+                ZION CODE · SOFTWARE DE PREVENCIÓN SÍSMICA
+              </span>
+              <h1 className="font-black text-xl sm:text-2xl text-white tracking-tight uppercase">
+                {t.admin.title}
+              </h1>
+            </div>
           </div>
           
           <button
@@ -317,9 +326,9 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           </div>
 
           <div className="bg-navy-950/80 p-2.5 rounded-xl border border-white/10">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Marco Técnico & Científico:</span>
-            <span className="font-black text-brand-cyan text-xs">INPRES San Juan & Min. de Educación</span>
-            <span className="text-[10px] text-slate-300 block">Desarrollo: Zion Code (Cristian Bordon)</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Ingeniería & Desarrollo:</span>
+            <span className="font-black text-brand-cyan text-xs">Zion Code (Cristian Bordon)</span>
+            <span className="text-[10px] text-slate-300 block">Contacto: zioncode25@gmail.com</span>
           </div>
         </div>
       </div>
@@ -522,9 +531,9 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
       </div>
 
       {/* Footer for Printed Ministry Dossier */}
-      <div className="hidden print:block text-center text-xs text-slate-600 pt-6 border-t border-slate-300">
-        <p>Informe generado por la plataforma digital SISMO LAB · Zion Code & Escuela Policía Federal Argentina</p>
-        <p>Directora: Vanessa Lewyle · Creador & Software Engineer: Cristian Bordon</p>
+      <div className="hidden print:block text-center text-xs text-slate-600 pt-6 border-t border-slate-300 space-y-0.5">
+        <p className="font-bold">Informe generado por la plataforma digital SISMO LAB · Zion Code & Escuela Policía Federal Argentina</p>
+        <p>Directora: Vanessa Lewyle · Software Engineer: Cristian Bordon (zioncode25@gmail.com · https://zion-code.vercel.app/)</p>
       </div>
     </div>
   );

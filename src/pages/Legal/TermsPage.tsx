@@ -54,11 +54,11 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
           <p>
             {language === 'es' ? (
               <>
-                <strong>SISMO LAB</strong> es una herramienta digital de divulgación pedagógica, gamificación e investigación sobre autoprotección y sismología diseñada por <strong>Zion Code</strong> para la <strong>Escuela Policía Federal Argentina</strong>, con contenidos avalados por normativas del <strong>INPRES</strong>.
+                <strong>SISMO LAB</strong> es una plataforma interactiva de divulgación pedagógica, gamificación e investigación sobre autoprotección sísmica desarrollada por la empresa <strong>Zion Code</strong> para la <strong>Escuela Policía Federal Argentina</strong>.
               </>
             ) : (
               <>
-                <strong>SISMO LAB</strong> is a digital educational platform designed by <strong>Zion Code</strong> for <strong>Escuela Policía Federal Argentina</strong>, aligned with scientific guidelines from <strong>INPRES</strong>.
+                <strong>SISMO LAB</strong> is an interactive educational platform designed by <strong>Zion Code</strong> for <strong>Escuela Policía Federal Argentina</strong> to foster civic seismic safety awareness.
               </>
             )}
           </p>
@@ -73,11 +73,11 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
           <p>
             {language === 'es' ? (
               <>
-                Las simulaciones, puntajes y recomendaciones de la aplicación tienen valor formativo para la preparación comunitaria. En caso de sismo real o desastre natural, la ciudadanía debe seguir siempre las instrucciones de las autoridades oficiales de <strong>Protección Civil, Bomberos y el INPRES</strong>.
+                Las simulaciones, puntajes y recomendaciones de la aplicación tienen valor formativo para la preparación comunitaria. En caso de sismo real, la ciudadanía debe seguir siempre las instrucciones de las autoridades oficiales de <strong>Protección Civil, Bomberos y organismos de emergencia</strong>.
               </>
             ) : (
               <>
-                Simulations, scores and recommendations are strictly pedagogical. In the event of a real seismic emergency, citizens must follow instructions from official emergency authorities, <strong>Civil Defense, Firefighters and INPRES</strong>.
+                Simulations, scores and recommendations are strictly educational. In the event of a real seismic emergency, citizens must follow instructions from official emergency authorities, <strong>Civil Defense and Firefighters</strong>.
               </>
             )}
           </p>
@@ -111,11 +111,11 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
           <p>
             {language === 'es' ? (
               <>
-                Los apodos elegidos para la tabla de posiciones deben respetar el decoro y las normas de convivencia escolar. Nombres ofensivos o inapropiados serán retirados por el panel docente de administración.
+                Los nombres de perfil deben mantener el decoro y las normas de convivencia escolar. Cada participante debe ingresar su edad real para competir de forma justa en su categoría.
               </>
             ) : (
               <>
-                User nicknames for the public leaderboard must maintain school and civic respect. Inappropriate or offensive names can be cleared from the teacher administration dashboard.
+                Profile names must maintain school and civic respect. Participants should enter their genuine age for fair category competition.
               </>
             )}
           </p>
