@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenId, UserMode, UserProfile } from './types';
 import { supabase } from './services/supabase';
-import { loadLocalProfile, createGuestProfile, saveLocalProfile, syncProfileWithSupabase } from './services/authService';
+import { loadLocalProfile, createGuestProfile, saveLocalProfile, syncProfileWithSupabase, fetchOrCreateUserProfile } from './services/authService';
 import { saveUserScoreLocally, submitGameScoreToSupabase } from './services/scoresService';
 import { sound } from './lib/sound';
 
@@ -66,67 +66,34 @@ function AppContent() {
   useEffect(() => {
     let isMounted = true;
 
-    // 1. Check current session immediately on mount (for OAuth redirects and persistent logins)
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const handleSession = async (sessionUser: { id: string; email?: string; user_metadata?: Record<string, unknown> }) => {
+      const { profile, isNewUser } = await fetchOrCreateUserProfile(sessionUser);
       if (!isMounted) return;
+
+      setUser(profile);
+      setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
+
+      if (isNewUser || !profile.age || !profile.has_completed_onboarding) {
+        setShowTutorial(true);
+      }
+
+      // Clean up OAuth hash parameters from URL
+      if (typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    };
+
+    // 1. Check current session immediately on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        const meta = session.user.user_metadata || {};
-        const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
-        const avatarUrl = meta.avatar_url || meta.picture;
-
-        setUser(prev => {
-          const updated = {
-            ...prev,
-            id: session.user.id,
-            auth_user_id: session.user.id,
-            nickname: googleName,
-            display_name: googleName,
-            avatar_url: avatarUrl || prev.avatar_url
-          };
-          if (!prev.has_completed_onboarding || !prev.age) {
-            setShowTutorial(true);
-          }
-          return updated;
-        });
-
-        setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
-
-        // Clean up OAuth hash parameters from URL if present
-        if (typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
-          window.history.replaceState(null, '', window.location.pathname);
-        }
+        handleSession(session.user);
       }
     });
 
-    // 2. Listen for auth changes (SIGNED_IN, TOKEN_REFRESHED, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return;
+    // 2. Listen for auth changes (SIGNED_IN, USER_UPDATED)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED')) {
-        const meta = session.user.user_metadata || {};
-        const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
-        const avatarUrl = meta.avatar_url || meta.picture;
-
-        setUser(prev => {
-          const updated = {
-            ...prev,
-            id: session.user.id,
-            auth_user_id: session.user.id,
-            nickname: googleName,
-            display_name: googleName,
-            avatar_url: avatarUrl || prev.avatar_url
-          };
-          if (!prev.has_completed_onboarding || !prev.age) {
-            setShowTutorial(true);
-          }
-          return updated;
-        });
-
-        setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
-
-        // Clean up OAuth hash parameters from URL
-        if (typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
-          window.history.replaceState(null, '', window.location.pathname);
-        }
+        handleSession(session.user);
       }
     });
 
@@ -136,7 +103,7 @@ function AppContent() {
     };
   }, []);
 
-  // Handler for login/nickname from Splash
+  // Handler for login from Splash
   const handleLoginSuccess = (nickname: string) => {
     setUser(prev => ({
       ...prev,
@@ -151,12 +118,16 @@ function AppContent() {
 
   // Handler for completing Onboarding Tutorial
   const handleTutorialComplete = (age: number, assignedMode: UserMode) => {
-    setUser(prev => ({
-      ...prev,
-      age,
-      mode: assignedMode,
-      has_completed_onboarding: true
-    }));
+    setUser(prev => {
+      const updated: UserProfile = {
+        ...prev,
+        age,
+        mode: assignedMode,
+        has_completed_onboarding: true
+      };
+      syncProfileWithSupabase(updated);
+      return updated;
+    });
     setShowTutorial(false);
   };
 
