@@ -1,7 +1,8 @@
 import React from 'react';
-import { ArrowLeft, Check, Lock, ChevronRight, Sparkles, Play } from 'lucide-react';
+import { ArrowLeft, Lock, ChevronRight, Sparkles, Play } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface KidsAdventurePageProps {
   user: UserProfile;
@@ -11,8 +12,10 @@ interface KidsAdventurePageProps {
 interface KidsGameCard {
   id: string;
   numberStr: string;
-  title: string;
-  category: string;
+  titleEs: string;
+  titleEn: string;
+  categoryEs: string;
+  categoryEn: string;
   icon: string;
   xpReward: number;
   screenId: ScreenId;
@@ -26,8 +29,10 @@ const KIDS_GAMES: KidsGameCard[] = [
   {
     id: 'k1',
     numberStr: '01',
-    title: '¿QUÉ ES UN SISMO?',
-    category: 'QUIZ ILUSTRADO',
+    titleEs: '¿QUÉ ES UN SISMO?',
+    titleEn: 'WHAT IS AN EARTHQUAKE?',
+    categoryEs: 'QUIZ ILUSTRADO',
+    categoryEn: 'ILLUSTRATED QUIZ',
     icon: '🌍',
     xpReward: 400,
     screenId: 'game-what-is',
@@ -38,8 +43,10 @@ const KIDS_GAMES: KidsGameCard[] = [
   {
     id: 'k2',
     numberStr: '02',
-    title: 'MOCHILA DE EMERGENCIA',
-    category: 'ARMAR & SALVAR',
+    titleEs: 'MOCHILA DE EMERGENCIA',
+    titleEn: 'EMERGENCY GO-BAG',
+    categoryEs: 'ARMAR & SALVAR',
+    categoryEn: 'PACK & PREPARE',
     icon: '🎒',
     xpReward: 500,
     screenId: 'game-emergency-kit',
@@ -51,8 +58,10 @@ const KIDS_GAMES: KidsGameCard[] = [
   {
     id: 'k3',
     numberStr: '03',
-    title: 'REFLEJOS EN ACCIÓN',
-    category: 'DECISIÓN RÁPIDA',
+    titleEs: 'REFLEJOS EN ACCIÓN',
+    titleEn: 'SAFETY REFLEXES',
+    categoryEs: 'DECISIÓN RÁPIDA',
+    categoryEn: 'QUICK REACTION',
     icon: '⚡',
     xpReward: 600,
     screenId: 'game-safe-home',
@@ -64,8 +73,10 @@ const KIDS_GAMES: KidsGameCard[] = [
   {
     id: 'k4',
     numberStr: '04',
-    title: '¿QUÉ HARÍAS VOS?',
-    category: 'HISTORIAS REALES',
+    titleEs: '¿QUÉ HARÍAS VOS?',
+    titleEn: 'WHAT WOULD YOU DO?',
+    categoryEs: 'HISTORIAS REALES',
+    categoryEn: 'REAL SCENARIOS',
     icon: '🚨',
     xpReward: 500,
     screenId: 'game-what-would-you-do',
@@ -77,8 +88,10 @@ const KIDS_GAMES: KidsGameCard[] = [
   {
     id: 'k5',
     numberStr: '05',
-    title: 'MITO O REALIDAD',
-    category: 'DESAFÍO MENTAL',
+    titleEs: 'MITO O REALIDAD',
+    titleEn: 'MYTH OR REALITY',
+    categoryEs: 'DESAFÍO MENTAL',
+    categoryEn: 'BRAIN CHALLENGE',
     icon: '🧠',
     xpReward: 500,
     screenId: 'game-myth-reality',
@@ -90,8 +103,10 @@ const KIDS_GAMES: KidsGameCard[] = [
   {
     id: 'k6',
     numberStr: '06',
-    title: 'GRAN DESAFÍO FINAL',
-    category: 'MISIÓN SUPREMA',
+    titleEs: 'GRAN DESAFÍO FINAL',
+    titleEn: 'GRAND FINAL CHALLENGE',
+    categoryEs: 'MISIÓN SUPREMA',
+    categoryEn: 'SUPREME MISSION',
     icon: '🏆',
     xpReward: 1000,
     screenId: 'game-final-challenge',
@@ -106,6 +121,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
   user,
   onNavigate
 }) => {
+  const { t, language } = useLanguage();
   const completedIds = user.completed_game_ids || [];
   const completedCount = KIDS_GAMES.filter(g => completedIds.includes(g.screenId)).length;
   const totalCount = KIDS_GAMES.length;
@@ -127,13 +143,13 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           <button
             onClick={() => { sound.playClick(); onNavigate('home'); }}
             className="w-10 h-10 rounded-2xl bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all shadow-sm"
-            aria-label="Volver a Inicio"
+            aria-label={t.common.back}
           >
             <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
 
           <div className="px-4 py-1.5 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-apache text-sm tracking-wider uppercase shadow-sm">
-            MODO NIÑOS 🧒
+            {t.kids.badge}
           </div>
 
           <div className="px-3 py-1 rounded-2xl bg-navy-900/90 border border-brand-gold/40 flex items-center gap-1.5 shadow-sm">
@@ -149,10 +165,10 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           <div className="flex items-end justify-between">
             <div>
               <span className="text-[11px] font-bold text-brand-cyan uppercase tracking-widest block">
-                CENTRO DE MISIONES
+                {t.kids.missionCenter}
               </span>
               <h1 className="font-apache text-2xl sm:text-3xl text-white tracking-wide leading-none mt-0.5">
-                AVENTURA SÍSMICA
+                {t.kids.adventureTitle}
               </h1>
             </div>
 
@@ -161,7 +177,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                 {completedCount} / {totalCount}
               </span>
               <span className="text-[10px] text-slate-400 font-bold block uppercase">
-                Completados
+                {t.kids.completedCount}
               </span>
             </div>
           </div>
@@ -181,7 +197,9 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
             const isCompleted = completedIds.includes(game.screenId);
             const reqCount = game.unlockRequirement || 0;
             const isPlayable = idx === 0 || completedCount >= reqCount || isCompleted;
-            const isLocked = !isPlayable;
+
+            const title = language === 'en' ? game.titleEn : game.titleEs;
+            const category = language === 'en' ? game.categoryEn : game.categoryEs;
 
             return (
               <div
@@ -205,19 +223,19 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                   {game.icon}
                 </div>
 
-                {/* Center Content (Title fully visible and spacious) */}
+                {/* Center Content */}
                 <div className="flex-1 min-w-0 space-y-1 pl-1">
                   <div className="flex items-center gap-1.5">
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${game.badgeStyle}`}>
-                      MISIÓN {game.numberStr}
+                      {t.kids.missionLabel} {game.numberStr}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                      {game.category}
+                      {category}
                     </span>
                   </div>
 
                   <h2 className="font-apache text-lg sm:text-xl text-white tracking-wide leading-tight">
-                    {game.title}
+                    {title}
                   </h2>
 
                   <div className="flex items-center gap-2">
@@ -227,7 +245,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                     </span>
                     {isCompleted && (
                       <span className="text-[11px] font-bold text-emerald-400">
-                        • ¡Superado!
+                        • {t.common.completed}!
                       </span>
                     )}
                   </div>
@@ -240,7 +258,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                       type="button"
                       className="px-3.5 py-2 rounded-2xl bg-emerald-950/90 border border-emerald-400 text-emerald-300 font-apache text-sm tracking-wider uppercase flex items-center gap-1 hover:bg-emerald-900 transition-all shadow-sm"
                     >
-                      <span>REJUGAR</span>
+                      <span>{t.common.replay}</span>
                       <Play className="w-3 h-3 fill-emerald-400 text-emerald-400" />
                     </button>
                   ) : isPlayable ? (
@@ -248,7 +266,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                       type="button"
                       className="px-4 py-2.5 rounded-2xl bg-brand-cyan hover:bg-brand-electric text-navy-950 font-apache text-sm tracking-wider uppercase flex items-center gap-1 shadow-glow-cyan transition-all"
                     >
-                      <span>JUGAR</span>
+                      <span>{t.common.play}</span>
                       <ChevronRight className="w-4 h-4 stroke-[3]" />
                     </button>
                   ) : (

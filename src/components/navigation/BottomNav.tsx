@@ -2,6 +2,7 @@ import React from 'react';
 import { Home, Compass, Gamepad2, Trophy, User } from 'lucide-react';
 import { ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface BottomNavProps {
   activeScreen: ScreenId;
@@ -14,7 +15,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   userMode,
   onNavigate
 }) => {
-  // Hide bottom nav during splash and active minigame screens
+  const { t } = useLanguage();
+
+  // Hide bottom nav during splash, active minigame screens and legal pages
   if ([
     'splash',
     'game-what-is',
@@ -30,11 +33,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const playScreen = userMode === 'kids' ? 'kids' : 'adults';
 
   const navItems = [
-    { id: 'home' as ScreenId, label: 'Inicio', icon: Home, matches: ['home'] },
-    { id: 'history' as ScreenId, label: 'Historia', icon: Compass, matches: ['history'] },
-    { id: playScreen as ScreenId, label: 'Jugar', icon: Gamepad2, matches: ['kids', 'adults'] },
-    { id: 'ranking' as ScreenId, label: 'Ranking', icon: Trophy, matches: ['ranking'] },
-    { id: 'profile' as ScreenId, label: 'Perfil', icon: User, matches: ['profile'] },
+    { id: 'home' as ScreenId, label: t.nav.home, icon: Home, matches: ['home'] },
+    { id: 'history' as ScreenId, label: t.nav.history, icon: Compass, matches: ['history'] },
+    { id: playScreen as ScreenId, label: t.nav.play, icon: Gamepad2, matches: ['kids', 'adults'] },
+    { id: 'ranking' as ScreenId, label: t.nav.ranking, icon: Trophy, matches: ['ranking'] },
+    { id: 'profile' as ScreenId, label: t.nav.profile, icon: User, matches: ['profile', 'credits', 'privacy', 'terms'] },
   ];
 
   return (

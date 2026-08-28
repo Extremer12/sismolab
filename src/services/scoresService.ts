@@ -1,18 +1,7 @@
 import { supabase } from './supabase';
 import { RankEntry, UserProfile, UserMode } from '../types';
 
-const LEADERBOARD_STORAGE_KEY = 'sismolab_leaderboard_v1';
-
-const SEED_LEADERBOARD: RankEntry[] = [
-  { id: '1', rank: 1, nickname: 'SantiGamer', avatar_emoji: '⚡', score: 2450, mode: 'kids' },
-  { id: '2', rank: 2, nickname: 'Dra. Flores', avatar_emoji: '🔬', score: 2280, mode: 'adult' },
-  { id: '3', rank: 3, nickname: 'Matías', avatar_emoji: '🦖', score: 2150, mode: 'kids' },
-  { id: '4', rank: 4, nickname: 'Ing. Ruiz', avatar_emoji: '🏗️', score: 1980, mode: 'adult' },
-  { id: '5', rank: 5, nickname: 'Lucía', avatar_emoji: '⭐', score: 1820, mode: 'kids' },
-  { id: '6', rank: 6, nickname: 'Profe Laura', avatar_emoji: '🏛️', score: 1690, mode: 'adult' },
-  { id: '7', rank: 7, nickname: 'Valentín', avatar_emoji: '🚀', score: 1450, mode: 'kids' },
-  { id: '8', rank: 8, nickname: 'Gabriela', avatar_emoji: '🌋', score: 1280, mode: 'adult' }
-];
+const LEADERBOARD_STORAGE_KEY = 'sismolab_leaderboard_v2';
 
 export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Promise<RankEntry[]> {
   try {
@@ -20,6 +9,7 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
       .from('profiles')
       .select('id, nickname, display_name, avatar_emoji, total_score, mode, updated_at')
       .eq('is_active', true)
+      .gt('total_score', 0) // Only real players with points
       .order('total_score', { ascending: false })
       .order('updated_at', { ascending: true })
       .limit(60);
@@ -43,20 +33,21 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
     console.warn('Leaderboard Supabase fallback to local:', err);
   }
 
-  // Local Storage Fallback
+  // Local Storage Fallback with only real played sessions
   try {
     const raw = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
-    let list: RankEntry[] = raw ? JSON.parse(raw) : SEED_LEADERBOARD;
+    let list: RankEntry[] = raw ? JSON.parse(raw) : [];
     
     if (filterMode !== 'all') {
       list = list.filter(item => item.mode === filterMode);
     }
 
     return list
+      .filter(item => item.score > 0)
       .sort((a, b) => b.score - a.score)
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
   } catch {
-    return SEED_LEADERBOARD.map((item, idx) => ({ ...item, rank: idx + 1 }));
+    return [];
   }
 }
 
@@ -72,8 +63,7 @@ export async function submitGameScoreToSupabase(
 
   try {
     // 1. Sync / Upsert User in Supabase
-    const { data: upsertData, error: upsertError } = await supabase.from('profiles').upsert({
-      id: user.id.length === 36 ? user.id : undefined, // Ensure valid UUID or let supabase generate
+    const profilePayload: Record<string, unknown> = {
       nickname: user.nickname,
       display_name: user.display_name || user.nickname,
       avatar_emoji: user.avatar_emoji,
@@ -88,7 +78,21 @@ export async function submitGameScoreToSupabase(
       is_active: true,
       last_active_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    }, { onConflict: 'nickname' }).select('id').maybeSingle();
+    };
+
+    if (user.auth_user_id) {
+      profilePayload.auth_user_id = user.auth_user_id;
+    }
+
+    if (user.id && user.id.length === 36) {
+      profilePayload.id = user.id;
+    }
+
+    const { data: upsertData, error: upsertError } = await supabase
+      .from('profiles')
+      .upsert(profilePayload, { onConflict: 'nickname' })
+      .select('id')
+      .maybeSingle();
 
     if (upsertError) {
       console.warn('Profile upsert warning:', upsertError);
@@ -105,6 +109,7 @@ export async function submitGameScoreToSupabase(
       metadata: {
         nickname: user.nickname,
         avatar: user.avatar_emoji,
+        age: user.age,
         completed_at: new Date().toISOString()
       }
     });
@@ -116,7 +121,7 @@ export async function submitGameScoreToSupabase(
 export function saveUserScoreLocally(user: UserProfile): void {
   try {
     const raw = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
-    let list: RankEntry[] = raw ? JSON.parse(raw) : SEED_LEADERBOARD;
+    let list: RankEntry[] = raw ? JSON.parse(raw) : [];
 
     const existingIdx = list.findIndex(item => item.id === user.id || item.nickname === user.nickname);
     const updatedEntry: RankEntry = {
@@ -136,6 +141,7 @@ export function saveUserScoreLocally(user: UserProfile): void {
     }
 
     list = list
+      .filter(item => item.score > 0)
       .sort((a, b) => b.score - a.score)
       .map((item, idx) => ({ ...item, rank: idx + 1 }))
       .slice(0, 60);

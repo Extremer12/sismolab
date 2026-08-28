@@ -1,7 +1,8 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Calendar, FileText } from 'lucide-react';
+import { ArrowRight, ChevronRight, Calendar, FileText, Sparkles } from 'lucide-react';
 import { UserProfile, ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface HomeScreenProps {
   user: UserProfile;
@@ -14,6 +15,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSelectMode,
   onNavigate
 }) => {
+  const { t } = useLanguage();
+
   const handleLaunchKids = () => {
     sound.playClick();
     onSelectMode('kids');
@@ -40,19 +43,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="relative py-1 px-1 flex items-center justify-between overflow-hidden">
           <div className="max-w-[210px] space-y-1.5 z-10">
             <h1 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase leading-none">
-              ¿ESTÁS LISTO<br />
-              <span className="text-brand-electric">PARA EL DESAFÍO?</span>
+              {t.home.heroTitle1}<br />
+              <span className="text-brand-electric">{t.home.heroTitle2}</span>
             </h1>
 
             <p className="text-xs text-slate-200 font-medium leading-relaxed">
-              Aprendé sobre sismos y{' '}
+              {t.home.heroDesc}{' '}
               <button
                 onClick={() => { sound.playClick(); onNavigate('ranking'); }}
                 className="text-brand-yellow font-bold underline decoration-brand-yellow/60 hover:text-white transition-colors"
               >
-                subí al ranking
+                {t.home.rankingLink}
               </button>{' '}
-              de la feria.
+              {t.ranking.subtitle.includes('San Juan') ? 'de la feria.' : 'now.'}
             </p>
 
             {/* Seismic Waveform Graphic */}
@@ -98,7 +101,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="relative z-10 w-[56%] ml-auto flex flex-col justify-center text-left space-y-1">
             <div className="flex items-center justify-between">
               <span className="px-2.5 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[9.5px] uppercase tracking-wider">
-                DE 6 A 12 AÑOS
+                {t.home.kidsCardBadge}
               </span>
               <span className="w-7 h-7 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center font-bold text-xs shadow-glow-cyan group-hover:translate-x-1 transition-transform shrink-0 ml-1">
                 <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -106,10 +109,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             <h2 className="font-black text-xl sm:text-2xl text-white tracking-tight leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              MODO <span className="text-brand-cyan">NIÑOS</span>
+              {t.home.kidsCardTitle} <span className="text-brand-cyan">{t.home.kidsCardSpan}</span>
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-200 font-medium leading-tight drop-shadow-md">
-              Misiones divertidas, mochila y trivias interactivas.
+              {t.home.kidsCardDesc}
             </p>
           </div>
         </button>
@@ -126,8 +129,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Right Content Area: Perfectly placed on the right 56% of the card */}
           <div className="relative z-10 w-[56%] ml-auto flex flex-col justify-center text-left space-y-1">
             <div className="flex items-center justify-between">
-              <span className="px-2.5 py-0.5 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-purple-300 font-black text-[9.5px] uppercase tracking-wider">
-                +13 AÑOS Y FAMILIAS
+              <span className="px-2.5 py-0.5 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-purple-300 font-black text-xs uppercase tracking-wider">
+                {t.home.adultsCardBadge}
               </span>
               <span className="w-7 h-7 rounded-full bg-brand-purple text-white flex items-center justify-center font-bold text-xs shadow-glow-purple group-hover:translate-x-1 transition-transform shrink-0 ml-1">
                 <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -135,10 +138,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             <h2 className="font-black text-xl sm:text-2xl text-white tracking-tight leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              JÓVENES Y <span className="text-purple-300">ADULTOS</span>
+              {t.home.adultsCardTitle} <span className="text-purple-300">{t.home.adultsCardSpan}</span>
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-200 font-medium leading-tight drop-shadow-md">
-              Sismología, mitos, reflejos y desafío final.
+              {t.home.adultsCardDesc}
             </p>
           </div>
         </button>
@@ -156,10 +159,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
               <div className="text-left leading-tight">
                 <h3 className="font-black text-xs text-white group-hover:text-brand-cyan transition-colors">
-                  HISTORIA
+                  {t.home.historyTitle}
                 </h3>
                 <span className="text-[10px] text-slate-300 font-medium block mt-0.5">
-                  1894, 1944 y 1977
+                  {t.home.historyYears}
                 </span>
               </div>
             </div>
@@ -177,16 +180,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
               <div className="text-left leading-tight">
                 <h3 className="font-black text-xs text-brand-yellow group-hover:text-white transition-colors">
-                  DOCUMENTO PDF
+                  {t.home.pdfTitle}
                 </h3>
                 <span className="text-[10px] text-slate-300 font-medium block mt-0.5">
-                  Leer o Descargar
+                  {t.home.pdfDesc}
                 </span>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-brand-gold group-hover:text-white shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
+
+        {/* 5. Institutional Credits Banner (Escuela Policía Federal Argentina & Zion Code) */}
+        <button
+          onClick={() => { sound.playClick(); onNavigate('credits'); }}
+          className="w-full p-3 rounded-2xl bg-navy-900/80 border border-brand-purple/30 hover:border-brand-purple/70 flex items-center justify-between text-xs text-slate-300 transition-all shadow-sm group active:scale-98"
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-purple-300" />
+            <span className="font-bold text-slate-200 group-hover:text-white">
+              {t.home.creditsButton}
+            </span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-purple-300 group-hover:translate-x-0.5 transition-transform" />
+        </button>
       </div>
     </div>
   );

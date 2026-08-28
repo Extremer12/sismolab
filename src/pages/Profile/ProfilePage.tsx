@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Lock, Settings } from 'lucide-react';
+import { ArrowLeft, Edit3, Check, Lock, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, User } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
 import { sound } from '../../lib/sound';
 import { Modal } from '../../components/ui/Modal';
+import { useLanguage, LanguageToggle } from '../../i18n/LanguageContext';
+import { OnboardingTutorial } from '../../components/onboarding/OnboardingTutorial';
 
 interface ProfilePageProps {
   user: UserProfile;
@@ -18,9 +20,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onUpdateUser,
   onNavigate
 }) => {
+  const { t, language } = useLanguage();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user.nickname);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const handleSaveName = () => {
     if (!nameInput.trim()) return;
@@ -57,35 +61,52 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const unlockedCount = OFFICIAL_ACHIEVEMENTS.filter(a => isUnlocked(a.id)).length;
 
   return (
-    <div className="p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto select-none">
+    <div className="p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto select-none font-sans">
+      
+      {/* Onboarding Tutorial Modal if requested from profile */}
+      {isTutorialOpen && (
+        <OnboardingTutorial
+          user={user}
+          onComplete={(age, mode) => {
+            onUpdateUser({ age, mode, has_completed_onboarding: true });
+            setIsTutorialOpen(false);
+          }}
+          onClose={() => setIsTutorialOpen(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => { sound.playClick(); onNavigate('home'); }}
           className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-slate-300 hover:text-white"
-          aria-label="Volver a Inicio"
+          aria-label={t.common.back}
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
         <span className="px-3 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/30 text-brand-cyan font-black text-xs uppercase tracking-wider">
-          MI PERFIL
+          {t.profile.title}
         </span>
 
-        <button
-          onClick={() => { sound.playClick(); onNavigate('admin'); }}
-          className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-slate-400 hover:text-white"
-          title="Panel de Métricas INPRES"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <LanguageToggle compact />
+
+          <button
+            onClick={() => { sound.playClick(); onNavigate('admin'); }}
+            className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-slate-400 hover:text-white"
+            title={t.profile.adminAccess}
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Profile Card & Avatar */}
       <div className="sismo-card p-5 flex flex-col items-center text-center space-y-3 border-brand-cyan/30">
         <button
           onClick={() => { sound.playClick(); setIsAvatarModalOpen(true); }}
-          className="relative w-24 h-24 aspect-square rounded-full bg-gradient-to-br from-brand-blue via-navy-800 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40 hover:scale-105 transition-transform"
+          className="relative w-24 h-24 aspect-square rounded-full bg-gradient-to-br from-brand-blue via-navy-850 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40 hover:scale-105 transition-transform"
         >
           <span>{user.avatar_emoji}</span>
           <div className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center shadow-md">
@@ -119,66 +140,55 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <button
               onClick={() => setIsEditingName(true)}
               className="text-accent-gray hover:text-brand-cyan p-1"
-              aria-label="Editar apodo"
+              aria-label={t.profile.editName}
             >
               <Edit3 className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* Mode Selector */}
-        <div className="flex bg-navy-950 border border-white/10 p-1 rounded-full text-xs font-bold">
-          <button
-            onClick={() => {
-              sound.playClick();
-              onUpdateUser({ mode: 'kids' });
-            }}
-            className={`px-3.5 py-1 rounded-full transition-all ${
-              user.mode === 'kids' ? 'bg-brand-cyan text-navy-950 font-black shadow-sm' : 'text-accent-gray'
-            }`}
-          >
-            🧒 Modo Niños
-          </button>
-          <button
-            onClick={() => {
-              sound.playClick();
-              onUpdateUser({ mode: 'adult' });
-            }}
-            className={`px-3.5 py-1 rounded-full transition-all ${
-              user.mode === 'adult' ? 'bg-brand-purple text-white font-black shadow-sm' : 'text-accent-gray'
-            }`}
-          >
-            🔬 Jóvenes y Adultos
-          </button>
+        {/* Age & Mode Badge */}
+        <div className="flex items-center gap-2 pt-0.5">
+          <span className="px-3 py-1 rounded-full bg-navy-950 border border-white/10 text-xs font-bold text-slate-300">
+            {user.age ? `${user.age} ${language === 'es' ? 'años' : 'years old'}` : (language === 'es' ? 'Edad no fijada' : 'Age not set')}
+          </span>
+
+          <span className={`px-3 py-1 rounded-full border text-xs font-black uppercase ${
+            user.mode === 'kids'
+              ? 'bg-brand-cyan/15 border-brand-cyan text-brand-cyan'
+              : 'bg-brand-purple/20 border-brand-purple text-purple-300'
+          }`}>
+            {user.mode === 'kids' ? t.common.modeKids : t.common.modeAdults}
+          </span>
         </div>
       </div>
 
-      {/* Stats Summary Grid (Section 27) */}
+      {/* Stats Summary Grid */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="sismo-card p-3 space-y-0.5 border-brand-gold/30">
-          <span className="text-[10px] font-bold text-accent-gray block">Puntaje Total</span>
+          <span className="text-[10px] font-bold text-accent-gray block">{t.profile.totalScore}</span>
           <span className="font-black text-base text-brand-yellow tabular-nums">⭐ {user.total_score}</span>
         </div>
 
         <div className="sismo-card p-3 space-y-0.5 border-brand-cyan/30">
-          <span className="text-[10px] font-bold text-accent-gray block">Nivel Actual</span>
-          <span className="font-black text-base text-brand-cyan">Nivel {user.level}</span>
+          <span className="text-[10px] font-bold text-accent-gray block">{t.profile.currentLevel}</span>
+          <span className="font-black text-base text-brand-cyan">{t.common.level} {user.level}</span>
         </div>
 
         <div className="sismo-card p-3 space-y-0.5 border-accent-success/30">
-          <span className="text-[10px] font-bold text-accent-gray block">Aciertos</span>
+          <span className="text-[10px] font-bold text-accent-gray block">{t.profile.accuracyRate}</span>
           <span className="font-black text-base text-accent-success">{accuracyPercent}%</span>
         </div>
       </div>
 
-      {/* Badges / Achievements Section (Section 26) */}
+      {/* Badges / Achievements Section */}
       <div className="space-y-3 pt-1">
         <div className="flex items-center justify-between">
           <h3 className="font-black text-sm text-white uppercase tracking-wide">
-            Insignias Oficiales ({unlockedCount}/6)
+            {t.profile.badgesTitle} ({unlockedCount}/6)
           </h3>
           <span className="text-xs font-bold text-brand-gold">
-            INPRES
+            {t.profile.officialBadges}
           </span>
         </div>
 
@@ -198,7 +208,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <span className="text-3xl">{ach.icon}</span>
                   {unlocked ? (
                     <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-brand-gold text-navy-950">
-                      Desbloqueada
+                      {t.profile.unlockedBadge}
                     </span>
                   ) : (
                     <Lock className="w-4 h-4 text-slate-500" />
@@ -219,11 +229,62 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </div>
       </div>
 
+      {/* Institutional & Legal Access Links */}
+      <div className="sismo-card p-3 rounded-2xl border-white/10 space-y-1 divide-y divide-white/5">
+        {/* Onboarding & Age Tutorial Button */}
+        <button
+          onClick={() => { sound.playClick(); setIsTutorialOpen(true); }}
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-slate-200 hover:text-white transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <HelpCircle className="w-4 h-4 text-brand-cyan" />
+            <span className="font-bold">{language === 'es' ? 'Tutorial de SISMO LAB y Cambiar Edad' : 'SISMO LAB Tutorial & Change Age'}</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-500" />
+        </button>
+
+        {/* Credits */}
+        <button
+          onClick={() => { sound.playClick(); onNavigate('credits'); }}
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <Award className="w-4 h-4 text-purple-300" />
+            <span className="font-bold">{t.profile.institutionalCredits}</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-500" />
+        </button>
+
+        {/* Privacy Policy */}
+        <button
+          onClick={() => { sound.playClick(); onNavigate('privacy'); }}
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-brand-cyan" />
+            <span className="font-bold">{t.profile.privacyPolicy}</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-500" />
+        </button>
+
+        {/* Terms */}
+        <button
+          onClick={() => { sound.playClick(); onNavigate('terms'); }}
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <Scale className="w-4 h-4 text-brand-gold" />
+            <span className="font-bold">{t.profile.termsConditions}</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-500" />
+        </button>
+      </div>
+
       {/* Avatar Picker Modal */}
       <Modal
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
-        title="Elegí tu Avatar Sanjuanino"
+        title={t.profile.chooseAvatar}
       >
         <div className="grid grid-cols-4 gap-3 py-2">
           {AVATAR_LIST.map((emoji) => (

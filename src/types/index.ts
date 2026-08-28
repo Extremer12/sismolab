@@ -23,7 +23,10 @@ export type ScreenId =
   | 'pdf-history'
   | 'ranking'
   | 'profile'
-  | 'admin';
+  | 'admin'
+  | 'privacy'
+  | 'terms'
+  | 'credits';
 
 export interface UserProfile {
   id: string;
@@ -32,6 +35,7 @@ export interface UserProfile {
   display_name: string;
   avatar_url?: string;
   avatar_emoji: string;
+  age?: number;
   mode: UserMode;
   total_score: number;
   level: number;
@@ -40,6 +44,7 @@ export interface UserProfile {
   game_high_scores?: Record<string, number>;
   correct_answers_count: number;
   total_answers_count: number;
+  has_completed_onboarding?: boolean;
   created_at: string;
 }
 

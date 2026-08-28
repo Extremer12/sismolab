@@ -9,6 +9,22 @@ import {
   Achievement,
   UserMode
 } from '../types';
+import {
+  WHAT_IS_SEISMIC_QUESTIONS_EN,
+  KIDS_SEISMIC_QUESTIONS_EN,
+  MYTH_STATEMENTS_EN,
+  KIDS_MYTH_STATEMENTS_EN,
+  SCENARIO_CHOICES_EN,
+  KIDS_SCENARIO_CHOICES_EN
+} from './gamesContentEn';
+
+function getCurrentLanguage(): 'es' | 'en' {
+  if (typeof window !== 'undefined') {
+    const lang = localStorage.getItem('sismolab_app_lang_v1');
+    if (lang === 'en') return 'en';
+  }
+  return 'es';
+}
 
 // ==========================================
 // 1. MINIJUEGO: ¿QUÉ ES UN SISMO? (QUIZ POOL EXPANDIDO)
@@ -319,8 +335,14 @@ export const KIDS_SEISMIC_QUESTIONS: Question[] = [
   }
 ];
 
-export function getRandomQuestions(count: number = 5, userMode: UserMode = 'kids'): Question[] {
-  const pool = userMode === 'kids' ? KIDS_SEISMIC_QUESTIONS : WHAT_IS_SEISMIC_QUESTIONS;
+export function getRandomQuestions(count: number = 5, userMode: UserMode = 'kids', lang?: 'es' | 'en'): Question[] {
+  const currentLang = lang || getCurrentLanguage();
+  let pool: Question[];
+  if (currentLang === 'en') {
+    pool = userMode === 'kids' ? KIDS_SEISMIC_QUESTIONS_EN : WHAT_IS_SEISMIC_QUESTIONS_EN;
+  } else {
+    pool = userMode === 'kids' ? KIDS_SEISMIC_QUESTIONS : WHAT_IS_SEISMIC_QUESTIONS;
+  }
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
@@ -561,8 +583,14 @@ export const KIDS_SCENARIO_CHOICES: ScenarioChoice[] = [
   }
 ];
 
-export function getRandomScenarios(count: number = 4, userMode: UserMode = 'kids'): ScenarioChoice[] {
-  const pool = userMode === 'kids' ? KIDS_SCENARIO_CHOICES : SCENARIO_CHOICES;
+export function getRandomScenarios(count: number = 4, userMode: UserMode = 'kids', lang?: 'es' | 'en'): ScenarioChoice[] {
+  const currentLang = lang || getCurrentLanguage();
+  let pool: ScenarioChoice[];
+  if (currentLang === 'en') {
+    pool = userMode === 'kids' ? KIDS_SCENARIO_CHOICES_EN : SCENARIO_CHOICES_EN;
+  } else {
+    pool = userMode === 'kids' ? KIDS_SCENARIO_CHOICES : SCENARIO_CHOICES;
+  }
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
@@ -716,8 +744,14 @@ export const KIDS_MYTH_STATEMENTS: MythStatement[] = [
   }
 ];
 
-export function getRandomMyths(count: number = 5, userMode: UserMode = 'kids'): MythStatement[] {
-  const pool = userMode === 'kids' ? KIDS_MYTH_STATEMENTS : MYTH_STATEMENTS;
+export function getRandomMyths(count: number = 5, userMode: UserMode = 'kids', lang?: 'es' | 'en'): MythStatement[] {
+  const currentLang = lang || getCurrentLanguage();
+  let pool: MythStatement[];
+  if (currentLang === 'en') {
+    pool = userMode === 'kids' ? KIDS_MYTH_STATEMENTS_EN : MYTH_STATEMENTS_EN;
+  } else {
+    pool = userMode === 'kids' ? KIDS_MYTH_STATEMENTS : MYTH_STATEMENTS;
+  }
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }

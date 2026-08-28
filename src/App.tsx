@@ -10,6 +10,9 @@ import { TopBar } from './components/navigation/TopBar';
 import { BottomNav } from './components/navigation/BottomNav';
 import { PWAInstallBanner } from './components/ui/PWAInstallBanner';
 
+// Onboarding Tutorial
+import { OnboardingTutorial } from './components/onboarding/OnboardingTutorial';
+
 // Pages
 import { SplashScreen } from './pages/Splash/SplashScreen';
 import { HomeScreen } from './pages/Home/HomeScreen';
@@ -20,6 +23,10 @@ import { PdfReaderPage } from './pages/PdfReader/PdfReaderPage';
 import { RankingPage } from './pages/Ranking/RankingPage';
 import { ProfilePage } from './pages/Profile/ProfilePage';
 import { AdminDashboardPage } from './pages/Admin/AdminDashboardPage';
+import { PrivacyPolicyPage } from './pages/Legal/PrivacyPolicyPage';
+import { TermsPage } from './pages/Legal/TermsPage';
+import { CreditsPage } from './pages/Legal/CreditsPage';
+import { LanguageProvider } from './i18n/LanguageContext';
 
 // Games
 import { WhatIsSeismicGame } from './components/games/WhatIsSeismicGame';
@@ -29,7 +36,7 @@ import { WhatWouldYouDoGame } from './components/games/WhatWouldYouDoGame';
 import { MythOrRealityGame } from './components/games/MythOrRealityGame';
 import { FinalBossChallengeGame } from './components/games/FinalBossChallengeGame';
 
-export function App() {
+function AppContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash || '';
@@ -40,12 +47,13 @@ export function App() {
     }
     return 'splash';
   });
+  
   const [isHistoryExperienceActive, setIsHistoryExperienceActive] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   
   const [user, setUser] = useState<UserProfile>(() => {
     return loadLocalProfile() || createGuestProfile();
   });
-
 
   // Sync profile when state updates
   useEffect(() => {
@@ -66,14 +74,20 @@ export function App() {
         const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
         const avatarUrl = meta.avatar_url || meta.picture;
 
-        setUser(prev => ({
-          ...prev,
-          id: session.user.id,
-          auth_user_id: session.user.id,
-          nickname: (prev.nickname.startsWith('Explorador') || prev.nickname.startsWith('Cóndor') || prev.nickname.startsWith('Guanaco') || prev.nickname.startsWith('Puma') || prev.nickname.startsWith('Zorro')) ? googleName : prev.nickname,
-          display_name: googleName,
-          avatar_url: avatarUrl || prev.avatar_url
-        }));
+        setUser(prev => {
+          const updated = {
+            ...prev,
+            id: session.user.id,
+            auth_user_id: session.user.id,
+            nickname: googleName,
+            display_name: googleName,
+            avatar_url: avatarUrl || prev.avatar_url
+          };
+          if (!prev.has_completed_onboarding || !prev.age) {
+            setShowTutorial(true);
+          }
+          return updated;
+        });
 
         setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
 
@@ -92,14 +106,20 @@ export function App() {
         const googleName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Explorador';
         const avatarUrl = meta.avatar_url || meta.picture;
 
-        setUser(prev => ({
-          ...prev,
-          id: session.user.id,
-          auth_user_id: session.user.id,
-          nickname: (prev.nickname.startsWith('Explorador') || prev.nickname.startsWith('Cóndor') || prev.nickname.startsWith('Guanaco') || prev.nickname.startsWith('Puma') || prev.nickname.startsWith('Zorro')) ? googleName : prev.nickname,
-          display_name: googleName,
-          avatar_url: avatarUrl || prev.avatar_url
-        }));
+        setUser(prev => {
+          const updated = {
+            ...prev,
+            id: session.user.id,
+            auth_user_id: session.user.id,
+            nickname: googleName,
+            display_name: googleName,
+            avatar_url: avatarUrl || prev.avatar_url
+          };
+          if (!prev.has_completed_onboarding || !prev.age) {
+            setShowTutorial(true);
+          }
+          return updated;
+        });
 
         setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
 
@@ -116,7 +136,6 @@ export function App() {
     };
   }, []);
 
-
   // Handler for login/nickname from Splash
   const handleLoginSuccess = (nickname: string) => {
     setUser(prev => ({
@@ -125,6 +144,20 @@ export function App() {
       display_name: nickname
     }));
     setActiveScreen('home');
+    if (!user.has_completed_onboarding || !user.age) {
+      setShowTutorial(true);
+    }
+  };
+
+  // Handler for completing Onboarding Tutorial
+  const handleTutorialComplete = (age: number, assignedMode: UserMode) => {
+    setUser(prev => ({
+      ...prev,
+      age,
+      mode: assignedMode,
+      has_completed_onboarding: true
+    }));
+    setShowTutorial(false);
   };
 
   // Handler for selecting Mode (Kids vs Adults)
@@ -149,15 +182,23 @@ export function App() {
       const previousHighScore = currentHighScores[id] || 0;
       let addedScore = 0;
 
-      if (!completedIds.includes(id)) {
-        // First completion of this mission -> full score
-        addedScore = earnedScore;
+      // RULE: If an adult (age >= 13) plays in Kids mode, it's practice only (0 ranking points)
+      const isAdultPlayingKids = Boolean(prev.age && prev.age >= 13 && prev.mode === 'kids');
+
+      if (isAdultPlayingKids) {
+        // Adult practice in kids mode -> no ranking score inflation
+        addedScore = 0;
       } else {
-        // Replaying: award delta if high score improved + 25 XP practice bonus
-        if (earnedScore > previousHighScore) {
-          addedScore = (earnedScore - previousHighScore) + 25;
+        if (!completedIds.includes(id)) {
+          // First completion of this mission in assigned category -> full score
+          addedScore = earnedScore;
         } else {
-          addedScore = 25; // small repeat practice bonus
+          // Replaying: award delta if high score improved + 25 XP practice bonus
+          if (earnedScore > previousHighScore) {
+            addedScore = (earnedScore - previousHighScore) + 25;
+          } else {
+            addedScore = 25; // small repeat practice bonus
+          }
         }
       }
 
@@ -193,6 +234,16 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950">
+      
+      {/* Full-Screen Onboarding Tutorial & Age Verification */}
+      {showTutorial && (
+        <OnboardingTutorial
+          user={user}
+          onComplete={handleTutorialComplete}
+          onClose={() => setShowTutorial(false)}
+        />
+      )}
+
       {/* Persistent Top Bar Header */}
       {showTopBar && (
         <TopBar
@@ -316,6 +367,24 @@ export function App() {
             onNavigate={setActiveScreen}
           />
         )}
+
+        {activeScreen === 'privacy' && (
+          <PrivacyPolicyPage
+            onNavigate={setActiveScreen}
+          />
+        )}
+
+        {activeScreen === 'terms' && (
+          <TermsPage
+            onNavigate={setActiveScreen}
+          />
+        )}
+
+        {activeScreen === 'credits' && (
+          <CreditsPage
+            onNavigate={setActiveScreen}
+          />
+        )}
       </main>
 
       {/* PWA Install Banner for Mobile Browsers */}
@@ -330,6 +399,14 @@ export function App() {
         />
       )}
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 
