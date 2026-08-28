@@ -2034,3 +2034,60 @@
   animation: pulsePromptGlow 1.5s ease-in-out infinite;
 }
 
+/* Editorial & Spatial Layout Utilities (No-card clean architecture) */
+.editorial-numeral {
+  font-family: 'Space Grotesk', 'Aldo the Apache', sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.45) 0%, rgba(255, 255, 255, 0.05) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.editorial-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(34, 211, 238, 0.3) 20%, rgba(255, 255, 255, 0.1) 80%, transparent 100%);
+}
+
+.editorial-divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(245, 184, 61, 0.4) 20%, rgba(255, 255, 255, 0.1) 80%, transparent 100%);
+}
+
+.timeline-connector {
+  position: absolute;
+  left: 1.25rem;
+  top: 2rem;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.5) 0%, rgba(34, 211, 238, 0.1) 80%, transparent 100%);
+}
+
+@keyframes editorialSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-editorial-1 {
+  animation: editorialSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+
+.animate-editorial-2 {
+  animation: editorialSlideIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+.animate-editorial-3 {
+  animation: editorialSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+.animate-editorial-4 {
+  animation: editorialSlideIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+
+

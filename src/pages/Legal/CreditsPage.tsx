@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Award, Building2, Code2, Users, School, ExternalLink, Mail, ShieldCheck, GraduationCap, Laptop, Sparkles } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Mail, Code2, School, Users, Sparkles, ChevronRight } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { sound } from '../../lib/sound';
@@ -15,110 +15,117 @@ export const CreditsPage: React.FC<CreditsPageProps> = ({ onNavigate }) => {
     {
       name: 'Karina Noemí Pedrozo',
       role: language === 'es' ? 'Coordinación & Gestión de Proyecto' : 'Project Coordination & Management',
-      icon: <GraduationCap className="w-5 h-5 text-brand-cyan" />
+      tag: 'Coordinación'
     },
     {
       name: 'Mauro Sebastián Figueroa',
       role: language === 'es' ? 'Contenidos & Asesoría Pedagógica' : 'Educational Content & Pedagogy',
-      icon: <ShieldCheck className="w-5 h-5 text-brand-yellow" />
+      tag: 'Pedagogía'
     },
     {
       name: 'María Eugenia Fernández',
       role: language === 'es' ? 'Difusión & Educación Comunitaria' : 'Community Outreach & Education',
-      icon: <Users className="w-5 h-5 text-purple-300" />
+      tag: 'Difusión'
     },
     {
       name: 'Cristian Bordon',
       role: language === 'es' ? 'Lead Software Engineer & Arquitecto' : 'Lead Software Engineer & Architect',
-      icon: <Code2 className="w-5 h-5 text-brand-cyan" />
+      tag: 'Zion Code'
     },
   ];
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 p-4 sm:p-6 pb-28 max-w-2xl mx-auto font-sans select-none space-y-5">
+    <div className="min-h-screen bg-navy-950 text-slate-100 p-5 sm:p-8 pb-32 max-w-2xl mx-auto font-sans selection:bg-brand-cyan selection:text-navy-950">
       
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* 1. Header Navigation Bar */}
+      <div className="flex items-center justify-between animate-editorial-1">
         <button
           onClick={() => { sound.playClick(); onNavigate('profile'); }}
-          className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-slate-300 hover:text-white"
+          className="w-10 h-10 rounded-full bg-navy-900 border border-white/10 hover:border-brand-cyan/50 flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-95"
           aria-label={t.common.back}
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <div className="px-3.5 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-glow-cyan/20">
-          <Award className="w-3.5 h-3.5" />
-          <span>{language === 'es' ? 'CRÉDITOS INSTITUCIONALES' : 'INSTITUTIONAL CREDITS'}</span>
-        </div>
+        <span className="text-[11px] font-black uppercase tracking-[0.25em] text-brand-cyan">
+          {language === 'es' ? 'CRÉDITOS INSTITUCIONALES' : 'INSTITUTIONAL CREDITS'}
+        </span>
+
+        <div className="w-10" />
       </div>
 
-      {/* Hero Header with Zion Code Logo */}
-      <div className="text-center space-y-2 py-2">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-navy-900 via-navy-850 to-blue-950/80 p-2 mx-auto border-2 border-brand-cyan/40 shadow-[0_0_35px_rgba(0,184,255,0.3)] flex items-center justify-center">
-          <img
-            src="/images/logozioncode-sinfondo.png"
-            alt="Zion Code"
-            className="w-16 h-16 object-contain"
-          />
-        </div>
+      {/* 2. Hero Editorial Section with Ambient Glow */}
+      <header className="relative pt-6 pb-4 space-y-4 animate-editorial-1 text-left">
+        {/* Subtle Ambient Light (No Box, pure atmospheric glow) */}
+        <div className="absolute -top-10 -left-10 w-48 h-48 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none" />
 
-        <h1 className="font-black text-3xl text-white tracking-tight uppercase">
-          SISMO <span className="text-brand-cyan">LAB</span>
-        </h1>
-        <p className="text-xs text-slate-300 font-medium max-w-md mx-auto">
-          {language === 'es'
-            ? 'Plataforma interactiva de prevención sísmica y autoprotección para la comunidad educativa.'
-            : 'Interactive earthquake preparedness and safety platform for the educational community.'}
-        </p>
-      </div>
-
-      {/* 1. Empresa de Desarrollo de Software: Zion Code */}
-      <div className="sismo-card p-5 space-y-4 border-2 border-brand-cyan/50 bg-gradient-to-br from-navy-900 via-navy-950 to-blue-950/60 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-navy-900 border border-brand-cyan/40 flex items-center justify-center p-1.5 shadow-glow-cyan/30 shrink-0">
-              <img
-                src="/images/logozioncode-sinfondo.png"
-                alt="Zion Code"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-brand-cyan block">
-                {language === 'es' ? 'EMPRESA DE DESARROLLO DE SOFTWARE' : 'SOFTWARE DEVELOPMENT COMPANY'}
-              </span>
-              <h2 className="font-black text-2xl text-white tracking-wide">
-                ZION CODE
-              </h2>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-navy-900 border border-brand-cyan/30 flex items-center justify-center p-2 shadow-[0_0_20px_rgba(0,184,255,0.25)]">
+            <img
+              src="/images/logozioncode-sinfondo.png"
+              alt="Zion Code"
+              className="w-full h-full object-contain"
+            />
+          </div>
+          <div>
+            <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase block">
+              SOFTWARE EDUCATIVO · SAN JUAN
+            </span>
+            <h1 className="font-black text-3xl sm:text-4xl text-white tracking-tight uppercase leading-none">
+              SISMO <span className="text-brand-cyan">LAB</span>
+            </h1>
           </div>
         </div>
-        
-        <p className="text-xs text-slate-300 leading-relaxed">
+
+        <p className="text-sm text-slate-300 font-medium leading-relaxed max-w-xl">
           {language === 'es'
-            ? 'Empresa de ingeniería de software dedicada al desarrollo de soluciones tecnológicas interactivas, arquitecturas cloud seguras y experiencias gamificadas para la educación ciudadana y el aprendizaje digital.'
-            : 'Software engineering company dedicated to interactive digital solutions, secure cloud architecture, and gamified civic education platforms.'}
+            ? 'Plataforma digital interactiva de ciencia, autoprotección y prevención sísmica creada para fomentar la resiliencia en la comunidad escolar.'
+            : 'Interactive digital platform for earthquake science, self-protection, and resilience built for the school community.'}
         </p>
 
-        {/* Links & Contact Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-white/10">
+        <div className="editorial-divider" />
+      </header>
+
+      {/* 3. Section 01: Zion Code (Ingeniería de Software) - Editorial Spatial Layout */}
+      <section className="space-y-4 pt-4 animate-editorial-2">
+        <div className="flex items-baseline justify-between">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-brand-cyan block">
+              01 · INGENIERÍA & DESARROLLO
+            </span>
+            <h2 className="font-black text-2xl text-white tracking-tight">
+              Zion Code
+            </h2>
+          </div>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            Empresa de Software
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-300 leading-relaxed">
+          {language === 'es'
+            ? 'Empresa de ingeniería de software especializada en el diseño de arquitecturas digitales interactivas, interfaces gamificadas fluidas y tecnologías cloud seguras orientadas al impacto social y la educación ciudadana.'
+            : 'Software engineering company specialized in interactive digital architecture, gamified fluid interfaces, and civic education technology.'}
+        </p>
+
+        {/* Action Links (Clean Pill style, no nested cards) */}
+        <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
           <a
             href="https://zion-code.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 rounded-xl bg-navy-900/90 border border-brand-cyan/40 hover:border-brand-cyan flex items-center justify-between text-xs text-white transition-all group shadow-sm hover:scale-[1.01]"
+            className="flex-1 py-3 px-4 rounded-full bg-navy-900 border border-brand-cyan/40 hover:border-brand-cyan flex items-center justify-between text-xs text-white transition-all hover:bg-navy-850 group active:scale-98"
           >
             <div className="flex items-center gap-2">
-              <Laptop className="w-4 h-4 text-brand-cyan" />
-              <span className="font-bold">Sitio Web Oficial</span>
+              <Code2 className="w-4 h-4 text-brand-cyan" />
+              <span className="font-bold">zion-code.vercel.app</span>
             </div>
             <ExternalLink className="w-3.5 h-3.5 text-brand-cyan group-hover:translate-x-0.5 transition-transform" />
           </a>
 
           <a
             href="mailto:zioncode25@gmail.com"
-            className="p-3 rounded-xl bg-navy-900/90 border border-brand-yellow/40 hover:border-brand-yellow flex items-center justify-between text-xs text-white transition-all group shadow-sm hover:scale-[1.01]"
+            className="flex-1 py-3 px-4 rounded-full bg-navy-900 border border-brand-yellow/40 hover:border-brand-yellow flex items-center justify-between text-xs text-white transition-all hover:bg-navy-850 group active:scale-98"
           >
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-brand-yellow" />
@@ -128,90 +135,93 @@ export const CreditsPage: React.FC<CreditsPageProps> = ({ onNavigate }) => {
           </a>
         </div>
 
-        <div className="pt-2 flex items-center justify-between text-[11px] font-bold text-slate-300 border-t border-white/10">
-          <span className="text-slate-400">Lead Software Developer & Creador:</span>
-          <span className="text-brand-cyan font-black text-xs">Cristian Bordon</span>
+        <div className="flex items-center justify-between pt-2 text-xs border-b border-white/5 pb-4">
+          <span className="text-slate-400 font-medium">Lead Software Developer & Creador:</span>
+          <span className="font-black text-brand-cyan">Cristian Bordon</span>
         </div>
-      </div>
+      </section>
 
-      {/* 2. Institución Educativa & Dirección */}
-      <div className="sismo-card p-5 space-y-3 border-2 border-brand-gold/40 bg-gradient-to-br from-navy-900 via-navy-950 to-amber-950/30 shadow-xl">
-        <div className="flex items-center gap-3 text-brand-yellow">
-          <div className="w-11 h-11 rounded-2xl bg-brand-gold/20 border border-brand-gold/50 flex items-center justify-center text-brand-gold shrink-0">
-            <School className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-              {language === 'es' ? 'INSTITUCIÓN EDUCATIVA' : 'EDUCATIONAL INSTITUTION'}
-            </span>
-            <h2 className="font-black text-lg sm:text-xl text-white tracking-wide">
-              ESCUELA POLICÍA FEDERAL ARGENTINA
-            </h2>
-          </div>
-        </div>
-
-        <div className="bg-navy-950/90 p-3.5 rounded-2xl border border-white/10 flex justify-between items-center text-xs">
-          <span className="text-slate-400 font-bold uppercase text-[10px]">
-            {language === 'es' ? 'Directora de la Institución:' : 'School Principal:'}
+      {/* 4. Section 02: Institución Educativa */}
+      <section className="space-y-3 pt-6 animate-editorial-3">
+        <div className="space-y-0.5">
+          <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold block">
+            02 · INSTITUCIÓN EDUCATIVA
           </span>
-          <span className="font-black text-brand-yellow text-sm">
-            Vanessa Lewyle
+          <h2 className="font-black text-2xl text-white tracking-tight uppercase">
+            Escuela Policía Federal Argentina
+          </h2>
+        </div>
+
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-navy-900/60 border border-white/10 text-xs">
+          <div className="flex items-center gap-2.5">
+            <School className="w-4 h-4 text-brand-gold" />
+            <span className="text-slate-300 font-medium">{language === 'es' ? 'Dirección Institucional:' : 'Principal:'}</span>
+          </div>
+          <span className="font-black text-brand-yellow text-sm">Vanessa Lewyle</span>
+        </div>
+
+        <div className="editorial-divider-gold mt-4" />
+      </section>
+
+      {/* 5. Section 03: Equipo de Colaboradores (Timeline Stream Layout) */}
+      <section className="space-y-4 pt-6 animate-editorial-4">
+        <div className="space-y-0.5">
+          <span className="text-[10px] font-black uppercase tracking-widest text-purple-300 block">
+            03 · EQUIPO Y COLABORADORES
           </span>
-        </div>
-      </div>
-
-      {/* 3. Equipo de Colaboradores del Proyecto */}
-      <div className="sismo-card p-5 space-y-3 border-white/15">
-        <div className="flex items-center gap-2 text-white font-black text-sm uppercase">
-          <Users className="w-4 h-4 text-purple-300" />
-          <h3>{language === 'es' ? 'Equipo de Colaboradores del Proyecto' : 'Project Collaborators & Team'}</h3>
+          <h2 className="font-black text-xl text-white tracking-tight">
+            {language === 'es' ? 'Colaboradores del Proyecto' : 'Project Collaborators'}
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {collaborators.map((collab) => (
+        <div className="divide-y divide-white/5">
+          {collaborators.map((collab, idx) => (
             <div
               key={collab.name}
-              className="bg-navy-900/90 p-3.5 rounded-2xl border border-white/10 flex items-center gap-3 shadow-sm hover:border-brand-cyan/40 transition-all"
+              className="py-3.5 flex items-center justify-between group hover:pl-1 transition-all"
             >
-              <div className="w-10 h-10 rounded-xl bg-navy-950 flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
-                {collab.icon}
-              </div>
-              <div className="min-w-0">
-                <h4 className="font-black text-xs text-white truncate">
+              <div className="space-y-0.5">
+                <h3 className="font-black text-sm text-white group-hover:text-brand-cyan transition-colors">
                   {collab.name}
-                </h4>
-                <p className="text-[10px] text-slate-400 font-medium leading-tight">
+                </h3>
+                <p className="text-xs text-slate-400">
                   {collab.role}
                 </p>
               </div>
+
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-navy-900 border border-white/10 text-slate-300">
+                {collab.tag}
+              </span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* 4. Propósito Pedagógico y Presentación Institucional */}
-      <div className="sismo-card p-4 space-y-2 border-brand-cyan/25">
-        <div className="flex items-center gap-2 text-brand-cyan font-black text-xs uppercase">
-          <Building2 className="w-4 h-4" />
-          <span>{language === 'es' ? 'Propósito del Proyecto' : 'Project Purpose'}</span>
+      {/* 6. Section 04: Propósito del Proyecto (Minimal Quote Layout) */}
+      <section className="space-y-2 pt-6 pb-4">
+        <div className="border-l-2 border-brand-cyan pl-4 py-1 space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-brand-cyan block">
+            PROPÓSITO & ALCANCE
+          </span>
+          <p className="text-xs text-slate-300 leading-relaxed font-medium">
+            {language === 'es'
+              ? 'SISMO LAB fue concebida y desarrollada como una propuesta de innovación pedagógica para ser presentada ante autoridades ministeriales y educativas de San Juan, con la meta de llevar a las escuelas una herramienta interactiva, medible y accesible que prepare a las futuras generaciones.'
+              : 'SISMO LAB was engineered as a pedagogical innovation proposal for educational and civil authorities in San Juan, aimed at delivering interactive and measurable safety tools to school classrooms.'}
+          </p>
         </div>
-        <p className="text-[11px] text-slate-300 leading-relaxed">
-          {language === 'es'
-            ? 'SISMO LAB es una iniciativa de innovación pedagógica diseñada y desarrollada para ser presentada ante autoridades ministeriales y educativas de San Juan, como una herramienta digital lúdica para fortalecer la cultura de autoprotección y resiliencia sísmica escolar.'
-            : 'SISMO LAB is a pedagogical innovation initiative developed for presentation before educational and ministerial authorities in San Juan, serving as a gamified digital tool to strengthen school earthquake safety and preparedness.'}
-        </p>
-      </div>
+      </section>
 
-      {/* Back button */}
-      <div className="pt-2">
+      {/* 7. Footer Return Button */}
+      <div className="pt-6">
         <button
           onClick={() => { sound.playClick(); onNavigate('profile'); }}
-          className="w-full py-3 rounded-2xl bg-navy-900 border border-brand-cyan/40 text-brand-cyan font-bold text-xs uppercase tracking-wider hover:bg-navy-850 transition-all text-center flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-full bg-navy-900 border border-white/10 hover:border-brand-cyan text-slate-200 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 hover:text-white active:scale-98"
         >
-          <Award className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" />
           <span>{t.common.back}</span>
         </button>
       </div>
+
     </div>
   );
 };
