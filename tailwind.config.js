@@ -31,9 +31,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Outfit', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-        apache: ['"Aldo the Apache"', 'Outfit', 'sans-serif'],
-        display: ['"Aldo the Apache"', 'Outfit', 'sans-serif'],
+        sans: ['"Outfit"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        apache: ['"Plus Jakarta Sans"', '"Outfit"', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Outfit"', 'sans-serif'],
         tech: ['"Space Grotesk"', 'sans-serif'],
       },
       boxShadow: {
