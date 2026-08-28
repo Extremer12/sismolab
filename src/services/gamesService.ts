@@ -1,5 +1,6 @@
 import {
   Question,
+  NumericQuestion,
   SafeHomeHazard,
   EmergencyKitItem,
   ScenarioChoice,
@@ -15,7 +16,9 @@ import {
   MYTH_STATEMENTS_EN,
   KIDS_MYTH_STATEMENTS_EN,
   SCENARIO_CHOICES_EN,
-  KIDS_SCENARIO_CHOICES_EN
+  KIDS_SCENARIO_CHOICES_EN,
+  NUMERIC_QUESTIONS_ADULTS_EN,
+  NUMERIC_QUESTIONS_KIDS_EN
 } from './gamesContentEn';
 
 function getCurrentLanguage(): 'es' | 'en' {
@@ -24,6 +27,151 @@ function getCurrentLanguage(): 'es' | 'en' {
     if (lang === 'en') return 'en';
   }
   return 'es';
+}
+
+// ==========================================
+// 0. DESAFÍO DE PRECISIÓN NUMÉRICA & HISTÓRICA (CÓDIGO SÍSMICO)
+// ==========================================
+export const NUMERIC_QUESTIONS_ADULTS: NumericQuestion[] = [
+  {
+    id: 'num_a1',
+    question: '¿En qué AÑO ocurrió el primer gran terremoto con registro sísmico destructivo documentado en San Juan (Magnitud ~7.5)?',
+    category: 'Sismología Histórica',
+    unit: 'AÑO',
+    targetValue: '1894',
+    hint: 'A fines del siglo XIX, el 27 de octubre.',
+    explanation: 'El 27 de octubre de 1894 ocurrió el mayor terremoto registrado históricamente en Argentina, con epicentro en el noroeste de San Juan.',
+    points: 120,
+    difficulty: 'medium'
+  },
+  {
+    id: 'num_a2',
+    question: '¿En qué AÑO se produjo el devastador terremoto que destruyó el 80% de las construcciones de adobe y transformó la arquitectura de San Juan?',
+    category: 'Historia Cívica',
+    unit: 'AÑO',
+    targetValue: '1944',
+    hint: '15 de enero a las 20:52 hs, plena década del 40.',
+    explanation: 'El terremoto del 15 de enero de 1944 (Magnitud 7.0) impulsó la creación del Consejo de Reconstrucción y las normas de hormigón sismorresistente.',
+    points: 120,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_a3',
+    question: '¿En qué AÑO ocurrió el histórico terremoto de Caucete (Magnitud 7.4) que demostró la solidez del hormigón sismorresistente?',
+    category: 'Ingeniería Estructural',
+    unit: 'AÑO',
+    targetValue: '1977',
+    hint: '23 de noviembre, década del 70.',
+    explanation: 'El terremoto de Caucete de 1977 provocó licuación de suelos y consolidó las normativas antisísmicas vigentes.',
+    points: 120,
+    difficulty: 'medium'
+  },
+  {
+    id: 'num_a4',
+    question: '¿En qué AÑO se fundó el Instituto Nacional de Prevención Sísmica (INPRES) mediante la Ley 19.616 con sede en San Juan?',
+    category: 'Instituciones Científicas',
+    unit: 'AÑO',
+    targetValue: '1972',
+    hint: 'Exactamente 5 años antes del terremoto de Caucete.',
+    explanation: 'El 8 de mayo de 1972 se constituyó el INPRES para reglamentar la construcción y monitorear la sismicidad argentina.',
+    points: 120,
+    difficulty: 'hard'
+  },
+  {
+    id: 'num_a5',
+    question: '¿Cuántas HORAS de autonomía básica y supervivencia familiar debe garantizar una mochila de emergencia?',
+    category: 'Protección Civil',
+    unit: 'HORAS',
+    targetValue: '72',
+    hint: 'Equivale a 3 días continuos (3 x 24 hs).',
+    explanation: 'Las primeras 72 horas son críticas para la supervivencia mientras los servicios de emergencia se restablecen.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_a6',
+    question: '¿A cuántos KILÓMETROS de profundidad aproximada se localizó el hipocentro superficial del sismo de Pocito del 18 de enero de 2021?',
+    category: 'Sismología Regional',
+    unit: 'KM PROFUNDIDAD',
+    targetValue: '8',
+    acceptedValues: ['8', '10'],
+    hint: 'Fue sumamente superficial (menos de 10 kilómetros).',
+    explanation: 'Su escasa profundidad (~8 km) provocó intensas aceleraciones del suelo sentidas en todo Cuyo.',
+    points: 120,
+    difficulty: 'medium'
+  }
+];
+
+export const NUMERIC_QUESTIONS_KIDS: NumericQuestion[] = [
+  {
+    id: 'num_k1',
+    question: '¿Cuántas HORAS de agua y comida debe tener la mochila de emergencia familiar?',
+    category: 'Mochila de Emergencia',
+    unit: 'HORAS',
+    targetValue: '72',
+    hint: 'Son 3 días enteros: 24 + 24 + 24 horas.',
+    explanation: 'La mochila de emergencia debe alcanzar para que tu familia esté segura durante 72 horas (3 días).',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k2',
+    question: '¿En cuántos SEGUNDOS promedio debemos realizar la maniobra de Agacharse y Cubrirse debajo de una mesa?',
+    category: 'Reflejos Rápidos',
+    unit: 'SEGUNDOS',
+    targetValue: '4',
+    hint: '¡Es súper rápido! Menos de los dedos de una mano.',
+    explanation: 'En solo 4 segundos debés proteger tu cabeza y cuello debajo de un mueble firme.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k3',
+    question: '¿Cuál es el número telefónico unificado de emergencia (policía y salud) en Argentina?',
+    category: 'Teléfonos de Ayuda',
+    unit: 'TELÉFONO',
+    targetValue: '911',
+    hint: 'Nueve-Uno-Uno.',
+    explanation: 'El 911 es la línea directa para solicitar rescate, ambulancias y policías.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k4',
+    question: '¿En qué AÑO ocurrió el terremoto de San Juan del siglo XXI que se sintió muy fuerte (Magnitud 6.4)?',
+    category: 'Historia Sanjuanina',
+    unit: 'AÑO',
+    targetValue: '2021',
+    hint: 'Ocurrió recientemente, un año después del 2020.',
+    explanation: 'El 18 de enero de 2021 ocurrió el terremoto con epicentro en Pocito y Media Agua.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k5',
+    question: '¿Cuál es el número de teléfono para llamar a los Bomberos ante un incendio o derrumbe?',
+    category: 'Teléfonos de Ayuda',
+    unit: 'TELÉFONO',
+    targetValue: '100',
+    hint: 'Un 1 seguido de dos ceros.',
+    explanation: 'El 100 conecta directamente con la central de Bomberos.',
+    points: 100,
+    difficulty: 'easy'
+  }
+];
+
+export function getRandomNumericQuestions(count: number = 5, mode: UserMode = 'kids'): NumericQuestion[] {
+  const lang = getCurrentLanguage();
+  let pool: NumericQuestion[];
+
+  if (lang === 'en') {
+    pool = mode === 'kids' ? NUMERIC_QUESTIONS_KIDS_EN : NUMERIC_QUESTIONS_ADULTS_EN;
+  } else {
+    pool = mode === 'kids' ? NUMERIC_QUESTIONS_KIDS : NUMERIC_QUESTIONS_ADULTS;
+  }
+
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, Math.min(count, pool.length));
 }
 
 // ==========================================

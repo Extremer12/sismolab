@@ -79,6 +79,19 @@ export interface Question {
   sort_order: number;
 }
 
+export interface NumericQuestion {
+  id: string;
+  question: string;
+  category: string;
+  unit?: string;
+  targetValue: string;
+  acceptedValues?: string[];
+  hint: string;
+  explanation: string;
+  points: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
 export interface SafeHomeHazard {
   id: string;
   name: string;

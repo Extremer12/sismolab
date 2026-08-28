@@ -1,5 +1,6 @@
 import {
   Question,
+  NumericQuestion,
   SafeHomeHazard,
   EmergencyKitItem,
   ScenarioChoice,
@@ -436,5 +437,133 @@ export const KIDS_SCENARIO_CHOICES_EN: ScenarioChoice[] = [
       { id: 'a', text: '🌳 Stay in the clear open area of the park, away from poles and cables.', isCorrect: true, feedback: 'Great! Out in the open grass is the safest place to be.' },
       { id: 'b', text: '🏢 Run under a metal shed roof.', isCorrect: false, feedback: 'Loose roofing and signs can drop; staying out in the open is best.' }
     ]
+  }
+];
+
+export const NUMERIC_QUESTIONS_ADULTS_EN: NumericQuestion[] = [
+  {
+    id: 'num_a1',
+    question: 'In what YEAR did the first major historically recorded earthquake occur in San Juan (Magnitude ~7.5)?',
+    category: 'Historical Seismology',
+    unit: 'YEAR',
+    targetValue: '1894',
+    hint: 'Late 19th century, October 27.',
+    explanation: 'On October 27, 1894, the largest historically documented earthquake in Argentina struck northwestern San Juan.',
+    points: 120,
+    difficulty: 'medium'
+  },
+  {
+    id: 'num_a2',
+    question: 'In what YEAR did the catastrophic earthquake occur that destroyed 80% of adobe buildings and transformed San Juan’s urban code?',
+    category: 'Civic History',
+    unit: 'YEAR',
+    targetValue: '1944',
+    hint: 'January 15, in the 1940s.',
+    explanation: 'The January 15, 1944 earthquake (Magnitude 7.0) led to modern anti-seismic construction codes and the Reconstruction Council.',
+    points: 120,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_a3',
+    question: 'In what YEAR did the Caucete earthquake (Magnitude 7.4) occur, proving reinforced concrete resilience?',
+    category: 'Structural Engineering',
+    unit: 'YEAR',
+    targetValue: '1977',
+    hint: 'November 23, in the 1970s.',
+    explanation: 'The 1977 Caucete earthquake caused extensive soil liquefaction and consolidated earthquake-resistant building standards.',
+    points: 120,
+    difficulty: 'medium'
+  },
+  {
+    id: 'num_a4',
+    question: 'In what YEAR was the National Institute for Seismic Prevention (INPRES) established by Law 19.616?',
+    category: 'Scientific Institutions',
+    unit: 'YEAR',
+    targetValue: '1972',
+    hint: 'Exactly 5 years before the 1977 Caucete earthquake.',
+    explanation: 'INPRES was created on May 8, 1972, headquartered in San Juan, Argentina.',
+    points: 120,
+    difficulty: 'hard'
+  },
+  {
+    id: 'num_a5',
+    question: 'How many HOURS of basic self-sufficiency must a family emergency survival kit provide?',
+    category: 'Civil Preparedness',
+    unit: 'HOURS',
+    targetValue: '72',
+    hint: 'Equivalent to 3 full days (3 x 24h).',
+    explanation: 'The first 72 hours are vital for family resilience while essential public services are restored.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_a6',
+    question: 'How many KILOMETERS of shallow depth was the epicenter of the January 18, 2021 Pocito earthquake?',
+    category: 'Regional Seismology',
+    unit: 'KM DEPTH',
+    targetValue: '8',
+    acceptedValues: ['8', '10'],
+    hint: 'Extremely shallow (under 10 km).',
+    explanation: 'Its shallow focal depth (~8 km) caused high peak ground acceleration across Cuyo.',
+    points: 120,
+    difficulty: 'medium'
+  }
+];
+
+export const NUMERIC_QUESTIONS_KIDS_EN: NumericQuestion[] = [
+  {
+    id: 'num_k1',
+    question: 'How many HOURS of water and food should your 3-day emergency backpack have?',
+    category: 'Emergency Kit',
+    unit: 'HOURS',
+    targetValue: '72',
+    hint: '3 full days: 24 + 24 + 24.',
+    explanation: 'Your emergency go-bag should keep your family safe for 72 hours (3 full days).',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k2',
+    question: 'In how many SECONDS on average should you Drop, Cover, and Hold On under a sturdy table?',
+    category: 'Quick Reflexes',
+    unit: 'SECONDS',
+    targetValue: '4',
+    hint: 'Very fast! Less than 5 seconds.',
+    explanation: 'In just 4 seconds you must protect your head and neck under sturdy furniture.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k3',
+    question: 'What is the unified emergency phone number for Police and Medical aid in Argentina?',
+    category: 'Emergency Contacts',
+    unit: 'PHONE',
+    targetValue: '911',
+    hint: 'Nine-One-One.',
+    explanation: 'Calling 911 connects you directly with unified emergency dispatch.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k4',
+    question: 'In what YEAR did the 21st-century 6.4 magnitude earthquake shake San Juan (Pocito)?',
+    category: 'San Juan History',
+    unit: 'YEAR',
+    targetValue: '2021',
+    hint: 'Recent event, one year after 2020.',
+    explanation: 'The January 18, 2021 earthquake was felt strongly throughout San Juan and Mendoza.',
+    points: 100,
+    difficulty: 'easy'
+  },
+  {
+    id: 'num_k5',
+    question: 'What is the direct phone number to call the Firefighters (Bomberos)?',
+    category: 'Emergency Contacts',
+    unit: 'PHONE',
+    targetValue: '100',
+    hint: 'A number 1 followed by two zeros.',
+    explanation: '100 is the emergency line for firefighters in Argentina.',
+    points: 100,
+    difficulty: 'easy'
   }
 ];
