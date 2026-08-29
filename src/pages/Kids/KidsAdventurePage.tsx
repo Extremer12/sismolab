@@ -170,12 +170,12 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           </div>
         </div>
 
-        {/* 2. Hero Mission Banner (Image occupies the whole background) */}
+        {/* 2. Hero Mission Banner */}
         <div
           className="relative rounded-3xl overflow-hidden border border-brand-cyan/40 p-4 sm:p-5 min-h-[135px] sm:min-h-[145px] flex items-center justify-between shadow-2xl bg-cover bg-right"
           style={{ backgroundImage: `url('/images/Banners/hero_missions.png')` }}
         >
-          {/* Subtle dark gradient overlay on the left to ensure crisp text reading */}
+          {/* Subtle dark gradient overlay on the left */}
           <div className="absolute inset-y-0 left-0 w-3/4 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-transparent pointer-events-none z-0" />
 
           {/* Left Text Content */}
@@ -203,7 +203,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           </div>
         </div>
 
-        {/* 3. Rectangular Game Cards (Banner occupies the whole background) */}
+        {/* 3. Rectangular Game Cards (Spacious, Uncluttered, Pixel-Perfect Buttons) */}
         <div className="space-y-3 pt-1">
           {KIDS_GAMES.map((game, idx) => {
             const isCompleted = completedIds.includes(game.screenId);
@@ -222,7 +222,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                     onNavigate(game.screenId);
                   }
                 }}
-                className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 min-h-[125px] sm:min-h-[135px] flex items-center justify-between p-4 sm:p-5 shadow-2xl bg-cover bg-left ${
+                className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 min-h-[132px] sm:min-h-[142px] flex items-center justify-between p-4 sm:p-5 shadow-2xl bg-cover bg-left ${
                   isCompleted
                     ? 'border-emerald-500/60 cursor-pointer hover:scale-[1.02]'
                     : isPlayable
@@ -231,22 +231,22 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                 }`}
                 style={{ backgroundImage: `url('${game.bannerImage}')` }}
               >
-                {/* Right-side dark gradient overlay: guarantees perfect text contrast without covering the left 3D icon */}
+                {/* Right-side dark gradient overlay */}
                 <div className="absolute inset-y-0 right-0 w-[64%] bg-gradient-to-l from-navy-950/95 via-navy-950/75 to-transparent pointer-events-none z-0" />
 
-                {/* Left spacer so text starts on the right 58% of the card */}
+                {/* Left spacer for 3D illustration */}
                 <div className="w-[36%] shrink-0 pointer-events-none" />
 
-                {/* Right Content Area: Minimal, Uncluttered, Sharp */}
-                <div className="relative z-10 flex-1 flex items-center justify-between gap-2 pl-2">
-                  <div className="space-y-1">
-                    {/* Compact Badge */}
+                {/* Right Content Area */}
+                <div className="relative z-10 flex-1 flex items-center justify-between gap-3 pl-2">
+                  <div className="space-y-1.5 min-w-0 flex-1 pr-1">
+                    {/* Mission Badge */}
                     <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${game.badgeBg} ${game.badgeText}`}>
                       {language === 'es' ? 'MISIÓN' : 'MISSION'} {game.numberStr} · {category}
                     </span>
 
-                    {/* Big Clean Title */}
-                    <h2 className="font-black text-lg sm:text-xl text-white tracking-tight leading-tight uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                    {/* Big Title */}
+                    <h2 className="font-black text-base sm:text-lg text-white tracking-tight leading-snug uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] truncate sm:whitespace-normal">
                       {title}
                     </h2>
 
@@ -257,19 +257,19 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                     </div>
                   </div>
 
-                  {/* Action Element: JUGAR Button or Lock Circle */}
-                  <div className="shrink-0 pl-1">
+                  {/* Standardized Action Element */}
+                  <div className="shrink-0">
                     {isPlayable ? (
                       <button
                         type="button"
-                        className="px-5 py-2.5 rounded-full bg-gradient-to-r from-brand-electric to-brand-cyan hover:from-brand-blue hover:to-brand-electric text-navy-950 font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-glow-cyan transition-all hover:scale-105 active:scale-95"
+                        className="h-11 px-5 rounded-full bg-gradient-to-r from-brand-electric to-brand-cyan hover:from-brand-blue hover:to-brand-electric text-navy-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-glow-cyan shrink-0 hover:scale-105 active:scale-95 transition-all"
                       >
                         <span>{language === 'es' ? 'JUGAR' : 'PLAY'}</span>
                         <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
                       </button>
                     ) : (
-                      <div className={`w-12 h-12 rounded-full bg-navy-950/90 border flex items-center justify-center shadow-inner ${game.lockColor}`}>
-                        <Lock className="w-5 h-5" />
+                      <div className={`w-11 h-11 rounded-full bg-navy-950/85 border flex items-center justify-center shrink-0 shadow-inner ${game.lockColor}`}>
+                        <Lock className="w-4 h-4" />
                       </div>
                     )}
                   </div>
