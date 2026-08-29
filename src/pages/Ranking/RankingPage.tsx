@@ -29,6 +29,7 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
         rank: 0,
         nickname: user.display_name || user.nickname,
         avatar_emoji: user.avatar_emoji,
+        avatar_url: user.avatar_url,
         score: user.total_score,
         mode: user.mode,
         isCurrentUser: true
@@ -59,6 +60,23 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
   // Target score to reach next rank
   const playerAbove = leaderboard.find(p => p.rank === userRank - 1);
   const pointsToNext = playerAbove ? Math.max(0, playerAbove.score - user.total_score + 10) : 0;
+
+  // Helper avatar renderer
+  const renderAvatar = (url?: string, emoji?: string, sizeClass = "w-full h-full") => {
+    if (url) {
+      return (
+        <img
+          src={url}
+          alt="Avatar"
+          className={`${sizeClass} object-cover`}
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+      );
+    }
+    return <span>{emoji || '🦅'}</span>;
+  };
 
   return (
     <div
@@ -131,7 +149,7 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
           })}
         </div>
 
-        {/* 4. Sleek Minimalist Top 3 Podium with Genuine Live Players */}
+        {/* 4. Sleek Minimalist Top 3 Podium with 3D Avatars */}
         <div className="pt-3 pb-1">
           <div className="grid grid-cols-3 gap-2 sm:gap-3 items-end text-center">
             
@@ -141,9 +159,9 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                 {t.ranking.silverBadge}
               </div>
 
-              <div className="w-14 h-14 sm:w-16 sm:h-16 aspect-square shrink-0 mx-auto rounded-full p-1 bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 shadow-md">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 aspect-square shrink-0 mx-auto rounded-full p-0.5 bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 shadow-md">
                 <div className="w-full h-full aspect-square rounded-full bg-navy-900 flex items-center justify-center text-3xl overflow-hidden border border-slate-300/40">
-                  {second ? second.avatar_emoji : '🥈'}
+                  {second ? renderAvatar(second.avatar_url, second.avatar_emoji) : '🥈'}
                 </div>
               </div>
 
@@ -163,9 +181,9 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                 {t.ranking.goldBadge}
               </div>
 
-              <div className="w-16 h-16 sm:w-20 sm:h-20 aspect-square shrink-0 mx-auto rounded-full p-1 bg-gradient-to-tr from-yellow-400 via-amber-300 to-amber-500 shadow-glow-gold">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 aspect-square shrink-0 mx-auto rounded-full p-0.5 bg-gradient-to-tr from-yellow-400 via-amber-300 to-amber-500 shadow-glow-gold">
                 <div className="w-full h-full aspect-square rounded-full bg-navy-950 flex items-center justify-center text-4xl overflow-hidden border-2 border-amber-300/60">
-                  {first ? first.avatar_emoji : '🥇'}
+                  {first ? renderAvatar(first.avatar_url, first.avatar_emoji) : '🥇'}
                 </div>
               </div>
 
@@ -185,9 +203,9 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                 {t.ranking.bronzeBadge}
               </div>
 
-              <div className="w-14 h-14 sm:w-16 sm:h-16 aspect-square shrink-0 mx-auto rounded-full p-1 bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-700 shadow-md">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 aspect-square shrink-0 mx-auto rounded-full p-0.5 bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-700 shadow-md">
                 <div className="w-full h-full aspect-square rounded-full bg-navy-900 flex items-center justify-center text-3xl overflow-hidden border border-amber-600/40">
-                  {third ? third.avatar_emoji : '🥉'}
+                  {third ? renderAvatar(third.avatar_url, third.avatar_emoji) : '🥉'}
                 </div>
               </div>
 
@@ -207,8 +225,8 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
         {/* 5. Real User Status Banner */}
         <div className="sismo-card p-3.5 rounded-2xl border border-brand-cyan/40 bg-gradient-to-r from-blue-950/90 via-navy-900/95 to-navy-950/95 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center text-2xl shrink-0">
-              {user.avatar_emoji || '🦅'}
+            <div className="w-10 h-10 rounded-full bg-navy-950 border border-brand-cyan/50 overflow-hidden flex items-center justify-center shrink-0">
+              {renderAvatar(user.avatar_url, user.avatar_emoji)}
             </div>
             <div>
               <div className="flex items-center gap-1.5">
@@ -264,10 +282,8 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                       #{player.rank}
                     </span>
 
-                    <div className={`relative w-9 h-9 rounded-full p-0.5 ${isMe ? 'bg-brand-cyan shadow-glow-cyan' : 'bg-navy-800 border border-white/10'} shrink-0`}>
-                      <div className="w-full h-full rounded-full bg-navy-900 flex items-center justify-center text-xl overflow-hidden">
-                        {player.avatar_emoji || '🧒'}
-                      </div>
+                    <div className={`relative w-9 h-9 rounded-full overflow-hidden ${isMe ? 'ring-2 ring-brand-cyan shadow-glow-cyan' : 'border border-white/10'} shrink-0 bg-navy-900 flex items-center justify-center`}>
+                      {renderAvatar(player.avatar_url, player.avatar_emoji)}
                     </div>
 
                     <div className="min-w-0">

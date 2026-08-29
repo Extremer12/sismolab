@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Lock, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, User } from 'lucide-react';
+import { ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, Sparkles } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
+import { OFFICIAL_AVATARS, AvatarOption } from '../../services/authService';
 import { sound } from '../../lib/sound';
 import { Modal } from '../../components/ui/Modal';
 import { useLanguage, LanguageToggle } from '../../i18n/LanguageContext';
@@ -13,8 +14,6 @@ interface ProfilePageProps {
   onNavigate: (screen: ScreenId) => void;
 }
 
-const AVATAR_LIST = ['🦅', '🦙', '🐆', '🦊', '🦉', '🦎', '🔬', '👷', '🌋', '⛺', '🧑‍🔬', '🎒'];
-
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   user,
   onUpdateUser,
@@ -25,6 +24,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [nameInput, setNameInput] = useState(user.nickname);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [avatarFilter, setAvatarFilter] = useState<'all' | 'fauna' | 'science' | 'rescue'>('all');
 
   const handleSaveName = () => {
     if (!nameInput.trim()) return;
@@ -36,9 +36,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     setIsEditingName(false);
   };
 
-  const handleSelectAvatar = (emoji: string) => {
+  const handleSelectAvatar = (avatar: AvatarOption) => {
     sound.playClick();
-    onUpdateUser({ avatar_emoji: emoji });
+    onUpdateUser({
+      avatar_url: avatar.url,
+      avatar_emoji: avatar.emoji
+    });
     setIsAvatarModalOpen(false);
   };
 
@@ -59,6 +62,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   };
 
   const unlockedCount = OFFICIAL_ACHIEVEMENTS.filter(a => isUnlocked(a.id)).length;
+
+  const filteredAvatars = avatarFilter === 'all'
+    ? OFFICIAL_AVATARS
+    : OFFICIAL_AVATARS.filter(a => a.category === avatarFilter);
 
   return (
     <div className="p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto select-none font-sans">
@@ -103,14 +110,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       </div>
 
       {/* Profile Card & Avatar */}
-      <div className="sismo-card p-5 flex flex-col items-center text-center space-y-3 border-brand-cyan/30">
+      <div className="sismo-card p-5 flex flex-col items-center text-center space-y-3 border-brand-cyan/30 relative overflow-hidden">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-cyan/15 rounded-full blur-2xl pointer-events-none" />
+
         <button
           onClick={() => { sound.playClick(); setIsAvatarModalOpen(true); }}
-          className="relative w-24 h-24 aspect-square rounded-full bg-gradient-to-br from-brand-blue via-navy-850 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40 hover:scale-105 transition-transform"
+          className="relative w-24 h-24 sm:w-28 sm:h-28 aspect-square rounded-full bg-navy-900 border-2 border-brand-cyan flex items-center justify-center shadow-[0_0_25px_rgba(0,184,255,0.4)] hover:scale-105 transition-transform group overflow-visible"
         >
-          <span>{user.avatar_emoji}</span>
-          <div className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center shadow-md">
-            <Edit3 className="w-3.5 h-3.5" />
+          <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-navy-950">
+            {user.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt={user.nickname}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="text-5xl">{user.avatar_emoji || '🦅'}</span>
+            )}
+          </div>
+
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center shadow-lg border-2 border-navy-950 group-hover:scale-110 transition-transform">
+            <Edit3 className="w-4 h-4" />
           </div>
         </button>
 
@@ -119,122 +142,118 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <div className="flex items-center gap-2 w-full max-w-xs">
             <input
               type="text"
-              maxLength={18}
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
-              className="flex-1 px-3 py-2 bg-navy-950 border border-brand-cyan rounded-xl text-sm font-black text-white outline-none"
+              maxLength={18}
+              className="flex-1 px-3 py-2 rounded-xl bg-navy-900 border border-brand-cyan/50 text-white font-black text-sm text-center focus:outline-none focus:border-brand-cyan"
               autoFocus
             />
             <button
               onClick={handleSaveName}
-              className="p-2.5 rounded-xl bg-brand-cyan text-navy-950 font-black text-xs"
+              className="p-2 rounded-xl bg-brand-cyan text-navy-950 font-bold"
             >
               <Check className="w-4 h-4" />
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-center gap-2">
-            <h2 className="font-black text-xl text-white">
+          <div className="flex items-center gap-2">
+            <h2 className="font-black text-lg text-white">
               {user.nickname}
             </h2>
             <button
               onClick={() => setIsEditingName(true)}
-              className="text-accent-gray hover:text-brand-cyan p-1"
-              aria-label={t.profile.editName}
+              className="text-slate-400 hover:text-brand-cyan"
             >
-              <Edit3 className="w-4 h-4" />
+              <Edit3 className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
-        {/* Age & Mode Badge */}
-        <div className="flex items-center gap-2 pt-0.5">
-          <span className="px-3 py-1 rounded-full bg-navy-950 border border-white/10 text-xs font-bold text-slate-300">
-            {user.age ? `${user.age} ${language === 'es' ? 'años' : 'years old'}` : (language === 'es' ? 'Edad no fijada' : 'Age not set')}
+        {/* Level & Mode Badges */}
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-yellow font-black text-xs">
+            {t.profile.currentLevel}: {user.level}
           </span>
-
-          <span className={`px-3 py-1 rounded-full border text-xs font-black uppercase ${
-            user.mode === 'kids'
-              ? 'bg-brand-cyan/15 border-brand-cyan text-brand-cyan'
-              : 'bg-brand-purple/20 border-brand-purple text-purple-300'
-          }`}>
+          <span className="px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/40 text-purple-300 font-black text-xs uppercase">
             {user.mode === 'kids' ? t.common.modeKids : t.common.modeAdults}
           </span>
         </div>
       </div>
 
-      {/* Stats Summary Grid */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="sismo-card p-3 space-y-0.5 border-brand-gold/30">
-          <span className="text-[10px] font-bold text-accent-gray block">{t.profile.totalScore}</span>
-          <span className="font-black text-base text-brand-yellow tabular-nums">⭐ {user.total_score}</span>
-        </div>
-
-        <div className="sismo-card p-3 space-y-0.5 border-brand-cyan/30">
-          <span className="text-[10px] font-bold text-accent-gray block">{t.profile.currentLevel}</span>
-          <span className="font-black text-base text-brand-cyan">{t.common.level} {user.level}</span>
-        </div>
-
-        <div className="sismo-card p-3 space-y-0.5 border-accent-success/30">
-          <span className="text-[10px] font-bold text-accent-gray block">{t.profile.accuracyRate}</span>
-          <span className="font-black text-base text-accent-success">{accuracyPercent}%</span>
-        </div>
-      </div>
-
-      {/* Badges / Achievements Section */}
-      <div className="space-y-3 pt-1">
-        <div className="flex items-center justify-between">
-          <h3 className="font-black text-sm text-white uppercase tracking-wide">
-            {t.profile.badgesTitle} ({unlockedCount}/6)
-          </h3>
-          <span className="text-xs font-bold text-brand-gold">
-            {t.profile.officialBadges}
+        <div className="sismo-card p-3 space-y-0.5">
+          <span className="text-xl font-black text-brand-yellow block tabular-nums">
+            {user.total_score.toLocaleString()}
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+            {t.common.points}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="sismo-card p-3 space-y-0.5">
+          <span className="text-xl font-black text-brand-cyan block tabular-nums">
+            {user.games_played}
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+            {language === 'es' ? 'Misiones' : 'Missions'}
+          </span>
+        </div>
+
+        <div className="sismo-card p-3 space-y-0.5">
+          <span className="text-xl font-black text-emerald-400 block tabular-nums">
+            {accuracyPercent}%
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+            {t.profile.accuracyRate}
+          </span>
+        </div>
+      </div>
+
+      {/* Achievements Section */}
+      <div className="sismo-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-black text-sm text-white uppercase tracking-wider flex items-center gap-2">
+            <Award className="w-4 h-4 text-brand-gold" />
+            <span>{t.profile.badgesTitle}</span>
+          </h3>
+          <span className="text-xs font-black text-brand-cyan tabular-nums">
+            {unlockedCount} / {OFFICIAL_ACHIEVEMENTS.length}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
           {OFFICIAL_ACHIEVEMENTS.map((ach) => {
             const unlocked = isUnlocked(ach.id);
             return (
               <div
                 key={ach.id}
-                className={`sismo-card p-3.5 flex flex-col justify-between text-left transition-all ${
+                className={`p-2.5 rounded-2xl border flex flex-col items-center text-center space-y-1 transition-all ${
                   unlocked
-                    ? 'border-brand-gold/50 bg-gradient-to-br from-navy-850 via-navy-900 to-amber-950/20'
-                    : 'opacity-40 border-white/5 bg-navy-950/60'
+                    ? 'bg-navy-900/90 border-brand-gold/50 shadow-[0_0_12px_rgba(245,184,61,0.2)]'
+                    : 'bg-navy-950/60 border-white/5 opacity-40 grayscale'
                 }`}
+                title={ach.description}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl">{ach.icon}</span>
-                  {unlocked ? (
-                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-brand-gold text-navy-950">
-                      {t.profile.unlockedBadge}
-                    </span>
-                  ) : (
-                    <Lock className="w-4 h-4 text-slate-500" />
-                  )}
-                </div>
-
-                <div className="pt-2">
-                  <h4 className="font-black text-xs text-white leading-tight">
-                    {ach.name}
-                  </h4>
-                  <p className="text-[11px] text-accent-gray leading-snug font-normal mt-0.5">
-                    {ach.description}
-                  </p>
-                </div>
+                <span className="text-2xl">{ach.icon}</span>
+                <span className="text-[10px] font-black text-white leading-tight line-clamp-1">
+                  {ach.name}
+                </span>
+                <span className="text-[8px] font-bold text-slate-400 line-clamp-1">
+                  {ach.description}
+                </span>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Institutional & Legal Access Links */}
-      <div className="sismo-card p-3 rounded-2xl border-white/10 space-y-1 divide-y divide-white/5">
-        {/* Onboarding & Age Tutorial Button */}
+      {/* Settings & Info Links */}
+      <div className="sismo-card p-2 divide-y divide-white/5">
+        {/* Onboarding & Age Reconfiguration */}
         <button
           onClick={() => { sound.playClick(); setIsTutorialOpen(true); }}
-          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-slate-200 hover:text-white transition-colors"
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-colors"
         >
           <div className="flex items-center gap-2.5">
             <HelpCircle className="w-4 h-4 text-brand-cyan" />
@@ -280,24 +299,77 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </button>
       </div>
 
-      {/* Avatar Picker Modal */}
+      {/* 3D Character Avatar Picker Modal */}
       <Modal
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
-        title={t.profile.chooseAvatar}
+        title={language === 'es' ? 'Elegí tu Avatar 3D' : 'Choose your 3D Avatar'}
       >
-        <div className="grid grid-cols-4 gap-3 py-2">
-          {AVATAR_LIST.map((emoji) => (
-            <button
-              key={emoji}
-              onClick={() => handleSelectAvatar(emoji)}
-              className="w-14 h-14 rounded-2xl bg-navy-950 hover:bg-navy-800 border border-white/10 hover:border-brand-cyan flex items-center justify-center text-3xl transition-transform hover:scale-110 active:scale-95"
-            >
-              {emoji}
-            </button>
-          ))}
+        <div className="space-y-4 py-1">
+          {/* Category Tabs */}
+          <div className="flex items-center justify-center gap-1.5 p-1 bg-navy-950 rounded-full border border-white/10 text-[11px] font-black uppercase">
+            {[
+              { id: 'all', label: language === 'es' ? 'Todos' : 'All' },
+              { id: 'fauna', label: language === 'es' ? 'Fauna Cuyo' : 'Fauna' },
+              { id: 'science', label: language === 'es' ? 'Ciencia' : 'Science' },
+              { id: 'rescue', label: language === 'es' ? 'Rescate' : 'Rescue' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => { sound.playClick(); setAvatarFilter(tab.id as any); }}
+                className={`flex-1 py-1.5 px-2 rounded-full transition-all ${
+                  avatarFilter === tab.id
+                    ? 'bg-brand-cyan text-navy-950 font-black shadow-glow-cyan'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 12 Avatars Grid */}
+          <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-1">
+            {filteredAvatars.map((avatar) => {
+              const isSelected = user.avatar_url === avatar.url || user.avatar_emoji === avatar.emoji;
+
+              return (
+                <button
+                  key={avatar.id}
+                  onClick={() => handleSelectAvatar(avatar)}
+                  className={`group relative p-2 rounded-2xl bg-navy-950 border text-center space-y-1.5 transition-all active:scale-95 flex flex-col items-center ${
+                    isSelected
+                      ? 'border-brand-cyan shadow-[0_0_20px_rgba(0,184,255,0.4)] ring-2 ring-brand-cyan/60'
+                      : 'border-white/10 hover:border-brand-cyan/50 hover:bg-navy-900'
+                  }`}
+                >
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 aspect-square rounded-full overflow-hidden bg-navy-900 border border-white/15 group-hover:scale-105 transition-transform flex items-center justify-center">
+                    <img
+                      src={avatar.url}
+                      alt={avatar.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+
+                  <span className="text-[10px] font-bold text-slate-200 line-clamp-1 block leading-tight px-0.5">
+                    {avatar.name}
+                  </span>
+
+                  {isSelected && (
+                    <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-brand-cyan text-navy-950 flex items-center justify-center shadow-md">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </Modal>
+
     </div>
   );
 };

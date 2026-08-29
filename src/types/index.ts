@@ -187,6 +187,7 @@ export interface RankEntry {
   id: string;
   nickname: string;
   avatar_emoji: string;
+  avatar_url?: string;
   score: number;
   mode: UserMode;
   rank: number;

@@ -7,7 +7,7 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
   try {
     let query = supabase
       .from('profiles')
-      .select('id, nickname, display_name, avatar_emoji, total_score, mode, updated_at')
+      .select('id, nickname, display_name, avatar_emoji, avatar_url, total_score, mode, updated_at')
       .eq('is_active', true)
       .gt('total_score', 0) // Only real players with points
       .order('total_score', { ascending: false })
@@ -24,7 +24,8 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
         id: item.id,
         rank: idx + 1,
         nickname: item.display_name || item.nickname || 'Explorador',
-        avatar_emoji: item.avatar_emoji || '🦁',
+        avatar_emoji: item.avatar_emoji || '🦅',
+        avatar_url: item.avatar_url || '/images/avatar/avatar_1.png',
         score: item.total_score || 0,
         mode: item.mode as UserMode
       }));
@@ -129,6 +130,7 @@ export function saveUserScoreLocally(user: UserProfile): void {
       rank: 0,
       nickname: user.display_name || user.nickname,
       avatar_emoji: user.avatar_emoji,
+      avatar_url: user.avatar_url,
       score: user.total_score,
       mode: user.mode,
       isCurrentUser: true

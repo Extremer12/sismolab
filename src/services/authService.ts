@@ -3,18 +3,41 @@ import { UserProfile, UserMode } from '../types';
 
 const PROFILE_STORAGE_KEY = 'sismolab_user_profile_v2';
 
-const DEFAULT_AVATARS = ['🦅', '🦙', '🐆', '🦊', '🦉', '🦎', '🔬', '👷'];
+export interface AvatarOption {
+  id: string;
+  name: string;
+  url: string;
+  emoji: string;
+  category: 'fauna' | 'science' | 'rescue';
+}
+
+export const OFFICIAL_AVATARS: AvatarOption[] = [
+  { id: 'avatar_1', name: 'Cóndor Andino Guardián', url: '/images/avatar/avatar_1.png', emoji: '🦅', category: 'fauna' },
+  { id: 'avatar_2', name: 'Guanaco Cordillerano', url: '/images/avatar/avatar_2.png', emoji: '🦙', category: 'fauna' },
+  { id: 'avatar_3', name: 'Puma Geólogo', url: '/images/avatar/avatar_3.png', emoji: '🐆', category: 'fauna' },
+  { id: 'avatar_4', name: 'Zorro del Desierto', url: '/images/avatar/avatar_4.png', emoji: '🦊', category: 'fauna' },
+  { id: 'avatar_5', name: 'Joven Geofísica', url: '/images/avatar/avatar_5.png', emoji: '👩‍🔬', category: 'science' },
+  { id: 'avatar_6', name: 'Geólogo de Campo', url: '/images/avatar/avatar_6.png', emoji: '🧑‍🔬', category: 'science' },
+  { id: 'avatar_7', name: 'Ingeniero Sismorresistente', url: '/images/avatar/avatar_7.png', emoji: '👷', category: 'science' },
+  { id: 'avatar_8', name: 'Dra. Ciencias de la Tierra', url: '/images/avatar/avatar_8.png', emoji: '🔬', category: 'science' },
+  { id: 'avatar_9', name: 'Niño Explorador 72h', url: '/images/avatar/avatar_9.png', emoji: '🎒', category: 'rescue' },
+  { id: 'avatar_10', name: 'Capitana de Simulacros', url: '/images/avatar/avatar_10.png', emoji: '👧', category: 'rescue' },
+  { id: 'avatar_11', name: 'Rescatista Urbano', url: '/images/avatar/avatar_11.png', emoji: '🚒', category: 'rescue' },
+  { id: 'avatar_12', name: 'SISMO-BOT Asistente', url: '/images/avatar/avatar_12.png', emoji: '🤖', category: 'rescue' },
+];
+
 const DEFAULT_NAMES = ['Cóndor Valiente', 'Guanaco Ágil', 'Puma Sabio', 'Zorro Veloz', 'Mara Curiosa'];
 
 export function createGuestProfile(nickname?: string, mode: UserMode = 'kids'): UserProfile {
   const chosenName = nickname?.trim() || `${DEFAULT_NAMES[Math.floor(Math.random() * DEFAULT_NAMES.length)]} ${Math.floor(Math.random() * 89 + 10)}`;
-  const chosenEmoji = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)];
+  const defaultAvatar = OFFICIAL_AVATARS[0];
   
   const newProfile: UserProfile = {
     id: 'guest_' + Date.now(),
     nickname: chosenName,
     display_name: chosenName,
-    avatar_emoji: chosenEmoji,
+    avatar_emoji: defaultAvatar.emoji,
+    avatar_url: defaultAvatar.url,
     mode,
     total_score: 0,
     level: 1,
@@ -76,7 +99,7 @@ export async function fetchOrCreateUserProfile(sessionUser: {
 }): Promise<{ profile: UserProfile; isNewUser: boolean }> {
   const meta = sessionUser.user_metadata || {};
   const googleName = (meta.full_name || meta.name || meta.display_name || sessionUser.email?.split('@')[0] || 'Explorador') as string;
-  const avatarUrl = (meta.avatar_url || meta.picture) as string | undefined;
+  const avatarUrl = (meta.avatar_url || meta.picture || OFFICIAL_AVATARS[0].url) as string;
 
   try {
     const { data, error } = await supabase
