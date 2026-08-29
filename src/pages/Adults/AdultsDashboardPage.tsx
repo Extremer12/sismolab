@@ -14,14 +14,10 @@ interface AdultGameCard {
   numberStr: string;
   titleEs: string;
   titleEn: string;
-  categoryEs: string;
-  categoryEn: string;
   bannerImage: string;
   xpReward: number;
   screenId: ScreenId;
   borderColor: string;
-  badgeBg: string;
-  badgeText: string;
   lockColor: string;
   unlockRequirement?: number;
 }
@@ -32,14 +28,10 @@ const ADULT_GAMES: AdultGameCard[] = [
     numberStr: '01',
     titleEs: 'FÍSICA Y SISMOLOGÍA',
     titleEn: 'PHYSICS & SEISMOLOGY',
-    categoryEs: 'CIENCIA INPRES',
-    categoryEn: 'INPRES SCIENCE',
     bannerImage: '/images/Banners/game_what_is.png',
     xpReward: 400,
     screenId: 'game-what-is',
     borderColor: 'border-purple-400/50 hover:border-purple-400',
-    badgeBg: 'bg-purple-950/90 border-purple-400/40',
-    badgeText: 'text-purple-300',
     lockColor: 'text-purple-400 border-purple-400/40',
   },
   {
@@ -47,14 +39,10 @@ const ADULT_GAMES: AdultGameCard[] = [
     numberStr: '02',
     titleEs: 'MOCHILA DE 72 HORAS',
     titleEn: '72-HOUR SURVIVAL KIT',
-    categoryEs: 'PLAN DE EMERGENCIA',
-    categoryEn: 'EMERGENCY PLAN',
     bannerImage: '/images/Banners/game_emergency_kit.png',
     xpReward: 600,
     screenId: 'game-emergency-kit',
     borderColor: 'border-amber-400/50 hover:border-amber-400',
-    badgeBg: 'bg-amber-950/90 border-amber-400/40',
-    badgeText: 'text-amber-300',
     lockColor: 'text-amber-400 border-amber-400/40',
     unlockRequirement: 1,
   },
@@ -63,14 +51,10 @@ const ADULT_GAMES: AdultGameCard[] = [
     numberStr: '03',
     titleEs: 'REFLEJOS EN 4 SEGUNDOS',
     titleEn: '4-SECOND REFLEXES',
-    categoryEs: 'ACCIÓN CRÍTICA',
-    categoryEn: 'CRITICAL ACTION',
     bannerImage: '/images/Banners/game_reflexes.png',
     xpReward: 600,
     screenId: 'game-safe-home',
     borderColor: 'border-emerald-400/50 hover:border-emerald-400',
-    badgeBg: 'bg-emerald-950/90 border-emerald-400/40',
-    badgeText: 'text-emerald-300',
     lockColor: 'text-emerald-400 border-emerald-400/40',
     unlockRequirement: 2,
   },
@@ -79,14 +63,10 @@ const ADULT_GAMES: AdultGameCard[] = [
     numberStr: '04',
     titleEs: 'DECISIÓN CRÍTICA',
     titleEn: 'CRITICAL DECISION',
-    categoryEs: 'PROTOCOLOS INPRES',
-    categoryEn: 'INPRES PROTOCOLS',
     bannerImage: '/images/Banners/game_scenarios.png',
     xpReward: 500,
     screenId: 'game-what-would-you-do',
     borderColor: 'border-rose-400/50 hover:border-rose-400',
-    badgeBg: 'bg-rose-950/90 border-rose-400/40',
-    badgeText: 'text-rose-300',
     lockColor: 'text-rose-400 border-rose-400/40',
     unlockRequirement: 3,
   },
@@ -95,14 +75,10 @@ const ADULT_GAMES: AdultGameCard[] = [
     numberStr: '05',
     titleEs: 'HOGAR Y ESTRUCTURAS',
     titleEn: 'STRUCTURAL SAFETY',
-    categoryEs: 'INGENIERÍA SÍSMICA',
-    categoryEn: 'SEISMIC ENGINEERING',
     bannerImage: '/images/Banners/game_safe_home.png',
     xpReward: 500,
     screenId: 'game-myth-reality',
     borderColor: 'border-cyan-400/50 hover:border-cyan-400',
-    badgeBg: 'bg-cyan-950/90 border-cyan-400/40',
-    badgeText: 'text-cyan-300',
     lockColor: 'text-cyan-400 border-cyan-400/40',
     unlockRequirement: 4,
   },
@@ -111,14 +87,10 @@ const ADULT_GAMES: AdultGameCard[] = [
     numberStr: '06',
     titleEs: 'DESAFÍO INTEGRAL',
     titleEn: 'COMPREHENSIVE EXAM',
-    categoryEs: 'EXAMEN FINAL',
-    categoryEn: 'FINAL EXAM',
     bannerImage: '/images/Banners/game_myths.png',
     xpReward: 1000,
     screenId: 'game-final-challenge',
     borderColor: 'border-yellow-400/50 hover:border-yellow-400',
-    badgeBg: 'bg-yellow-950/90 border-yellow-400/40',
-    badgeText: 'text-yellow-300',
     lockColor: 'text-yellow-400 border-yellow-400/40',
     unlockRequirement: 5,
   }
@@ -163,7 +135,6 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
 
           {/* XP Pill */}
           <div className="px-3.5 py-1.5 rounded-full bg-navy-900/90 border border-brand-gold/40 flex items-center gap-1.5 shadow-sm">
-            <span className="text-brand-yellow font-black text-xs">★</span>
             <span className="font-black text-xs text-brand-yellow tabular-nums">
               {user.total_score.toLocaleString()} XP
             </span>
@@ -203,7 +174,7 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
           </div>
         </div>
 
-        {/* 3. Rectangular Game Cards (Spacious, Uncluttered, Pixel-Perfect Buttons) */}
+        {/* 3. Rectangular Game Cards: Title Top + 01 Top-Right / XP Bottom-Left + JUGAR Bottom-Right */}
         <div className="space-y-3 pt-1">
           {ADULT_GAMES.map((game, idx) => {
             const isCompleted = completedIds.includes(game.screenId);
@@ -211,7 +182,6 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
             const isPlayable = idx === 0 || completedCount >= reqCount || isCompleted;
 
             const title = language === 'en' ? game.titleEn : game.titleEs;
-            const category = language === 'en' ? game.categoryEn : game.categoryEs;
 
             return (
               <div
@@ -222,7 +192,7 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
                     onNavigate(game.screenId);
                   }
                 }}
-                className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 min-h-[132px] sm:min-h-[142px] flex items-center justify-between p-4 sm:p-5 shadow-2xl bg-cover bg-left ${
+                className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 min-h-[135px] sm:min-h-[145px] flex shadow-2xl bg-cover bg-left ${
                   isCompleted
                     ? 'border-emerald-500/60 cursor-pointer hover:scale-[1.02]'
                     : isPlayable
@@ -231,48 +201,48 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
                 }`}
                 style={{ backgroundImage: `url('${game.bannerImage}')` }}
               >
-                {/* Right-side dark gradient overlay */}
-                <div className="absolute inset-y-0 right-0 w-[64%] bg-gradient-to-l from-navy-950/95 via-navy-950/75 to-transparent pointer-events-none z-0" />
+                {/* Dark gradient overlay on the right */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-navy-950/65 to-navy-950/95 pointer-events-none z-0" />
 
-                {/* Left spacer for 3D illustration */}
-                <div className="w-[36%] shrink-0 pointer-events-none" />
+                {/* Left 32% spacer for 3D graphic */}
+                <div className="w-[32%] sm:w-[35%] shrink-0 pointer-events-none" />
 
-                {/* Right Content Area */}
-                <div className="relative z-10 flex-1 flex items-center justify-between gap-3 pl-2">
-                  <div className="space-y-1.5 min-w-0 flex-1 pr-1">
-                    {/* Mission Badge (No "Módulo") */}
-                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${game.badgeBg} ${game.badgeText}`}>
-                      {language === 'es' ? 'MISIÓN' : 'MISSION'} {game.numberStr} · {category}
-                    </span>
-
-                    {/* Big Title */}
-                    <h2 className="font-black text-base sm:text-lg text-white tracking-tight leading-snug uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] truncate sm:whitespace-normal">
+                {/* Right Area: Top Title + Number / Bottom XP + JUGAR Button */}
+                <div className="relative z-10 flex-1 flex flex-col justify-between py-3.5 pr-4 pl-1 min-w-0">
+                  
+                  {/* TOP ROW: Title on left, Number (01) on top-right */}
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="font-black text-base sm:text-lg text-white tracking-tight leading-snug uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 pr-1">
                       {title}
                     </h2>
-
-                    {/* XP Reward */}
-                    <div className="text-xs font-black text-brand-yellow flex items-center gap-1 drop-shadow-md">
-                      <span>★</span>
-                      <span>+{game.xpReward} XP</span>
-                    </div>
+                    <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-navy-900/90 border border-white/20 text-slate-200 font-mono font-black text-xs shadow-sm">
+                      {game.numberStr}
+                    </span>
                   </div>
 
-                  {/* Standardized Action Element: Identical 44px Button or Lock */}
-                  <div className="shrink-0">
+                  {/* BOTTOM ROW: XP without star icon on left + JUGAR button on right */}
+                  <div className="flex items-center justify-between gap-2 pt-2">
+                    {/* XP without star icon */}
+                    <span className="font-mono font-black text-sm text-brand-yellow tabular-nums tracking-wide drop-shadow-md">
+                      +{game.xpReward} XP
+                    </span>
+
+                    {/* JUGAR Button or Lock Circle */}
                     {isPlayable ? (
                       <button
                         type="button"
-                        className="h-11 px-5 rounded-full bg-gradient-to-r from-brand-electric to-brand-cyan hover:from-brand-blue hover:to-brand-electric text-navy-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-glow-cyan shrink-0 hover:scale-105 active:scale-95 transition-all"
+                        className="h-9 px-5 rounded-full bg-gradient-to-r from-brand-electric to-brand-cyan hover:from-brand-blue hover:to-brand-electric text-navy-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-glow-cyan shrink-0 hover:scale-105 active:scale-95 transition-all"
                       >
                         <span>{language === 'es' ? 'JUGAR' : 'PLAY'}</span>
                         <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
                       </button>
                     ) : (
-                      <div className={`w-11 h-11 rounded-full bg-navy-950/85 border flex items-center justify-center shrink-0 shadow-inner ${game.lockColor}`}>
+                      <div className={`w-9 h-9 rounded-full bg-navy-950/90 border flex items-center justify-center shrink-0 shadow-inner ${game.lockColor}`}>
                         <Lock className="w-4 h-4" />
                       </div>
                     )}
                   </div>
+
                 </div>
 
               </div>
