@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Lock, ChevronRight, Sparkles, Play, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Lock, ChevronRight, Sparkles } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -19,7 +19,6 @@ interface KidsGameCard {
   bannerImage: string;
   xpReward: number;
   screenId: ScreenId;
-  themeColor: 'cyan' | 'amber' | 'emerald' | 'rose' | 'blue' | 'purple';
   borderColor: string;
   badgeBg: string;
   badgeText: string;
@@ -38,11 +37,10 @@ const KIDS_GAMES: KidsGameCard[] = [
     bannerImage: '/images/Banners/game_what_is.png',
     xpReward: 400,
     screenId: 'game-what-is',
-    themeColor: 'cyan',
-    borderColor: 'border-brand-cyan/40 hover:border-brand-cyan',
-    badgeBg: 'bg-brand-cyan/20 border-brand-cyan/40',
-    badgeText: 'text-brand-cyan',
-    lockColor: 'text-brand-cyan border-brand-cyan/30',
+    borderColor: 'border-cyan-400/50 hover:border-cyan-400',
+    badgeBg: 'bg-cyan-950/90 border-cyan-400/40',
+    badgeText: 'text-cyan-300',
+    lockColor: 'text-cyan-400 border-cyan-400/40',
   },
   {
     id: 'k2',
@@ -54,11 +52,10 @@ const KIDS_GAMES: KidsGameCard[] = [
     bannerImage: '/images/Banners/game_emergency_kit.png',
     xpReward: 500,
     screenId: 'game-emergency-kit',
-    themeColor: 'amber',
-    borderColor: 'border-amber-500/40 hover:border-amber-400',
-    badgeBg: 'bg-amber-500/20 border-amber-500/40',
+    borderColor: 'border-amber-400/50 hover:border-amber-400',
+    badgeBg: 'bg-amber-950/90 border-amber-400/40',
     badgeText: 'text-amber-300',
-    lockColor: 'text-amber-400 border-amber-500/30',
+    lockColor: 'text-amber-400 border-amber-400/40',
     unlockRequirement: 1,
   },
   {
@@ -71,11 +68,10 @@ const KIDS_GAMES: KidsGameCard[] = [
     bannerImage: '/images/Banners/game_reflexes.png',
     xpReward: 600,
     screenId: 'game-safe-home',
-    themeColor: 'emerald',
-    borderColor: 'border-emerald-500/40 hover:border-emerald-400',
-    badgeBg: 'bg-emerald-500/20 border-emerald-500/40',
+    borderColor: 'border-emerald-400/50 hover:border-emerald-400',
+    badgeBg: 'bg-emerald-950/90 border-emerald-400/40',
     badgeText: 'text-emerald-300',
-    lockColor: 'text-emerald-400 border-emerald-500/30',
+    lockColor: 'text-emerald-400 border-emerald-400/40',
     unlockRequirement: 2,
   },
   {
@@ -88,28 +84,26 @@ const KIDS_GAMES: KidsGameCard[] = [
     bannerImage: '/images/Banners/game_scenarios.png',
     xpReward: 600,
     screenId: 'game-what-would-you-do',
-    themeColor: 'rose',
-    borderColor: 'border-rose-500/40 hover:border-rose-400',
-    badgeBg: 'bg-rose-500/20 border-rose-500/40',
+    borderColor: 'border-rose-400/50 hover:border-rose-400',
+    badgeBg: 'bg-rose-950/90 border-rose-400/40',
     badgeText: 'text-rose-300',
-    lockColor: 'text-rose-400 border-rose-500/30',
+    lockColor: 'text-rose-400 border-rose-400/40',
     unlockRequirement: 3,
   },
   {
     id: 'k5',
     numberStr: '05',
     titleEs: 'CASA SEGURA',
-    titleEn: 'SAFE HOME INSPECTION',
+    titleEn: 'SAFE HOME',
     categoryEs: 'PREVENCIÓN HOGAR',
     categoryEn: 'HOME SAFETY',
     bannerImage: '/images/Banners/game_safe_home.png',
     xpReward: 500,
     screenId: 'game-myth-reality',
-    themeColor: 'blue',
-    borderColor: 'border-blue-500/40 hover:border-blue-400',
-    badgeBg: 'bg-blue-500/20 border-blue-500/40',
+    borderColor: 'border-blue-400/50 hover:border-blue-400',
+    badgeBg: 'bg-blue-950/90 border-blue-400/40',
     badgeText: 'text-blue-300',
-    lockColor: 'text-blue-400 border-blue-500/30',
+    lockColor: 'text-blue-400 border-blue-400/40',
     unlockRequirement: 4,
   },
   {
@@ -117,16 +111,15 @@ const KIDS_GAMES: KidsGameCard[] = [
     numberStr: '06',
     titleEs: 'MITOS VS REALIDADES',
     titleEn: 'MYTHS VS REALITIES',
-    categoryEs: 'DESAFÍO SUPREMO',
-    categoryEn: 'SUPREME CHALLENGE',
+    categoryEs: 'DESAFÍO FINAL',
+    categoryEn: 'FINAL CHALLENGE',
     bannerImage: '/images/Banners/game_myths.png',
     xpReward: 1000,
     screenId: 'game-final-challenge',
-    themeColor: 'purple',
-    borderColor: 'border-purple-500/40 hover:border-purple-400',
-    badgeBg: 'bg-purple-500/20 border-purple-500/40',
+    borderColor: 'border-purple-400/50 hover:border-purple-400',
+    badgeBg: 'bg-purple-950/90 border-purple-400/40',
     badgeText: 'text-purple-300',
-    lockColor: 'text-purple-400 border-purple-500/30',
+    lockColor: 'text-purple-400 border-purple-400/40',
     unlockRequirement: 5,
   }
 ];
@@ -162,7 +155,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
             <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
 
-          {/* Mode Pill Indicator */}
+          {/* Mode Pill */}
           <div className="px-5 py-1.5 rounded-full bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5">
             <span>{language === 'es' ? 'MODO NIÑOS' : 'KIDS MODE'}</span>
             <span>🧒</span>
@@ -177,46 +170,40 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           </div>
         </div>
 
-        {/* 2. Hero Mission Banner ("CENTRO DE MISIONES · AVENTURA SÍSMICA") */}
-        <div className="relative rounded-3xl overflow-hidden border border-brand-cyan/30 bg-gradient-to-r from-[#071629] via-[#091f3a] to-[#051324] shadow-[0_8px_30px_rgba(4,14,27,0.85)] p-4 sm:p-5 min-h-[125px] flex items-center justify-between">
-          {/* Subtle Ambient Glow */}
-          <div className="absolute top-0 left-1/4 w-32 h-32 bg-brand-cyan/15 rounded-full blur-2xl pointer-events-none" />
+        {/* 2. Hero Mission Banner (Image occupies the whole background) */}
+        <div
+          className="relative rounded-3xl overflow-hidden border border-brand-cyan/40 p-4 sm:p-5 min-h-[135px] sm:min-h-[145px] flex items-center justify-between shadow-2xl bg-cover bg-right"
+          style={{ backgroundImage: `url('/images/Banners/hero_missions.png')` }}
+        >
+          {/* Subtle dark gradient overlay on the left to ensure crisp text reading */}
+          <div className="absolute inset-y-0 left-0 w-3/4 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-transparent pointer-events-none z-0" />
 
           {/* Left Text Content */}
-          <div className="relative z-10 space-y-1.5 max-w-[55%]">
+          <div className="relative z-10 space-y-1.5 max-w-[65%]">
             <span className="text-[10px] font-black tracking-widest text-brand-cyan uppercase block">
               {language === 'es' ? 'CENTRO DE MISIONES' : 'MISSION HUB'}
             </span>
-            <h1 className="font-black text-2xl sm:text-3xl text-white tracking-tight leading-none uppercase">
+            <h1 className="font-black text-2xl sm:text-3xl text-white tracking-tight leading-none uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               {language === 'es' ? 'AVENTURA SÍSMICA' : 'SEISMIC QUEST'}
             </h1>
 
             {/* Progress Counter & Bar */}
-            <div className="pt-2 space-y-1">
+            <div className="pt-1.5 space-y-1">
               <div className="flex items-center gap-1.5 text-[11px] font-black uppercase">
                 <span className="text-brand-yellow font-mono text-sm">{completedCount} / {totalCount}</span>
                 <span className="text-slate-300 text-[10px]">{language === 'es' ? 'COMPLETADOS' : 'COMPLETED'}</span>
               </div>
-              <div className="w-full h-2 bg-navy-950/90 rounded-full p-0.5 border border-white/10 overflow-hidden">
+              <div className="w-44 sm:w-52 h-2.5 bg-navy-950/90 rounded-full p-0.5 border border-white/15 overflow-hidden shadow-inner">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-electric to-brand-cyan shadow-glow-cyan transition-all duration-700"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-electric via-brand-cyan to-brand-cyan shadow-glow-cyan transition-all duration-700"
                   style={{ width: `${Math.max(6, progressPercent)}%` }}
                 />
               </div>
             </div>
           </div>
-
-          {/* Right Mountain Graphic */}
-          <div className="relative z-10 w-[45%] h-24 sm:h-28 flex items-center justify-end">
-            <img
-              src="/images/Banners/hero_missions.png"
-              alt="Aventura Sísmica"
-              className="h-full w-full object-contain filter drop-shadow-[0_0_15px_rgba(0,184,255,0.4)]"
-            />
-          </div>
         </div>
 
-        {/* 3. Rectangular Game Cards (40% Left Graphic / 60% Solid Dark Overlay Right) */}
+        {/* 3. Rectangular Game Cards (Banner occupies the whole background) */}
         <div className="space-y-3 pt-1">
           {KIDS_GAMES.map((game, idx) => {
             const isCompleted = completedIds.includes(game.screenId);
@@ -235,81 +222,54 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                     onNavigate(game.screenId);
                   }
                 }}
-                className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 min-h-[112px] sm:min-h-[120px] flex items-center shadow-lg group ${
+                className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 min-h-[125px] sm:min-h-[135px] flex items-center justify-between p-4 sm:p-5 shadow-2xl bg-cover bg-left ${
                   isCompleted
-                    ? 'border-emerald-500/60 bg-navy-950/95 cursor-pointer hover:scale-[1.01]'
+                    ? 'border-emerald-500/60 cursor-pointer hover:scale-[1.02]'
                     : isPlayable
-                    ? `${game.borderColor} bg-navy-950/95 cursor-pointer hover:scale-[1.01] active:scale-[0.99]`
-                    : 'border-white/10 bg-navy-950/80 opacity-60 cursor-not-allowed'
+                    ? `${game.borderColor} cursor-pointer hover:scale-[1.02] active:scale-[0.98]`
+                    : 'border-white/10 opacity-50 grayscale-[30%] cursor-not-allowed'
                 }`}
+                style={{ backgroundImage: `url('${game.bannerImage}')` }}
               >
-                {/* 1. Left 38% Area: 3D Illustration Graphic with thematic ambient glow */}
-                <div className="relative w-[38%] h-full shrink-0 flex items-center justify-center p-2 self-stretch overflow-hidden bg-gradient-to-r from-navy-900/60 to-transparent">
-                  <img
-                    src={game.bannerImage}
-                    alt={title}
-                    className="w-full h-24 sm:h-26 object-contain filter drop-shadow-[0_0_12px_rgba(0,0,0,0.8)] group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      // Fallback
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                </div>
+                {/* Right-side dark gradient overlay: guarantees perfect text contrast without covering the left 3D icon */}
+                <div className="absolute inset-y-0 right-0 w-[64%] bg-gradient-to-l from-navy-950/95 via-navy-950/75 to-transparent pointer-events-none z-0" />
 
-                {/* 2. Right 62% Area: Solid dark surface for high-contrast crisp text */}
-                <div className="relative z-10 w-[62%] py-3 pr-3 pl-1 flex items-center justify-between gap-2">
-                  <div className="space-y-1 min-w-0 flex-1">
-                    {/* Mission Badge & Category */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${game.badgeBg} ${game.badgeText}`}>
-                        {language === 'es' ? 'MISIÓN' : 'MISSION'} {game.numberStr}
-                      </span>
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide truncate">
-                        {category}
-                      </span>
-                    </div>
+                {/* Left spacer so text starts on the right 58% of the card */}
+                <div className="w-[36%] shrink-0 pointer-events-none" />
 
-                    {/* Game Title */}
-                    <h2 className="font-black text-sm sm:text-base text-white tracking-tight leading-tight line-clamp-2 uppercase">
+                {/* Right Content Area: Minimal, Uncluttered, Sharp */}
+                <div className="relative z-10 flex-1 flex items-center justify-between gap-2 pl-2">
+                  <div className="space-y-1">
+                    {/* Compact Badge */}
+                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${game.badgeBg} ${game.badgeText}`}>
+                      {language === 'es' ? 'MISIÓN' : 'MISSION'} {game.numberStr} · {category}
+                    </span>
+
+                    {/* Big Clean Title */}
+                    <h2 className="font-black text-lg sm:text-xl text-white tracking-tight leading-tight uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                       {title}
                     </h2>
 
-                    {/* XP & Status */}
-                    <div className="flex items-center gap-2 pt-0.5">
-                      <span className="text-xs font-black text-brand-yellow flex items-center gap-1">
-                        <span>★</span>
-                        <span>+{game.xpReward} XP</span>
-                      </span>
-                      {isCompleted && (
-                        <span className="text-[10px] font-black text-emerald-400 flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>{language === 'es' ? 'LISTO' : 'DONE'}</span>
-                        </span>
-                      )}
+                    {/* XP Reward */}
+                    <div className="text-xs font-black text-brand-yellow flex items-center gap-1 drop-shadow-md">
+                      <span>★</span>
+                      <span>+{game.xpReward} XP</span>
                     </div>
                   </div>
 
-                  {/* 3. Action Right Element (Button or Lock Icon) */}
+                  {/* Action Element: JUGAR Button or Lock Circle */}
                   <div className="shrink-0 pl-1">
-                    {isCompleted ? (
+                    {isPlayable ? (
                       <button
                         type="button"
-                        className="px-3.5 py-2 rounded-full bg-emerald-950/90 border border-emerald-400/60 text-emerald-300 font-black text-xs tracking-wider uppercase flex items-center gap-1 hover:bg-emerald-900 transition-all shadow-sm"
-                      >
-                        <span>{language === 'es' ? 'JUGAR' : 'PLAY'}</span>
-                        <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
-                      </button>
-                    ) : isPlayable ? (
-                      <button
-                        type="button"
-                        className="px-4 py-2.5 rounded-full bg-gradient-to-r from-brand-electric to-brand-cyan hover:from-brand-blue hover:to-brand-electric text-navy-950 font-black text-xs tracking-wider uppercase flex items-center gap-1 shadow-glow-cyan transition-all group-hover:scale-105"
+                        className="px-5 py-2.5 rounded-full bg-gradient-to-r from-brand-electric to-brand-cyan hover:from-brand-blue hover:to-brand-electric text-navy-950 font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-glow-cyan transition-all hover:scale-105 active:scale-95"
                       >
                         <span>{language === 'es' ? 'JUGAR' : 'PLAY'}</span>
                         <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
                       </button>
                     ) : (
-                      <div className={`w-11 h-11 rounded-full bg-navy-900/90 border flex items-center justify-center shadow-inner ${game.lockColor}`}>
-                        <Lock className="w-4 h-4" />
+                      <div className={`w-12 h-12 rounded-full bg-navy-950/90 border flex items-center justify-center shadow-inner ${game.lockColor}`}>
+                        <Lock className="w-5 h-5" />
                       </div>
                     )}
                   </div>
