@@ -48,6 +48,11 @@ function AppContent() {
       if (hash.includes('access_token') || hash.includes('refresh_token') || search.includes('code=')) {
         return 'home';
       }
+      // If user has a saved authenticated session or completed profile, stay in home
+      const local = loadLocalProfile();
+      if (local && (local.auth_user_id || local.has_completed_onboarding || local.total_score > 0 || local.games_played > 0)) {
+        return 'home';
+      }
     }
     return 'splash';
   });
@@ -237,7 +242,9 @@ function AppContent() {
         >
           {activeScreen === 'splash' && (
             <SplashScreen
+              user={user}
               onLoginSuccess={handleLoginSuccess}
+              onContinue={() => setActiveScreen('home')}
             />
           )}
 

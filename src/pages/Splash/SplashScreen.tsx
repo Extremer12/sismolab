@@ -2,15 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { sound } from '../../lib/sound';
 import { signInWithGoogle } from '../../services/authService';
 import { useLanguage, LanguageToggle } from '../../i18n/LanguageContext';
+import { UserProfile } from '../../types';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 interface SplashScreenProps {
+  user?: UserProfile;
   onLoginSuccess: (nickname: string) => void;
+  onContinue?: () => void;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginSuccess }) => {
+export const SplashScreen: React.FC<SplashScreenProps> = ({ user, onLoginSuccess, onContinue }) => {
   const { t, language } = useLanguage();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [interactiveOffset, setInteractiveOffset] = useState({ x: 0, y: 0 });
+
+  const hasExistingSession = Boolean(user && (user.auth_user_id || user.has_completed_onboarding || user.total_score > 0));
 
   // Interactive mouse move parallax
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -107,7 +113,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginSuccess }) =>
         </div>
       </div>
 
-      {/* LAYER 6: Bottom Action Panel with Google Login Exclusively */}
+      {/* LAYER 6: Bottom Action Panel */}
       <div
         className="relative z-20 pb-6 max-w-sm mx-auto w-full space-y-3 will-change-transform"
         style={{
@@ -116,11 +122,32 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginSuccess }) =>
         }}
       >
         <div className="space-y-2.5">
+          {/* If user already has an active session or profile, show direct Resume Button */}
+          {hasExistingSession && onContinue && (
+            <button
+              onClick={() => {
+                sound.playClick();
+                onContinue();
+              }}
+              className="relative overflow-hidden w-full h-14 bg-gradient-to-r from-brand-electric to-brand-cyan hover:from-brand-blue hover:to-brand-electric text-navy-950 font-black rounded-pill flex items-center justify-between px-6 text-base shadow-glow-cyan transition-all active:scale-[0.98] border border-cyan-300/40 group mb-2"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-lg">{user?.avatar_emoji || '🦅'}</span>
+                <span className="font-black text-sm tracking-wide">
+                  {language === 'es' ? `Continuar como ${user?.nickname}` : `Continue as ${user?.nickname}`}
+                </span>
+              </div>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform stroke-[2.5]" />
+            </button>
+          )}
+
           {/* Primary Google Login Button with Shimmer Sheen */}
           <button
             onClick={handleGoogleAuth}
             disabled={isLoggingIn}
-            className="relative overflow-hidden w-full h-14 bg-white hover:bg-slate-100 text-navy-950 font-black rounded-pill flex items-center justify-center gap-3 text-base shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all active:scale-[0.98] border border-white/60 group"
+            className={`relative overflow-hidden w-full h-14 bg-white hover:bg-slate-100 text-navy-950 font-black rounded-pill flex items-center justify-center gap-3 text-base shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all active:scale-[0.98] border border-white/60 group ${
+              hasExistingSession ? 'opacity-90 hover:opacity-100 text-xs h-11' : ''
+            }`}
           >
             {/* Shimmer Light Reflection Sweep */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer pointer-events-none" />
@@ -131,7 +158,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginSuccess }) =>
               <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
               <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
             </svg>
-            <span className="relative z-10">{isLoggingIn ? t.splash.loggingIn : t.splash.googleLogin}</span>
+            <span className="relative z-10">
+              {isLoggingIn
+                ? t.splash.loggingIn
+                : hasExistingSession
+                ? (language === 'es' ? 'Cambiar de Cuenta con Google' : 'Switch Google Account')
+                : t.splash.googleLogin}
+            </span>
           </button>
         </div>
 
@@ -143,3 +176,4 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginSuccess }) =>
     </div>
   );
 };
+
