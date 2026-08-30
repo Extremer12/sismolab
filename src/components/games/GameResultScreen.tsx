@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Trophy, Star, Sparkles, RotateCcw, ArrowRight, Flame, Zap, Award, CheckCircle2 } from 'lucide-react';
+import { Star, Sparkles, RotateCcw, ArrowRight, Flame, Zap, CheckCircle2 } from 'lucide-react';
 import { sound } from '../../lib/sound';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export interface GameResultScreenProps {
   gameTitle: string;
@@ -23,9 +24,10 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   onReplay,
   onContinue
 }) => {
+  const { t } = useLanguage();
   const [starsVisible, setStarsVisible] = useState<number>(0);
 
-  // Calculate star count: 3 stars if >= 85%, 2 stars if >= 60%, 1 star otherwise
+  // Calculate star count: 3 stars if >= 85%, 2 stars if >= 55%, 1 star otherwise
   const accuracy = totalCount > 0 ? correctCount / totalCount : 1;
   const starsEarned = accuracy >= 0.85 ? 3 : accuracy >= 0.55 ? 2 : 1;
 
@@ -60,15 +62,15 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   }, [starsEarned]);
 
   const getTitleMessage = () => {
-    if (starsEarned === 3) return '¡DESEMPEÑO IMPECABLE!';
-    if (starsEarned === 2) return '¡EXCELENTE TRABAJO!';
-    return '¡BUEN INTENTO!';
+    if (starsEarned === 3) return t.gameResult.impeccableTitle;
+    if (starsEarned === 2) return t.gameResult.greatTitle;
+    return t.gameResult.goodTitle;
   };
 
   const getSubtitleMessage = () => {
-    if (starsEarned === 3) return 'Demostraste un dominio total de la sismología sanjuanina.';
-    if (starsEarned === 2) return '¡Estás muy cerca de la puntuación perfecta!';
-    return 'Repasá los conceptos y volvé a intentarlo para subir al podio.';
+    if (starsEarned === 3) return t.gameResult.impeccableSub;
+    if (starsEarned === 2) return t.gameResult.greatSub;
+    return t.gameResult.goodSub;
   };
 
   return (
@@ -79,7 +81,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
       {/* Top Header Badge */}
       <div className="relative z-10 pt-4 text-center">
         <span className="px-4 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-yellow font-black text-[11px] uppercase tracking-[0.25em] inline-block shadow-glow-gold/30">
-          DESAFÍO COMPLETADO
+          {t.gameResult.completedBadge}
         </span>
       </div>
 
@@ -122,7 +124,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
               </div>
               <div>
                 <span className="text-[10px] font-black text-brand-gold uppercase tracking-wider block">
-                  XP GANADO
+                  {t.gameResult.xpEarned}
                 </span>
                 <span className="font-extrabold text-xs text-white">
                   {gameTitle}
@@ -134,7 +136,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
               <span className="font-black text-3xl text-brand-yellow tabular-nums drop-shadow-md">
                 +{earnedScore}
               </span>
-              <span className="text-xs font-bold text-brand-gold block">PUNTOS</span>
+              <span className="text-xs font-bold text-brand-gold block">{t.gameResult.points}</span>
             </div>
           </div>
 
@@ -146,7 +148,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
                 {correctCount}/{totalCount}
               </span>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-                Aciertos
+                {t.gameResult.accuracy}
               </span>
             </div>
 
@@ -156,7 +158,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
                 x{Math.max(1, maxStreak)}
               </span>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-                Racha Máx.
+                {t.gameResult.maxStreak}
               </span>
             </div>
 
@@ -166,7 +168,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
                 +{speedBonus}
               </span>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-                Bonus Veloz
+                {t.gameResult.speedBonus}
               </span>
             </div>
           </div>
@@ -179,7 +181,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
           onClick={() => { sound.playClick(); onContinue(); }}
           className="w-full h-14 rounded-full bg-gradient-to-r from-brand-yellow via-amber-400 to-yellow-500 text-navy-950 font-black text-base uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_6px_30px_rgba(245,184,61,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
-          <span>Continuar & Guardar Ranking</span>
+          <span>{t.gameResult.continueBtn}</span>
           <ArrowRight className="w-5 h-5 stroke-[2.5]" />
         </button>
 
@@ -188,7 +190,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
           className="w-full h-12 rounded-full bg-navy-900/90 border border-white/20 hover:border-brand-cyan/50 text-slate-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
         >
           <RotateCcw className="w-4 h-4 text-brand-cyan" />
-          <span>Jugar Otra Ronda (Nuevas Preguntas)</span>
+          <span>{t.gameResult.replayBtn}</span>
         </button>
       </div>
     </div>

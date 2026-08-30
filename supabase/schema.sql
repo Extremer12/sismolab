@@ -262,3 +262,78 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'message', 'Tabla de posiciones reiniciada exitosamente para la feria');
 END;
 $$;
+
+-- RPC: Registro atómico y seguro de puntaje de partida (Server-Side Score Validation)
+CREATE OR REPLACE FUNCTION public.submit_game_score(
+  p_player_id UUID,
+  p_nickname TEXT,
+  p_display_name TEXT,
+  p_avatar_emoji TEXT,
+  p_avatar_url TEXT,
+  p_mode TEXT,
+  p_game_id TEXT,
+  p_score INTEGER,
+  p_correct_count INTEGER,
+  p_total_count INTEGER,
+  p_completed_game_ids TEXT[] DEFAULT ARRAY[]::TEXT[]
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_new_total INT;
+  v_new_games INT;
+BEGIN
+  -- 1. Upsert / Incrementar estadísticas del jugador
+  INSERT INTO public.profiles (
+    id, nickname, display_name, avatar_emoji, avatar_url, mode,
+    total_score, level, games_played, correct_answers, total_answers, completed_game_ids,
+    is_active, last_active_at, updated_at
+  )
+  VALUES (
+    p_player_id, p_nickname, COALESCE(p_display_name, p_nickname), p_avatar_emoji, p_avatar_url, p_mode,
+    GREATEST(0, p_score), (GREATEST(0, p_score) / 400) + 1, 1, p_correct_count, p_total_count, p_completed_game_ids,
+    true, timezone('utc'::TEXT, now()), timezone('utc'::TEXT, now())
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    nickname = EXCLUDED.nickname,
+    display_name = EXCLUDED.display_name,
+    avatar_emoji = EXCLUDED.avatar_emoji,
+    avatar_url = EXCLUDED.avatar_url,
+    mode = EXCLUDED.mode,
+    total_score = public.profiles.total_score + EXCLUDED.total_score,
+    level = ((public.profiles.total_score + EXCLUDED.total_score) / 400) + 1,
+    games_played = public.profiles.games_played + 1,
+    correct_answers = public.profiles.correct_answers + EXCLUDED.correct_answers,
+    total_answers = public.profiles.total_answers + EXCLUDED.total_answers,
+    completed_game_ids = ARRAY(SELECT DISTINCT UNNEST(public.profiles.completed_game_ids || EXCLUDED.completed_game_ids)),
+    is_active = true,
+    last_active_at = timezone('utc'::TEXT, now()),
+    updated_at = timezone('utc'::TEXT, now())
+  RETURNING total_score, games_played
+  INTO v_new_total, v_new_games;
+
+  -- 2. Registrar sesión individual
+  INSERT INTO public.game_sessions (
+    player_id, game_id, mode, score, correct_count, total_count, metadata
+  )
+  VALUES (
+    p_player_id, p_game_id, p_mode, p_score, p_correct_count, p_total_count,
+    jsonb_build_object(
+      'nickname', p_nickname,
+      'avatar', p_avatar_emoji,
+      'completed_at', timezone('utc'::TEXT, now())
+    )
+  );
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'player_id', p_player_id,
+    'total_score', v_new_total,
+    'games_played', v_new_games
+  );
+END;
+$$;
+

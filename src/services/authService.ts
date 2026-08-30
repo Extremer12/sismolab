@@ -236,3 +236,18 @@ export async function syncProfileWithSupabase(profile: UserProfile): Promise<voi
     console.warn('Sync profile fallback to local:', err);
   }
 }
+
+let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function syncProfileWithSupabaseDebounced(profile: UserProfile, delayMs: number = 450): void {
+  saveLocalProfile(profile);
+
+  if (syncDebounceTimer) {
+    clearTimeout(syncDebounceTimer);
+  }
+
+  syncDebounceTimer = setTimeout(() => {
+    syncProfileWithSupabase(profile);
+  }, delayMs);
+}
+

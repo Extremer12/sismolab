@@ -119,6 +119,24 @@ export interface Translations {
     institutionalCredits: string;
     privacyPolicy: string;
     termsConditions: string;
+    logoutBtn: string;
+    logoutConfirm: string;
+  };
+  gameResult: {
+    completedBadge: string;
+    impeccableTitle: string;
+    impeccableSub: string;
+    greatTitle: string;
+    greatSub: string;
+    goodTitle: string;
+    goodSub: string;
+    xpEarned: string;
+    points: string;
+    accuracy: string;
+    maxStreak: string;
+    speedBonus: string;
+    continueBtn: string;
+    replayBtn: string;
   };
   admin: {
     loginTitle: string;

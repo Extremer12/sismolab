@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenId, UserMode, UserProfile } from './types';
 import { supabase } from './services/supabase';
-import { loadLocalProfile, createGuestProfile, saveLocalProfile, syncProfileWithSupabase, fetchOrCreateUserProfile } from './services/authService';
+import { loadLocalProfile, createGuestProfile, saveLocalProfile, syncProfileWithSupabase, syncProfileWithSupabaseDebounced, fetchOrCreateUserProfile } from './services/authService';
 import { saveUserScoreLocally, submitGameScoreToSupabase } from './services/scoresService';
 import { sound } from './lib/sound';
 
@@ -55,11 +55,11 @@ function AppContent() {
     return loadLocalProfile() || createGuestProfile();
   });
 
-  // Sync profile when state updates
+  // Sync profile when state updates with debouncing
   useEffect(() => {
     saveLocalProfile(user);
     saveUserScoreLocally(user);
-    syncProfileWithSupabase(user);
+    syncProfileWithSupabaseDebounced(user);
   }, [user]);
 
   // Check active session & listen to Supabase OAuth login

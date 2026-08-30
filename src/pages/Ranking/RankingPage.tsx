@@ -4,6 +4,7 @@ import { ScreenId, UserProfile, RankEntry, UserMode } from '../../types';
 import { fetchLeaderboard, calculateUserRank } from '../../services/scoresService';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { UiverseLoader } from '../../components/ui/UiverseLoader';
 
 interface RankingPageProps {
   user: UserProfile;
@@ -149,8 +150,15 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
           })}
         </div>
 
-        {/* 4. Sleek Minimalist Top 3 Podium with 3D Avatars */}
-        <div className="pt-3 pb-1">
+        {/* Loading State with Uiverse Loader */}
+        {isLoading && leaderboard.length === 0 ? (
+          <div className="py-12 flex justify-center">
+            <UiverseLoader text={language === 'es' ? 'CARGANDO CLASIFICACIÓN...' : 'LOADING LEADERBOARD...'} />
+          </div>
+        ) : (
+          <>
+            {/* 4. Sleek Minimalist Top 3 Podium with 3D Avatars */}
+            <div className="pt-3 pb-1">
           <div className="grid grid-cols-3 gap-2 sm:gap-3 items-end text-center">
             
             {/* 2nd Place (Silver - Left) */}
@@ -304,6 +312,8 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
               );
             })}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

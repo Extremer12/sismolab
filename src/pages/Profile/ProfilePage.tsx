@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, Sparkles, LogOut } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
-import { OFFICIAL_AVATARS, AvatarOption } from '../../services/authService';
+import { OFFICIAL_AVATARS, AvatarOption, createGuestProfile } from '../../services/authService';
+import { supabase } from '../../services/supabase';
 import { sound } from '../../lib/sound';
 import { Modal } from '../../components/ui/Modal';
 import { useLanguage, LanguageToggle } from '../../i18n/LanguageContext';
@@ -296,6 +297,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <span className="font-bold">{t.profile.termsConditions}</span>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-500" />
+        </button>
+
+        {/* Logout / Switch User */}
+        <button
+          onClick={async () => {
+            if (window.confirm(t.profile.logoutConfirm)) {
+              sound.playClick();
+              try {
+                await supabase.auth.signOut();
+              } catch {
+                // Fallback
+              }
+              const newGuest = createGuestProfile();
+              onUpdateUser(newGuest);
+              onNavigate('splash');
+            }
+          }}
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-950/20 transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <LogOut className="w-4 h-4 text-rose-400" />
+            <span className="font-bold">{t.profile.logoutBtn}</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-rose-500" />
         </button>
       </div>
 

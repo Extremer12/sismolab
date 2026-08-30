@@ -65,7 +65,26 @@ export async function submitGameScoreToSupabase(
   if (!supabase || !user.id) return;
 
   try {
-    // 1. Sync / Upsert User in Supabase with explicit unique UUID conflict resolution
+    // 1. Try secure Server-Side RPC first
+    const { data: rpcData, error: rpcError } = await supabase.rpc('submit_game_score', {
+      p_player_id: user.id,
+      p_nickname: user.nickname,
+      p_display_name: user.display_name || user.nickname,
+      p_avatar_emoji: user.avatar_emoji,
+      p_avatar_url: user.avatar_url,
+      p_mode: user.mode,
+      p_game_id: gameId,
+      p_score: earnedScore,
+      p_correct_count: correctCount,
+      p_total_count: totalCount,
+      p_completed_game_ids: user.completed_game_ids || []
+    });
+
+    if (!rpcError && rpcData?.success) {
+      return;
+    }
+
+    // 2. Fallback to direct upsert if RPC is not yet created in Supabase
     const profilePayload: Record<string, unknown> = {
       id: user.id,
       nickname: user.nickname,
@@ -89,15 +108,11 @@ export async function submitGameScoreToSupabase(
       profilePayload.auth_user_id = user.auth_user_id;
     }
 
-    const { error: upsertError } = await supabase
+    await supabase
       .from('profiles')
       .upsert(profilePayload, { onConflict: 'id' });
 
-    if (upsertError) {
-      console.warn('Profile upsert warning in submitGameScoreToSupabase:', upsertError);
-    }
-
-    // 2. Log Game Session with valid player UUID
+    // Log Game Session
     await supabase.from('game_sessions').insert({
       player_id: user.id,
       game_id: gameId,
