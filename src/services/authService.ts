@@ -12,18 +12,18 @@ export interface AvatarOption {
 }
 
 export const OFFICIAL_AVATARS: AvatarOption[] = [
-  { id: 'avatar_1', name: 'Cóndor Andino Guardián', url: '/images/avatar/avatar_1.png', emoji: '🦅', category: 'fauna' },
-  { id: 'avatar_2', name: 'Guanaco Cordillerano', url: '/images/avatar/avatar_2.png', emoji: '🦙', category: 'fauna' },
-  { id: 'avatar_3', name: 'Puma Geólogo', url: '/images/avatar/avatar_3.png', emoji: '🐆', category: 'fauna' },
-  { id: 'avatar_4', name: 'Zorro del Desierto', url: '/images/avatar/avatar_4.png', emoji: '🦊', category: 'fauna' },
-  { id: 'avatar_5', name: 'Joven Geofísica', url: '/images/avatar/avatar_5.png', emoji: '👩‍🔬', category: 'science' },
-  { id: 'avatar_6', name: 'Geólogo de Campo', url: '/images/avatar/avatar_6.png', emoji: '🧑‍🔬', category: 'science' },
-  { id: 'avatar_7', name: 'Ingeniero Sismorresistente', url: '/images/avatar/avatar_7.png', emoji: '👷', category: 'science' },
-  { id: 'avatar_8', name: 'Dra. Ciencias de la Tierra', url: '/images/avatar/avatar_8.png', emoji: '🔬', category: 'science' },
-  { id: 'avatar_9', name: 'Niño Explorador 72h', url: '/images/avatar/avatar_9.png', emoji: '🎒', category: 'rescue' },
-  { id: 'avatar_10', name: 'Capitana de Simulacros', url: '/images/avatar/avatar_10.png', emoji: '👧', category: 'rescue' },
-  { id: 'avatar_11', name: 'Rescatista Urbano', url: '/images/avatar/avatar_11.png', emoji: '🚒', category: 'rescue' },
-  { id: 'avatar_12', name: 'SISMO-BOT Asistente', url: '/images/avatar/avatar_12.png', emoji: '🤖', category: 'rescue' },
+  { id: 'avatar_1', name: 'Cóndor Andino Guardián', url: '/images/avatar/avatar_1.webp', emoji: '🦅', category: 'fauna' },
+  { id: 'avatar_2', name: 'Guanaco Cordillerano', url: '/images/avatar/avatar_2.webp', emoji: '🦙', category: 'fauna' },
+  { id: 'avatar_3', name: 'Puma Geólogo', url: '/images/avatar/avatar_3.webp', emoji: '🐆', category: 'fauna' },
+  { id: 'avatar_4', name: 'Zorro del Desierto', url: '/images/avatar/avatar_4.webp', emoji: '🦊', category: 'fauna' },
+  { id: 'avatar_5', name: 'Joven Geofísica', url: '/images/avatar/avatar_5.webp', emoji: '👩‍🔬', category: 'science' },
+  { id: 'avatar_6', name: 'Geólogo de Campo', url: '/images/avatar/avatar_6.webp', emoji: '🧑‍🔬', category: 'science' },
+  { id: 'avatar_7', name: 'Ingeniero Sismorresistente', url: '/images/avatar/avatar_7.webp', emoji: '👷', category: 'science' },
+  { id: 'avatar_8', name: 'Dra. Ciencias de la Tierra', url: '/images/avatar/avatar_8.webp', emoji: '🔬', category: 'science' },
+  { id: 'avatar_9', name: 'Niño Explorador 72h', url: '/images/avatar/avatar_9.webp', emoji: '🎒', category: 'rescue' },
+  { id: 'avatar_10', name: 'Capitana de Simulacros', url: '/images/avatar/avatar_10.webp', emoji: '👧', category: 'rescue' },
+  { id: 'avatar_11', name: 'Rescatista Urbano', url: '/images/avatar/avatar_11.webp', emoji: '🚒', category: 'rescue' },
+  { id: 'avatar_12', name: 'SISMO-BOT Asistente', url: '/images/avatar/avatar_12.webp', emoji: '🤖', category: 'rescue' },
 ];
 
 const DEFAULT_NAMES = ['Cóndor Valiente', 'Guanaco Ágil', 'Puma Sabio', 'Zorro Veloz', 'Mara Curiosa'];

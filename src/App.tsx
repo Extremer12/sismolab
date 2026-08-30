@@ -1,40 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ScreenId, UserMode, UserProfile } from './types';
 import { supabase } from './services/supabase';
 import { loadLocalProfile, createGuestProfile, saveLocalProfile, syncProfileWithSupabase, syncProfileWithSupabaseDebounced, fetchOrCreateUserProfile } from './services/authService';
 import { saveUserScoreLocally, submitGameScoreToSupabase } from './services/scoresService';
 import { sound } from './lib/sound';
 
-// Navigation Components
+// Navigation & Global UI Components
 import { TopBar } from './components/navigation/TopBar';
 import { BottomNav } from './components/navigation/BottomNav';
 import { PWAInstallBanner } from './components/ui/PWAInstallBanner';
+import { OfflineIndicator } from './components/ui/OfflineIndicator';
+import { UiverseLoader } from './components/ui/UiverseLoader';
 
 // Onboarding Tutorial
 import { OnboardingTutorial } from './components/onboarding/OnboardingTutorial';
 
-// Pages
+// Primary Core Screens (Eager loaded for instant first render)
 import { SplashScreen } from './pages/Splash/SplashScreen';
 import { HomeScreen } from './pages/Home/HomeScreen';
 import { KidsAdventurePage } from './pages/Kids/KidsAdventurePage';
 import { AdultsDashboardPage } from './pages/Adults/AdultsDashboardPage';
-import { HistoryPage } from './pages/History/HistoryPage';
-import { PdfReaderPage } from './pages/PdfReader/PdfReaderPage';
 import { RankingPage } from './pages/Ranking/RankingPage';
 import { ProfilePage } from './pages/Profile/ProfilePage';
-import { AdminDashboardPage } from './pages/Admin/AdminDashboardPage';
-import { PrivacyPolicyPage } from './pages/Legal/PrivacyPolicyPage';
-import { TermsPage } from './pages/Legal/TermsPage';
-import { CreditsPage } from './pages/Legal/CreditsPage';
 import { LanguageProvider } from './i18n/LanguageContext';
 
-// Games
-import { WhatIsSeismicGame } from './components/games/WhatIsSeismicGame';
-import { SafeHomeGame } from './components/games/SafeHomeGame';
-import { EmergencyKitGame } from './components/games/EmergencyKitGame';
-import { WhatWouldYouDoGame } from './components/games/WhatWouldYouDoGame';
-import { MythOrRealityGame } from './components/games/MythOrRealityGame';
-import { FinalBossChallengeGame } from './components/games/FinalBossChallengeGame';
+// Lazy Loaded Minigames (Code-splitting to reduce initial bundle)
+const WhatIsSeismicGame = lazy(() => import('./components/games/WhatIsSeismicGame').then(m => ({ default: m.WhatIsSeismicGame })));
+const SafeHomeGame = lazy(() => import('./components/games/SafeHomeGame').then(m => ({ default: m.SafeHomeGame })));
+const EmergencyKitGame = lazy(() => import('./components/games/EmergencyKitGame').then(m => ({ default: m.EmergencyKitGame })));
+const WhatWouldYouDoGame = lazy(() => import('./components/games/WhatWouldYouDoGame').then(m => ({ default: m.WhatWouldYouDoGame })));
+const MythOrRealityGame = lazy(() => import('./components/games/MythOrRealityGame').then(m => ({ default: m.MythOrRealityGame })));
+const FinalBossChallengeGame = lazy(() => import('./components/games/FinalBossChallengeGame').then(m => ({ default: m.FinalBossChallengeGame })));
+
+// Lazy Loaded Secondary Pages
+const HistoryPage = lazy(() => import('./pages/History/HistoryPage').then(m => ({ default: m.HistoryPage })));
+const PdfReaderPage = lazy(() => import('./pages/PdfReader/PdfReaderPage').then(m => ({ default: m.PdfReaderPage })));
+const AdminDashboardPage = lazy(() => import('./pages/Admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const PrivacyPolicyPage = lazy(() => import('./pages/Legal/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
+const TermsPage = lazy(() => import('./pages/Legal/TermsPage').then(m => ({ default: m.TermsPage })));
+const CreditsPage = lazy(() => import('./pages/Legal/CreditsPage').then(m => ({ default: m.CreditsPage })));
 
 function AppContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>(() => {
@@ -157,18 +161,15 @@ function AppContent() {
       const isAdultPlayingKids = Boolean(prev.age && prev.age >= 13 && prev.mode === 'kids');
 
       if (isAdultPlayingKids) {
-        // Adult practice in kids mode -> no ranking score inflation
         addedScore = 0;
       } else {
         if (!completedIds.includes(id)) {
-          // First completion of this mission in assigned category -> full score
           addedScore = earnedScore;
         } else {
-          // Replaying: award delta if high score improved + 25 XP practice bonus
           if (earnedScore > previousHighScore) {
             addedScore = (earnedScore - previousHighScore) + 25;
           } else {
-            addedScore = 25; // small repeat practice bonus
+            addedScore = 25;
           }
         }
       }
@@ -205,6 +206,8 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950">
+      {/* Real-Time Offline Status Indicator */}
+      <OfflineIndicator />
       
       {/* Full-Screen Onboarding Tutorial & Age Verification */}
       {showTutorial && (
@@ -223,139 +226,147 @@ function AppContent() {
         />
       )}
 
-      {/* Main Dynamic Screen Routing */}
+      {/* Main Dynamic Screen Routing with Suspense Lazy Loading */}
       <main className="flex-1 animate-in fade-in duration-200">
-        {activeScreen === 'splash' && (
-          <SplashScreen
-            onLoginSuccess={handleLoginSuccess}
-          />
-        )}
+        <Suspense
+          fallback={
+            <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+              <UiverseLoader text="CARGANDO EXPERIENCIA..." />
+            </div>
+          }
+        >
+          {activeScreen === 'splash' && (
+            <SplashScreen
+              onLoginSuccess={handleLoginSuccess}
+            />
+          )}
 
-        {activeScreen === 'home' && (
-          <HomeScreen
-            user={user}
-            onSelectMode={handleSelectMode}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'home' && (
+            <HomeScreen
+              user={user}
+              onSelectMode={handleSelectMode}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'kids' && (
-          <KidsAdventurePage
-            user={user}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'kids' && (
+            <KidsAdventurePage
+              user={user}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'adults' && (
-          <AdultsDashboardPage
-            user={user}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'adults' && (
+            <AdultsDashboardPage
+              user={user}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {/* 5 Minigames + Final Challenge */}
-        {activeScreen === 'game-what-is' && (
-          <WhatIsSeismicGame
-            userMode={user.mode}
-            onFinishGame={handleFinishGame}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {/* 5 Minigames + Final Challenge (Lazy Loaded) */}
+          {activeScreen === 'game-what-is' && (
+            <WhatIsSeismicGame
+              userMode={user.mode}
+              onFinishGame={handleFinishGame}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'game-safe-home' && (
-          <SafeHomeGame
-            userMode={user.mode}
-            onFinishGame={handleFinishGame}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'game-safe-home' && (
+            <SafeHomeGame
+              userMode={user.mode}
+              onFinishGame={handleFinishGame}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'game-emergency-kit' && (
-          <EmergencyKitGame
-            userMode={user.mode}
-            onFinishGame={handleFinishGame}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'game-emergency-kit' && (
+            <EmergencyKitGame
+              userMode={user.mode}
+              onFinishGame={handleFinishGame}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'game-what-would-you-do' && (
-          <WhatWouldYouDoGame
-            userMode={user.mode}
-            onFinishGame={handleFinishGame}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'game-what-would-you-do' && (
+            <WhatWouldYouDoGame
+              userMode={user.mode}
+              onFinishGame={handleFinishGame}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'game-myth-reality' && (
-          <MythOrRealityGame
-            userMode={user.mode}
-            onFinishGame={handleFinishGame}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'game-myth-reality' && (
+            <MythOrRealityGame
+              userMode={user.mode}
+              onFinishGame={handleFinishGame}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'game-final-challenge' && (
-          <FinalBossChallengeGame
-            userMode={user.mode}
-            onFinishGame={handleFinishGame}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'game-final-challenge' && (
+            <FinalBossChallengeGame
+              userMode={user.mode}
+              onFinishGame={handleFinishGame}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {/* Exploration & Management */}
-        {activeScreen === 'history' && (
-          <HistoryPage
-            onNavigate={setActiveScreen}
-            onExperienceChange={setIsHistoryExperienceActive}
-            onFinishGame={handleFinishGame}
-          />
-        )}
+          {/* Exploration & Management (Lazy Loaded) */}
+          {activeScreen === 'history' && (
+            <HistoryPage
+              onNavigate={setActiveScreen}
+              onExperienceChange={setIsHistoryExperienceActive}
+              onFinishGame={handleFinishGame}
+            />
+          )}
 
-        {activeScreen === 'pdf-history' && (
-          <PdfReaderPage
-            onNavigate={setActiveScreen}
-            onFinishGame={handleFinishGame}
-          />
-        )}
+          {activeScreen === 'pdf-history' && (
+            <PdfReaderPage
+              onNavigate={setActiveScreen}
+              onFinishGame={handleFinishGame}
+            />
+          )}
 
-        {activeScreen === 'ranking' && (
-          <RankingPage
-            user={user}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'ranking' && (
+            <RankingPage
+              user={user}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'profile' && (
-          <ProfilePage
-            user={user}
-            onUpdateUser={handleUpdateUser}
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'profile' && (
+            <ProfilePage
+              user={user}
+              onUpdateUser={handleUpdateUser}
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'admin' && (
-          <AdminDashboardPage
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'admin' && (
+            <AdminDashboardPage
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'privacy' && (
-          <PrivacyPolicyPage
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'privacy' && (
+            <PrivacyPolicyPage
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'terms' && (
-          <TermsPage
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'terms' && (
+            <TermsPage
+              onNavigate={setActiveScreen}
+            />
+          )}
 
-        {activeScreen === 'credits' && (
-          <CreditsPage
-            onNavigate={setActiveScreen}
-          />
-        )}
+          {activeScreen === 'credits' && (
+            <CreditsPage
+              onNavigate={setActiveScreen}
+            />
+          )}
+        </Suspense>
       </main>
 
       {/* PWA Install Banner for Mobile Browsers */}

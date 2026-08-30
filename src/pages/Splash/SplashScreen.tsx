@@ -53,7 +53,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginSuccess }) =>
       <div
         className="absolute -inset-12 bg-cover bg-center animate-bg-parallax will-change-transform"
         style={{
-          backgroundImage: `url('/images/fondologin.png')`,
+          backgroundImage: `url('/images/fondologin.webp')`,
           transform: `translate(${interactiveOffset.x * -1.2}px, ${interactiveOffset.y * -1.2}px)`,
           transition: 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}

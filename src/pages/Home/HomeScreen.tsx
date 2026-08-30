@@ -32,7 +32,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <div
       className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 overflow-x-hidden"
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      style={{ backgroundImage: `url('/images/fondoinicio.webp')` }}
     >
       {/* Background Dark Overlay */}
       <div className="fixed inset-0 bg-navy-950/80 pointer-events-none z-0" />
@@ -75,7 +75,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Glowing San Juan Map Silhouette with Pulsing Epicenter */}
           <div className="w-36 h-36 relative shrink-0 -mr-2 flex items-center justify-center">
             <img
-              src="/images/sanjuanforma.png"
+              src="/images/sanjuanforma.webp"
               alt="Mapa de San Juan"
               className="w-full h-full object-contain filter drop-shadow-[0_0_18px_rgba(0,184,255,0.75)]"
             />
@@ -92,7 +92,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <button
           onClick={handleLaunchKids}
           className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-cyan/40 hover:border-brand-cyan transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex items-center justify-between p-4 sm:p-5 text-left bg-cover bg-left min-h-[140px] sm:min-h-[155px]"
-          style={{ backgroundImage: `url('/images/fondocardniños.png')` }}
+          style={{ backgroundImage: `url('/images/fondocardniños.webp')` }}
         >
           {/* Subtle gradient on the right side to ensure optimal text contrast */}
           <div className="absolute inset-y-0 right-0 w-3/5 bg-gradient-to-l from-navy-950/85 via-navy-950/40 to-transparent z-0 pointer-events-none" />
@@ -121,7 +121,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <button
           onClick={handleLaunchAdults}
           className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-purple/40 hover:border-brand-purple transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex items-center justify-between p-4 sm:p-5 text-left bg-cover bg-left min-h-[140px] sm:min-h-[155px]"
-          style={{ backgroundImage: `url('/images/fondocardjovenesyadultos.png')` }}
+          style={{ backgroundImage: `url('/images/fondocardjovenesyadultos.webp')` }}
         >
           {/* Subtle gradient on the right side to ensure optimal text contrast */}
           <div className="absolute inset-y-0 right-0 w-3/5 bg-gradient-to-l from-navy-950/85 via-purple-950/40 to-transparent z-0 pointer-events-none" />
