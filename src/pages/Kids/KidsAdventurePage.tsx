@@ -174,7 +174,7 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           </div>
         </div>
 
-        {/* 3. Rectangular Game Cards: Level Top-Left + Title Top-Right + XP & JUGAR Bottom-Right */}
+        {/* 3. Rectangular Game Cards: 01 Top-Left + Expanded Title Top-Right + XP & JUGAR Bottom-Right */}
         <div className="space-y-3 pt-1">
           {KIDS_GAMES.map((game, idx) => {
             const isCompleted = completedIds.includes(game.screenId);
@@ -201,30 +201,29 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
                 }`}
                 style={{ backgroundImage: `url('${game.bannerImage}')` }}
               >
-                {/* Top-Left Level Badge */}
-                <div className="absolute top-3 left-3.5 z-20 px-2.5 py-0.5 rounded-full bg-navy-950/85 backdrop-blur-md border border-white/20 text-brand-yellow font-mono font-black text-xs shadow-md tracking-wider flex items-center gap-1">
-                  <span className="text-[9px] text-slate-300 font-sans font-bold uppercase">{language === 'es' ? 'NIVEL' : 'LEVEL'}</span>
-                  <span>{game.numberStr}</span>
+                {/* Top-Left Number Only Badge */}
+                <div className="absolute top-3 left-3 z-20 px-2.5 py-0.5 rounded-full bg-navy-950/90 backdrop-blur-md border border-white/25 text-brand-yellow font-mono font-black text-xs shadow-md">
+                  {game.numberStr}
                 </div>
 
                 {/* Dark gradient overlay on the right to ensure razor-sharp text and button contrast */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-navy-950/65 to-navy-950/95 pointer-events-none z-0" />
 
-                {/* Left 36% spacer for 3D graphic */}
-                <div className="w-[36%] sm:w-[38%] shrink-0 pointer-events-none" />
+                {/* Left 32% spacer for 3D graphic */}
+                <div className="w-[32%] sm:w-[34%] shrink-0 pointer-events-none" />
 
-                {/* Right Area: Title Top / XP + JUGAR Button Bottom-Right */}
-                <div className="relative z-10 flex-1 flex flex-col justify-between py-3.5 pr-4 pl-1 min-w-0">
+                {/* Right Area: Expanded Title Top / XP + JUGAR Button Bottom-Right */}
+                <div className="relative z-10 flex-1 flex flex-col justify-between py-3 pr-2.5 pl-0.5 min-w-0">
                   
-                  {/* TOP ROW: Title spanning right area */}
+                  {/* TOP ROW: Title spanning almost completely to right border */}
                   <div className="w-full">
-                    <h2 className="font-black text-base sm:text-lg text-white tracking-tight leading-snug uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2">
+                    <h2 className="font-black text-base sm:text-lg text-white tracking-tight leading-snug uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] w-full">
                       {title}
                     </h2>
                   </div>
 
                   {/* BOTTOM ROW: XP pushed rightward next to JUGAR button */}
-                  <div className="flex items-center justify-end gap-3 pt-2">
+                  <div className="flex items-center justify-end gap-2.5 pt-1.5 pr-0.5">
                     {/* XP without star icon */}
                     <span className="font-mono font-black text-sm text-brand-yellow tabular-nums tracking-wide drop-shadow-md">
                       +{game.xpReward} XP
