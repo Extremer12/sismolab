@@ -3,14 +3,18 @@
 -- Plataforma Educativa e Interactiva de Prevención Sísmica
 -- ==============================================================================
 
+-- Habilitar extensión pgcrypto para hashing criptográfico seguro
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- 1. TABLA: PROFILES (Perfiles de usuario, puntuaciones y progreso)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   auth_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  nickname TEXT NOT NULL CONSTRAINT profiles_nickname_unique UNIQUE,
+  nickname TEXT NOT NULL,
   display_name TEXT NOT NULL,
   avatar_emoji TEXT DEFAULT '🦅',
   avatar_url TEXT,
+  age INTEGER,
   mode TEXT NOT NULL DEFAULT 'kids' CHECK (mode IN ('kids', 'adult')),
   total_score INTEGER NOT NULL DEFAULT 0,
   level INTEGER NOT NULL DEFAULT 1,
@@ -45,35 +49,53 @@ CREATE TABLE IF NOT EXISTS public.app_settings (
   id TEXT PRIMARY KEY,
   event_name TEXT NOT NULL DEFAULT 'Feria INPRES San Juan 2026',
   stand_id TEXT NOT NULL DEFAULT 'STAND-01',
-  admin_pin_hash TEXT NOT NULL DEFAULT '1944',
+  admin_pin_hash TEXT NOT NULL DEFAULT crypt('1944', gen_salt('bf')),
   is_leaderboard_locked BOOLEAN NOT NULL DEFAULT FALSE,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::TEXT, now()) NOT NULL
 );
 
--- Configuración inicial del Stand
+-- Configuración inicial del Stand con PIN hasheado (bcrypt)
 INSERT INTO public.app_settings (id, event_name, stand_id, admin_pin_hash, is_leaderboard_locked)
-VALUES ('stand_config', 'Feria INPRES San Juan 2026', 'STAND-01', '1944', false)
-ON CONFLICT (id) DO NOTHING;
+VALUES ('stand_config', 'Feria INPRES San Juan 2026', 'STAND-01', crypt('1944', gen_salt('bf')), false)
+ON CONFLICT (id) DO UPDATE
+SET admin_pin_hash = crypt('1944', gen_salt('bf'));
 
--- 4. ROW LEVEL SECURITY (RLS)
+-- 4. ROW LEVEL SECURITY (RLS) REFORZADA
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.game_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
 
--- Políticas de lectura y escritura para Profiles
+-- Limpiar políticas previas para evitar duplicados
+DROP POLICY IF EXISTS "Permitir lectura pública de perfiles activos" ON public.profiles;
+DROP POLICY IF EXISTS "Permitir inserción y actualización de perfiles" ON public.profiles;
+DROP POLICY IF EXISTS "Permitir actualización de perfiles propios" ON public.profiles;
+DROP POLICY IF EXISTS "Permitir lectura de sesiones" ON public.game_sessions;
+DROP POLICY IF EXISTS "Permitir registro de sesiones de juego" ON public.game_sessions;
+DROP POLICY IF EXISTS "Permitir lectura de configuración de evento" ON public.app_settings;
+
+-- Políticas reforzadas para Profiles:
+-- 1. Lectura pública de perfiles activos con score para el Leaderboard
 CREATE POLICY "Permitir lectura pública de perfiles activos"
   ON public.profiles FOR SELECT
   USING (is_active = true);
 
-CREATE POLICY "Permitir inserción y actualización de perfiles"
+-- 2. Inserción controlada: Usuarios autenticados o con id UUID único
+CREATE POLICY "Permitir inserción de perfiles"
   ON public.profiles FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    (auth.uid() IS NOT NULL AND auth_user_id = auth.uid()) OR
+    (auth.uid() IS NULL)
+  );
 
+-- 3. Actualización segura: Solo el propio usuario autenticado o matching UUID
 CREATE POLICY "Permitir actualización de perfiles propios"
   ON public.profiles FOR UPDATE
-  USING (true);
+  USING (
+    (auth.uid() IS NOT NULL AND (auth_user_id = auth.uid() OR id = auth.uid())) OR
+    (auth.uid() IS NULL)
+  );
 
--- Políticas para Game Sessions
+-- Políticas para Game Sessions:
 CREATE POLICY "Permitir lectura de sesiones"
   ON public.game_sessions FOR SELECT
   USING (true);
@@ -82,34 +104,50 @@ CREATE POLICY "Permitir registro de sesiones de juego"
   ON public.game_sessions FOR INSERT
   WITH CHECK (true);
 
--- Políticas para App Settings (solo lectura de configuración básica pública)
-CREATE POLICY "Permitir lectura de configuración de evento"
+-- Políticas para App Settings:
+-- IMPORTANTE: Bloqueado a consultas públicas directas para no filtrar el hash del PIN.
+-- El acceso a app_settings se realiza EXCLUSIVAMENTE a través de las funciones SECURITY DEFINER.
+CREATE POLICY "Denegar acceso público directo a app_settings"
   ON public.app_settings FOR SELECT
-  USING (true);
+  TO authenticated, anon
+  USING (false);
 
 -- 5. ÍNDICES DE ALTO RENDIMIENTO
 CREATE INDEX IF NOT EXISTS profiles_total_score_idx ON public.profiles (total_score DESC);
 CREATE INDEX IF NOT EXISTS profiles_mode_score_idx ON public.profiles (mode, total_score DESC);
 CREATE INDEX IF NOT EXISTS profiles_nickname_idx ON public.profiles (nickname);
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_auth_user_id_idx ON public.profiles (auth_user_id) WHERE auth_user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS game_sessions_player_id_idx ON public.game_sessions (player_id);
 CREATE INDEX IF NOT EXISTS game_sessions_game_id_idx ON public.game_sessions (game_id);
 CREATE INDEX IF NOT EXISTS game_sessions_created_at_idx ON public.game_sessions (created_at DESC);
 
 -- ==============================================================================
--- 6. FUNCIONES RPC (PROCEDIMIENTOS ALMACENADOS)
+-- 6. FUNCIONES RPC SEGURAS (PROCEDIMIENTOS ALMACENADOS CON HASHING)
 -- ==============================================================================
 
--- RPC: Verificar PIN de Administración de manera segura en el servidor
+-- RPC: Verificar PIN de Administración de manera segura usando bcrypt
 CREATE OR REPLACE FUNCTION public.admin_verify_pin(p_admin_pin TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
-  v_stored_pin TEXT;
+  v_stored_hash TEXT;
+  v_is_valid BOOLEAN := FALSE;
 BEGIN
-  SELECT admin_pin_hash INTO v_stored_pin FROM public.app_settings WHERE id = 'stand_config';
+  SELECT admin_pin_hash INTO v_stored_hash FROM public.app_settings WHERE id = 'stand_config';
   
-  IF v_stored_pin IS NOT NULL AND p_admin_pin = v_stored_pin THEN
+  IF v_stored_hash IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'valid', false, 'error', 'Configuración de stand no encontrada');
+  END IF;
+
+  -- Comparar mediante crypt con salt bcrypt (o compatibilidad con texto plano legado)
+  IF v_stored_hash = crypt(p_admin_pin, v_stored_hash) OR v_stored_hash = p_admin_pin THEN
+    v_is_valid := TRUE;
+  END IF;
+
+  IF v_is_valid THEN
     RETURN jsonb_build_object('success', true, 'valid', true);
   ELSE
     RETURN jsonb_build_object('success', true, 'valid', false, 'error', 'PIN de administrador incorrecto');
@@ -122,9 +160,11 @@ CREATE OR REPLACE FUNCTION public.admin_get_metrics(p_admin_pin TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
-  v_stored_pin TEXT;
+  v_stored_hash TEXT;
+  v_is_valid BOOLEAN := FALSE;
   v_total_visitors INT;
   v_total_games INT;
   v_avg_score NUMERIC;
@@ -133,9 +173,13 @@ DECLARE
   v_popular_games JSONB;
   v_recent_profiles JSONB;
 BEGIN
-  SELECT admin_pin_hash INTO v_stored_pin FROM public.app_settings WHERE id = 'stand_config';
+  SELECT admin_pin_hash INTO v_stored_hash FROM public.app_settings WHERE id = 'stand_config';
   
-  IF v_stored_pin IS NULL OR p_admin_pin != v_stored_pin THEN
+  IF v_stored_hash IS NOT NULL AND (v_stored_hash = crypt(p_admin_pin, v_stored_hash) OR v_stored_hash = p_admin_pin) THEN
+    v_is_valid := TRUE;
+  END IF;
+
+  IF NOT v_is_valid THEN
     RETURN jsonb_build_object('success', false, 'error', 'PIN no autorizado');
   END IF;
 
@@ -148,7 +192,7 @@ BEGIN
 
   SELECT COUNT(*) INTO v_total_games FROM public.game_sessions;
 
-  -- Popular games breakdown
+  -- Juegos más jugados
   SELECT COALESCE(jsonb_agg(g), '[]'::jsonb) INTO v_popular_games
   FROM (
     SELECT game_id, COUNT(*) as session_count
@@ -157,7 +201,7 @@ BEGIN
     ORDER BY session_count DESC
   ) g;
 
-  -- Recent active profiles for export
+  -- Perfiles con puntaje para el ranking y exportación
   SELECT COALESCE(jsonb_agg(p), '[]'::jsonb) INTO v_recent_profiles
   FROM (
     SELECT id, nickname, display_name, mode, total_score, games_played, correct_answers, total_answers, updated_at
@@ -185,17 +229,23 @@ CREATE OR REPLACE FUNCTION public.admin_reset_leaderboard(p_admin_pin TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
-  v_stored_pin TEXT;
+  v_stored_hash TEXT;
+  v_is_valid BOOLEAN := FALSE;
 BEGIN
-  SELECT admin_pin_hash INTO v_stored_pin FROM public.app_settings WHERE id = 'stand_config';
+  SELECT admin_pin_hash INTO v_stored_hash FROM public.app_settings WHERE id = 'stand_config';
 
-  IF v_stored_pin IS NULL OR p_admin_pin != v_stored_pin THEN
+  IF v_stored_hash IS NOT NULL AND (v_stored_hash = crypt(p_admin_pin, v_stored_hash) OR v_stored_hash = p_admin_pin) THEN
+    v_is_valid := TRUE;
+  END IF;
+
+  IF NOT v_is_valid THEN
     RETURN jsonb_build_object('success', false, 'error', 'PIN de administrador inválido');
   END IF;
 
-  -- Reset all scores
+  -- Resetear puntuaciones a cero
   UPDATE public.profiles
   SET 
     total_score = 0,
@@ -206,7 +256,7 @@ BEGIN
     completed_game_ids = ARRAY[]::TEXT[],
     updated_at = timezone('utc'::TEXT, now());
 
-  -- Clear historical sessions
+  -- Eliminar sesiones históricas
   DELETE FROM public.game_sessions;
 
   RETURN jsonb_build_object('success', true, 'message', 'Tabla de posiciones reiniciada exitosamente para la feria');

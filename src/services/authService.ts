@@ -28,12 +28,23 @@ export const OFFICIAL_AVATARS: AvatarOption[] = [
 
 const DEFAULT_NAMES = ['Cóndor Valiente', 'Guanaco Ágil', 'Puma Sabio', 'Zorro Veloz', 'Mara Curiosa'];
 
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function createGuestProfile(nickname?: string, mode: UserMode = 'kids'): UserProfile {
   const chosenName = nickname?.trim() || `${DEFAULT_NAMES[Math.floor(Math.random() * DEFAULT_NAMES.length)]} ${Math.floor(Math.random() * 89 + 10)}`;
   const defaultAvatar = OFFICIAL_AVATARS[0];
   
   const newProfile: UserProfile = {
-    id: 'guest_' + Date.now(),
+    id: generateUUID(),
     nickname: chosenName,
     display_name: chosenName,
     avatar_emoji: defaultAvatar.emoji,
@@ -57,7 +68,15 @@ export function createGuestProfile(nickname?: string, mode: UserMode = 'kids'): 
 export function loadLocalProfile(): UserProfile | null {
   try {
     const data = localStorage.getItem(PROFILE_STORAGE_KEY);
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+    const parsed: UserProfile = JSON.parse(data);
+    
+    // Auto-migrate legacy guest IDs that were not valid UUIDs
+    if (!parsed.id || parsed.id.startsWith('guest_') || parsed.id.length !== 36) {
+      parsed.id = generateUUID();
+      saveLocalProfile(parsed);
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -135,7 +154,7 @@ export async function fetchOrCreateUserProfile(sessionUser: {
     console.warn('Error fetching profile from Supabase:', err);
   }
 
-  // Brand new profile in Supabase
+  // New profile for authenticated user
   const initialMode: UserMode = 'kids';
   const newProfile: UserProfile = {
     id: sessionUser.id,
@@ -174,7 +193,7 @@ export async function fetchOrCreateUserProfile(sessionUser: {
       is_active: true,
       last_active_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    });
+    }, { onConflict: 'id' });
   } catch (err) {
     console.warn('Error creating initial profile in Supabase:', err);
   }
@@ -186,15 +205,11 @@ export async function fetchOrCreateUserProfile(sessionUser: {
 export async function syncProfileWithSupabase(profile: UserProfile): Promise<void> {
   saveLocalProfile(profile);
 
-  if (!supabase) return;
+  if (!supabase || !profile.id) return;
 
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return;
-
-    await supabase.from('profiles').upsert({
-      id: session.user.id,
-      auth_user_id: session.user.id,
+    const profilePayload: Record<string, unknown> = {
+      id: profile.id,
       nickname: profile.nickname,
       display_name: profile.display_name || profile.nickname,
       avatar_url: profile.avatar_url,
@@ -202,6 +217,7 @@ export async function syncProfileWithSupabase(profile: UserProfile): Promise<voi
       age: profile.age || null,
       mode: profile.mode,
       total_score: profile.total_score,
+      level: profile.level || 1,
       games_played: profile.games_played,
       correct_answers: profile.correct_answers_count,
       total_answers: profile.total_answers_count,
@@ -209,7 +225,13 @@ export async function syncProfileWithSupabase(profile: UserProfile): Promise<voi
       is_active: true,
       last_active_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    });
+    };
+
+    if (profile.auth_user_id) {
+      profilePayload.auth_user_id = profile.auth_user_id;
+    }
+
+    await supabase.from('profiles').upsert(profilePayload, { onConflict: 'id' });
   } catch (err) {
     console.warn('Sync profile fallback to local:', err);
   }

@@ -9,10 +9,10 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
       .from('profiles')
       .select('id, nickname, display_name, avatar_emoji, avatar_url, total_score, mode, updated_at')
       .eq('is_active', true)
-      .gt('total_score', 0) // Only real players with points
+      .gt('total_score', 0)
       .order('total_score', { ascending: false })
       .order('updated_at', { ascending: true })
-      .limit(60);
+      .limit(100);
 
     if (filterMode !== 'all') {
       query = query.eq('mode', filterMode);
@@ -62,16 +62,20 @@ export async function submitGameScoreToSupabase(
   // Always update locally first for zero-latency UI
   saveUserScoreLocally(user);
 
+  if (!supabase || !user.id) return;
+
   try {
-    // 1. Sync / Upsert User in Supabase
+    // 1. Sync / Upsert User in Supabase with explicit unique UUID conflict resolution
     const profilePayload: Record<string, unknown> = {
+      id: user.id,
       nickname: user.nickname,
       display_name: user.display_name || user.nickname,
       avatar_emoji: user.avatar_emoji,
       avatar_url: user.avatar_url,
+      age: user.age || null,
       mode: user.mode,
       total_score: user.total_score,
-      level: user.level,
+      level: user.level || 1,
       games_played: user.games_played,
       correct_answers: user.correct_answers_count,
       total_answers: user.total_answers_count,
@@ -85,23 +89,17 @@ export async function submitGameScoreToSupabase(
       profilePayload.auth_user_id = user.auth_user_id;
     }
 
-    if (user.id && user.id.length === 36) {
-      profilePayload.id = user.id;
-    }
-
-    const { data: upsertData, error: upsertError } = await supabase
+    const { error: upsertError } = await supabase
       .from('profiles')
-      .upsert(profilePayload, { onConflict: 'nickname' })
-      .select('id')
-      .maybeSingle();
+      .upsert(profilePayload, { onConflict: 'id' });
 
     if (upsertError) {
-      console.warn('Profile upsert warning:', upsertError);
+      console.warn('Profile upsert warning in submitGameScoreToSupabase:', upsertError);
     }
 
-    // 2. Log Game Session
+    // 2. Log Game Session with valid player UUID
     await supabase.from('game_sessions').insert({
-      player_id: upsertData?.id || (user.id.length === 36 ? user.id : null),
+      player_id: user.id,
       game_id: gameId,
       mode: user.mode,
       score: earnedScore,
@@ -124,7 +122,7 @@ export function saveUserScoreLocally(user: UserProfile): void {
     const raw = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
     let list: RankEntry[] = raw ? JSON.parse(raw) : [];
 
-    const existingIdx = list.findIndex(item => item.id === user.id || item.nickname === user.nickname);
+    const existingIdx = list.findIndex(item => item.id === user.id);
     const updatedEntry: RankEntry = {
       id: user.id,
       rank: 0,
@@ -146,7 +144,7 @@ export function saveUserScoreLocally(user: UserProfile): void {
       .filter(item => item.score > 0)
       .sort((a, b) => b.score - a.score)
       .map((item, idx) => ({ ...item, rank: idx + 1 }))
-      .slice(0, 60);
+      .slice(0, 100);
 
     localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(list));
   } catch {
