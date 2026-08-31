@@ -174,8 +174,8 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
               </div>
 
               <div className="space-y-0.5 w-full min-w-0">
-                <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5">
-                  {second ? (second.nickname || second.id).split(' ')[0] : (language === 'es' ? 'Disponible' : 'Open')}
+                <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5" title={second?.nickname}>
+                  {second ? (second.nickname || second.id) : (language === 'es' ? 'Disponible' : 'Open')}
                 </h3>
                 <span className="font-black text-xs text-brand-cyan tabular-nums block">
                   {second ? `${second.score.toLocaleString()} pts` : '-'}
@@ -196,8 +196,8 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
               </div>
 
               <div className="space-y-0.5 w-full min-w-0">
-                <h3 className="font-black text-sm sm:text-base text-brand-yellow truncate px-0.5">
-                  {first ? (first.nickname || first.id).split(' ')[0] : (language === 'es' ? 'Disponible' : 'Open')}
+                <h3 className="font-black text-sm sm:text-base text-brand-yellow truncate px-0.5" title={first?.nickname}>
+                  {first ? (first.nickname || first.id) : (language === 'es' ? 'Disponible' : 'Open')}
                 </h3>
                 <span className="font-black text-sm text-white tabular-nums block drop-shadow-md">
                   {first ? `${first.score.toLocaleString()} pts` : '-'}
@@ -218,8 +218,8 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
               </div>
 
               <div className="space-y-0.5 w-full min-w-0">
-                <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5">
-                  {third ? (third.nickname || third.id).split(' ')[0] : (language === 'es' ? 'Disponible' : 'Open')}
+                <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5" title={third?.nickname}>
+                  {third ? (third.nickname || third.id) : (language === 'es' ? 'Disponible' : 'Open')}
                 </h3>
                 <span className="font-black text-xs text-brand-cyan tabular-nums block">
                   {third ? `${third.score.toLocaleString()} pts` : '-'}

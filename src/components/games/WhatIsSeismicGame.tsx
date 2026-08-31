@@ -204,7 +204,7 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
                   className={`h-full rounded-full transition-all duration-1000 ${
                     questionTimer <= 5 ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]' : 'bg-gradient-to-r from-brand-electric to-brand-cyan'
                   }`}
-                  style={{ width: `${(questionTimer / 15) * 100}%` }}
+                  style={{ width: `${(questionTimer / timerLimit) * 100}%` }}
                 />
               </div>
             </div>

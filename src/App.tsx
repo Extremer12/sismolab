@@ -152,8 +152,6 @@ function AppContent() {
 
   // Handler when any minigame completes
   const handleFinishGame = (earnedScore: number, correctCount: number, totalCount: number, gameId?: string) => {
-    sound.playWinFanfare();
-
     setUser(prev => {
       const currentHighScores = prev.game_high_scores || {};
       const completedIds = prev.completed_game_ids || [];
@@ -162,19 +160,21 @@ function AppContent() {
       const previousHighScore = currentHighScores[id] || 0;
       let addedScore = 0;
 
-      // RULE: If an adult (age >= 13) plays in Kids mode, it's practice only (0 ranking points)
+      // RULE 1: If an adult (age >= 13) plays in Kids mode, it's practice only (0 ranking points)
       const isAdultPlayingKids = Boolean(prev.age && prev.age >= 13 && prev.mode === 'kids');
 
       if (isAdultPlayingKids) {
         addedScore = 0;
       } else {
         if (!completedIds.includes(id)) {
+          // First time completing the mission: full score awarded
           addedScore = earnedScore;
         } else {
+          // Replay: Only award the incremental difference if the user beat their personal best
           if (earnedScore > previousHighScore) {
-            addedScore = (earnedScore - previousHighScore) + 25;
+            addedScore = earnedScore - previousHighScore;
           } else {
-            addedScore = 25;
+            addedScore = 0; // Anti-cheat: No farming points by repeating without beating high score
           }
         }
       }

@@ -75,9 +75,11 @@ export async function submitGameScoreToSupabase(
       p_mode: user.mode,
       p_game_id: gameId,
       p_score: earnedScore,
+      p_total_score: user.total_score,
       p_correct_count: correctCount,
       p_total_count: totalCount,
-      p_completed_game_ids: user.completed_game_ids || []
+      p_completed_game_ids: user.completed_game_ids || [],
+      p_game_high_scores: user.game_high_scores || {}
     });
 
     if (!rpcError && rpcData?.success) {

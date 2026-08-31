@@ -256,7 +256,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
   };
 
   const handleNextRound = () => {
-    if (lives <= 0 || currentIndex + 1 >= REFLEX_SCENARIOS.length) {
+    if (lives <= 0 || currentIndex + 1 >= scenarios.length) {
       sound.playWinFanfare();
       setGameState('result');
     } else {
@@ -293,7 +293,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
           instructions="En un terremoto real no hay tiempo para dudar. Elegí la acción segura en segundos, acumulá rachas de fuego y demostrá tus reflejos de supervivencia."
           icon="⚡"
           rewardXp={600}
-          timeLimitSec={4}
+          timeLimitSec={userMode === 'kids' ? 6.5 : 4}
           onStart={() => setGameState('playing')}
         />
       )}
@@ -304,11 +304,11 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
           gameTitle="Reflejos de Supervivencia"
           earnedScore={totalScore}
           correctCount={correctCount}
-          totalCount={REFLEX_SCENARIOS.length}
+          totalCount={scenarios.length}
           maxStreak={maxStreak}
           speedBonus={lives > 0 ? lives * 50 : 0}
           onReplay={handleReplay}
-          onContinue={() => onFinishGame(totalScore, correctCount, REFLEX_SCENARIOS.length, 'game-safe-home')}
+          onContinue={() => onFinishGame(totalScore, correctCount, scenarios.length, 'game-safe-home')}
         />
       )}
 
@@ -368,7 +368,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                 />
               </div>
               <div className="flex justify-between items-center text-[10px] font-black uppercase text-slate-400">
-                <span>Ronda {currentIndex + 1} de {REFLEX_SCENARIOS.length}</span>
+                <span>Ronda {currentIndex + 1} de {scenarios.length}</span>
                 <span className={timeLeft <= 1.2 ? 'text-rose-400 font-extrabold animate-pulse' : 'text-brand-cyan'}>
                   ⏱️ {timeLeft.toFixed(1)}s
                 </span>
@@ -452,7 +452,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                   fullWidth
                   onClick={handleNextRound}
                 >
-                  <span>{currentIndex + 1 >= REFLEX_SCENARIOS.length || lives <= 0 ? 'Ver Resultados Finales' : 'Siguiente Situación ⚡'}</span>
+                  <span>{currentIndex + 1 >= scenarios.length || lives <= 0 ? 'Ver Resultados Finales' : 'Siguiente Situación ⚡'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

@@ -263,7 +263,7 @@ BEGIN
 END;
 $$;
 
--- RPC: Registro atómico y seguro de puntaje de partida (Server-Side Score Validation)
+-- RPC: Registro atómico y seguro de puntaje de partida (Server-Side Score Validation & Anti-Cheat)
 CREATE OR REPLACE FUNCTION public.submit_game_score(
   p_player_id UUID,
   p_nickname TEXT,
@@ -273,9 +273,11 @@ CREATE OR REPLACE FUNCTION public.submit_game_score(
   p_mode TEXT,
   p_game_id TEXT,
   p_score INTEGER,
+  p_total_score INTEGER,
   p_correct_count INTEGER,
   p_total_count INTEGER,
-  p_completed_game_ids TEXT[] DEFAULT ARRAY[]::TEXT[]
+  p_completed_game_ids TEXT[] DEFAULT ARRAY[]::TEXT[],
+  p_game_high_scores JSONB DEFAULT '{}'::JSONB
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -286,16 +288,33 @@ DECLARE
   v_new_total INT;
   v_new_games INT;
 BEGIN
-  -- 1. Upsert / Incrementar estadísticas del jugador
+  -- Anti-Cheat: Validar que el puntaje de una sola partida esté en rangos válidos (0 a 1200 pts)
+  IF p_score < 0 OR p_score > 1200 THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Puntaje fuera de rango permitido');
+  END IF;
+
+  -- 1. Upsert / Sincronización canónica del perfil del jugador
   INSERT INTO public.profiles (
     id, nickname, display_name, avatar_emoji, avatar_url, mode,
     total_score, level, games_played, correct_answers, total_answers, completed_game_ids,
     is_active, last_active_at, updated_at
   )
   VALUES (
-    p_player_id, p_nickname, COALESCE(p_display_name, p_nickname), p_avatar_emoji, p_avatar_url, p_mode,
-    GREATEST(0, p_score), (GREATEST(0, p_score) / 400) + 1, 1, p_correct_count, p_total_count, p_completed_game_ids,
-    true, timezone('utc'::TEXT, now()), timezone('utc'::TEXT, now())
+    p_player_id, 
+    p_nickname, 
+    COALESCE(p_display_name, p_nickname), 
+    p_avatar_emoji, 
+    p_avatar_url, 
+    p_mode,
+    GREATEST(0, p_total_score), 
+    (GREATEST(0, p_total_score) / 400) + 1, 
+    1, 
+    p_correct_count, 
+    p_total_count, 
+    p_completed_game_ids,
+    true, 
+    timezone('utc'::TEXT, now()), 
+    timezone('utc'::TEXT, now())
   )
   ON CONFLICT (id) DO UPDATE SET
     nickname = EXCLUDED.nickname,
@@ -303,8 +322,8 @@ BEGIN
     avatar_emoji = EXCLUDED.avatar_emoji,
     avatar_url = EXCLUDED.avatar_url,
     mode = EXCLUDED.mode,
-    total_score = public.profiles.total_score + EXCLUDED.total_score,
-    level = ((public.profiles.total_score + EXCLUDED.total_score) / 400) + 1,
+    total_score = GREATEST(public.profiles.total_score, EXCLUDED.total_score),
+    level = (GREATEST(public.profiles.total_score, EXCLUDED.total_score) / 400) + 1,
     games_played = public.profiles.games_played + 1,
     correct_answers = public.profiles.correct_answers + EXCLUDED.correct_answers,
     total_answers = public.profiles.total_answers + EXCLUDED.total_answers,
@@ -315,7 +334,7 @@ BEGIN
   RETURNING total_score, games_played
   INTO v_new_total, v_new_games;
 
-  -- 2. Registrar sesión individual
+  -- 2. Registrar sesión individual para auditoría y analítica
   INSERT INTO public.game_sessions (
     player_id, game_id, mode, score, correct_count, total_count, metadata
   )
@@ -324,6 +343,7 @@ BEGIN
     jsonb_build_object(
       'nickname', p_nickname,
       'avatar', p_avatar_emoji,
+      'high_scores', p_game_high_scores,
       'completed_at', timezone('utc'::TEXT, now())
     )
   );

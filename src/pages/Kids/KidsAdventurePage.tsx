@@ -128,9 +128,16 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           </button>
 
           {/* Mode Pill */}
-          <div className="px-5 py-1.5 rounded-full bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-            <span>{language === 'es' ? 'MODO NIÑOS' : 'KIDS MODE'}</span>
-            <span>🧒</span>
+          <div className="flex items-center gap-2">
+            <div className="px-4 py-1.5 rounded-full bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+              <span>{language === 'es' ? 'MODO NIÑOS' : 'KIDS MODE'}</span>
+              <span>🧒</span>
+            </div>
+            {user.age && user.age >= 13 && (
+              <span className="px-2.5 py-1 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 font-extrabold text-[10px] uppercase tracking-wider">
+                {language === 'es' ? '🎮 PRÁCTICA' : '🎮 PRACTICE'}
+              </span>
+            )}
           </div>
 
           {/* XP Pill */}
