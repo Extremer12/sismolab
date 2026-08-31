@@ -13,6 +13,8 @@ interface ReflexScenario {
   situation: string;
   optionSafe: string;
   optionDanger: string;
+  imageSafe?: string;
+  imageDanger?: string;
   safeExplanation: string;
   dangerExplanation: string;
 }
@@ -25,6 +27,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Comienza a temblar fuerte el piso y crujen las paredes.',
     optionSafe: '🛡️ Agacharse, cubrirse bajo el pupitre y sujetarse',
     optionDanger: '🏃 Correr desesperado hacia las escaleras',
+    imageSafe: '/images/reflexes/adults/r1_safe.webp',
+    imageDanger: '/images/reflexes/adults/r1_danger.webp',
     safeExplanation: '¡Reflejo vital! Proteger cabeza y cuerpo bajo un mueble firme evita traumatismos por caída de revoques y lámparas.',
     dangerExplanation: '¡Peligro mortal! Correr por escaleras durante la sacudida es la causa #1 de caídas y fracturas graves.'
   },
@@ -35,6 +39,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Cesó el temblor, no hay luz eléctrica y se siente olor a gas.',
     optionSafe: '🔧 Cerrar llave de gas, no tocar interruptores y evacuar',
     optionDanger: '🕯️ Encender una vela o linterna rota para buscar daños',
+    imageSafe: '/images/reflexes/adults/r2_safe.webp',
+    imageDanger: '/images/reflexes/adults/r2_danger.webp',
     safeExplanation: '¡Conducta impecable! Neutralizás el riesgo de incendio y evacuás sin generar chispas.',
     dangerExplanation: '¡Riesgo de explosión! Una llama abierta detona acumulaciones de gas fugado en segundos.'
   },
@@ -45,6 +51,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Estás en un 4to piso y el edificio oscila con fuerza.',
     optionSafe: '🛡️ Resguardarse junto a una columna o bajo mesa firme',
     optionDanger: '🛗 Tomar el ascensor para bajar rápido a la calle',
+    imageSafe: '/images/reflexes/adults/r3_safe.webp',
+    imageDanger: '/images/reflexes/adults/r3_danger.webp',
     safeExplanation: '¡Correcto! Los edificios modernos con norma INPRES no colapsan. Mantenete a resguardo en el lugar.',
     dangerExplanation: '¡Trampa mortal! El corte de energía o descalce de guías te deja atrapado dentro del ascensor.'
   },
@@ -55,6 +63,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Manejando por la avenida sentís vibración y pérdida de control.',
     optionSafe: '🛑 Balizas, frenar suave lejos de postes y quedarse dentro',
     optionDanger: '⚡ Acelerar a fondo para cruzar el puente a toda velocidad',
+    imageSafe: '/images/reflexes/adults/r4_safe.webp',
+    imageDanger: '/images/reflexes/adults/r4_danger.webp',
     safeExplanation: '¡Perfecto! La carrocería del auto protege contra caídas de cables mientras esperás que cese el sismo.',
     dangerExplanation: '¡Peligro crítico! Acelerar en puentes durante un sismo provoca vuelcos y colisiones fatales.'
   },
@@ -65,6 +75,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Caminás por el centro y empiezan a caer vidrios de edificios.',
     optionSafe: '🌳 Dirigirse con calma hacia el centro despejado de la plaza',
     optionDanger: '🏢 Pegarse a la pared bajo las marquesinas comerciales',
+    imageSafe: '/images/reflexes/adults/r5_safe.webp',
+    imageDanger: '/images/reflexes/adults/r5_danger.webp',
     safeExplanation: '¡Muy bien! Te alejás de vidrios, mampostería de cornisas y cables de media tensión.',
     dangerExplanation: '¡Zona de impacto! Los vidrios y revoques caen en cascada directamente sobre la línea de vereda.'
   },
@@ -75,6 +87,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Te despierta un violento terremoto a oscuras en la noche.',
     optionSafe: '🛌 Quedarse en la cama, proteger cabeza con la almohada boca abajo',
     optionDanger: '🏃 Levantarse de golpe y correr descalzo en la oscuridad',
+    imageSafe: '/images/reflexes/adults/r6_safe.webp',
+    imageDanger: '/images/reflexes/adults/r6_danger.webp',
     safeExplanation: '¡Excelente decisión! Evitás cortes severos por vidrios rotos en el suelo y caídas a oscuras.',
     dangerExplanation: '¡Riesgo de corte severo! Desplazarse a oscuras con el suelo sacudiéndose sobre vidrios causa heridas graves.'
   },
@@ -85,6 +99,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Comienza el sismo y tambalean góndolas con botellas y mercadería.',
     optionSafe: '🛡️ Alejarse de góndolas altas y protegerse en pasillo central',
     optionDanger: '🏃 Empujar en estampida hacia la puerta giratoria',
+    imageSafe: '/images/reflexes/adults/r7_safe.webp',
+    imageDanger: '/images/reflexes/adults/r7_danger.webp',
     safeExplanation: '¡Correcto! Evitás la caída de botellas y latas pesadas sin quedar atrapado en avalanchas humanas.',
     dangerExplanation: '¡Estampida humana! Empujar en salidas angostas provoca aplastamiento y asfixia masiva.'
   },
@@ -95,6 +111,8 @@ const REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Vas a salir de la vivienda hacia el punto de encuentro seguro.',
     optionSafe: '🎒 Calzado firme, llave en mano y la Mochila de 72 Horas',
     optionDanger: '💎 Demorarse rescatando televisores y joyas de valor',
+    imageSafe: '/images/reflexes/adults/r8_safe.webp',
+    imageDanger: '/images/reflexes/adults/r8_danger.webp',
     safeExplanation: '¡Prioridad correcta! La vida y la autonomía de 72 horas son lo único indispensable.',
     dangerExplanation: '¡Pérdida de tiempo crítico! Demorarse ante posibles réplicas pone en riesgo tu vida.'
   }
@@ -108,6 +126,8 @@ export const KIDS_REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: '¡Empieza a temblar el piso del aula!',
     optionSafe: '🛡️ ¡Me meto abajo del banco y me agarro!',
     optionDanger: '🏃 ¡Salgo corriendo empujando a todos!',
+    imageSafe: '/images/reflexes/kids/kr1_safe.webp',
+    imageDanger: '/images/reflexes/kids/kr1_danger.webp',
     safeExplanation: '¡Genial! Tu banco te protege como un escudo de cualquier cosa.',
     dangerExplanation: '¡Peligro! Correr y empujar causa caídas y golpes feos.'
   },
@@ -118,6 +138,8 @@ export const KIDS_REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Terminó el temblor y se cortó la luz.',
     optionSafe: '🔦 ¡Prendo una linterna a pilas con cuidado!',
     optionDanger: '🕯️ ¡Prendo fuego una vela con fósforos!',
+    imageSafe: '/images/reflexes/kids/kr2_safe.webp',
+    imageDanger: '/images/reflexes/kids/kr2_danger.webp',
     safeExplanation: '¡Muy bien! Las linternas dan luz segura sin peligro.',
     dangerExplanation: '¡Peligro! El fuego de la vela puede encender fugas de gas.'
   },
@@ -128,6 +150,8 @@ export const KIDS_REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Estás jugando afuera y se sacude el suelo.',
     optionSafe: '🌳 ¡Me quedo en el pasto, lejos de postes y cables!',
     optionDanger: '🏢 ¡Me pego a la pared abajo de un cartel gigante!',
+    imageSafe: '/images/reflexes/kids/kr3_safe.webp',
+    imageDanger: '/images/reflexes/kids/kr3_danger.webp',
     safeExplanation: '¡Perfecto! Al aire libre en el pasto estás súper seguro.',
     dangerExplanation: '¡Cuidado! Los carteles y vidrios pueden caer de las paredes.'
   },
@@ -138,6 +162,8 @@ export const KIDS_REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: '¡Un temblor fuerte te despierta en tu cama!',
     optionSafe: '🛌 ¡Me tapo bien la cabeza con la almohada en la cama!',
     optionDanger: '🏃 ¡Salgo corriendo descalzo en la oscuridad!',
+    imageSafe: '/images/reflexes/kids/kr4_safe.webp',
+    imageDanger: '/images/reflexes/kids/kr4_danger.webp',
     safeExplanation: '¡Excelente reflejo! La almohada cuida tu cabeza.',
     dangerExplanation: '¡Cuidado! Correr a oscuras puede hacer que pises cosas rotas.'
   },
@@ -148,6 +174,8 @@ export const KIDS_REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Vamos a salir con la familia al punto seguro.',
     optionSafe: '🎒 ¡Zapatillas puestas y la mochila de emergencia!',
     optionDanger: '🎮 ¡Quedarme a guardar la Play y los juguetes!',
+    imageSafe: '/images/reflexes/kids/kr5_safe.webp',
+    imageDanger: '/images/reflexes/kids/kr5_danger.webp',
     safeExplanation: '¡Prioridad correcta! La mochila tiene agua y cosas vitales.',
     dangerExplanation: '¡No! Lo más valioso sos vos, los juguetes se quedan.'
   },
@@ -158,6 +186,8 @@ export const KIDS_REFLEX_SCENARIOS: ReflexScenario[] = [
     situation: 'Vamos en el auto y sentimos que tiembla el camino.',
     optionSafe: '🛑 ¡Frenar despacito y esperar adentro del auto!',
     optionDanger: '⚡ ¡Acelerar a fondo para ir a toda velocidad!',
+    imageSafe: '/images/reflexes/kids/kr6_safe.webp',
+    imageDanger: '/images/reflexes/kids/kr6_danger.webp',
     safeExplanation: '¡Muy bien! Adentro del auto estamos protegidos.',
     dangerExplanation: '¡Peligro! Acelerar en un sismo hace perder el control.'
   }
@@ -187,7 +217,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
   const [totalScore, setTotalScore] = useState<number>(0);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
   const [isTimeOut, setIsTimeOut] = useState<boolean>(false);
-  const [shuffledOptions, setShuffledOptions] = useState<{ isSafe: boolean; text: string }[]>([]);
+  const [shuffledOptions, setShuffledOptions] = useState<{ isSafe: boolean; text: string; image?: string }[]>([]);
 
   const currentScenario = scenarios[currentIndex] || scenarios[0];
 
@@ -195,8 +225,8 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
   useEffect(() => {
     if (!currentScenario) return;
     const opts = [
-      { isSafe: true, text: currentScenario.optionSafe },
-      { isSafe: false, text: currentScenario.optionDanger }
+      { isSafe: true, text: currentScenario.optionSafe, image: currentScenario.imageSafe },
+      { isSafe: false, text: currentScenario.optionDanger, image: currentScenario.imageDanger }
     ].sort(() => Math.random() - 0.5);
     setShuffledOptions(opts);
     setTimeLeft(roundTimeSec);
@@ -397,19 +427,45 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
               </h2>
             </div>
 
-            {/* Decision Buttons (Playing State) */}
+            {/* Decision Image Cards (Playing State) */}
             {gameState === 'playing' && (
-              <div className="space-y-2.5 pt-1">
+              <div className="grid grid-cols-2 gap-3 pt-1">
                 {shuffledOptions.map((opt, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSelectOption(opt.isSafe)}
-                    className="w-full p-4 rounded-2xl bg-gradient-to-r from-navy-900/90 to-navy-950 border-2 border-white/20 hover:border-brand-cyan hover:bg-navy-850 active:scale-[0.98] transition-all text-left flex items-center justify-between group shadow-lg"
+                    className="relative flex flex-col justify-between rounded-2xl overflow-hidden bg-gradient-to-b from-navy-900/95 to-navy-950/95 border-2 border-white/20 hover:border-brand-cyan hover:scale-[1.03] active:scale-[0.97] transition-all text-center p-2.5 shadow-xl group"
                   >
-                    <span className="font-extrabold text-sm sm:text-base text-slate-100 group-hover:text-white leading-snug">
+                    {/* Option Tag Badge */}
+                    <div className="flex items-center justify-between w-full pb-1.5">
+                      <span className="px-2 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[9px] uppercase tracking-wider">
+                        {idx === 0 ? 'OPCIÓN A' : 'OPCIÓN B'}
+                      </span>
+                      <Zap className="w-3.5 h-3.5 text-brand-cyan opacity-40 group-hover:opacity-100 transition-opacity" />
+                    </div>
+
+                    {/* Image Area with Fallback */}
+                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-navy-900 border border-white/10 flex items-center justify-center mb-2 shadow-inner">
+                      {opt.image ? (
+                        <img
+                          src={opt.image}
+                          alt={opt.text}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : null}
+                      {/* Fallback Icon if image not loaded */}
+                      <span className="text-3xl filter drop-shadow">
+                        {opt.isSafe ? '🛡️' : '⚠️'}
+                      </span>
+                    </div>
+
+                    {/* Concise Label */}
+                    <span className="font-extrabold text-[11px] sm:text-xs text-slate-100 group-hover:text-white leading-tight line-clamp-3">
                       {opt.text}
                     </span>
-                    <Zap className="w-5 h-5 text-brand-cyan opacity-50 group-hover:opacity-100 shrink-0 ml-2 group-hover:scale-110 transition-transform" />
                   </button>
                 ))}
               </div>
