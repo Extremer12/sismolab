@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Timer, Zap, Play, Flame } from 'lucide-react';
+import { Sparkles, Timer, Zap, Play, Flame, HelpCircle } from 'lucide-react';
 import { sound } from '../../lib/sound';
+import { GameInfoModal } from './GameInfoModal';
 
 interface GameIntroCountdownProps {
   title: string;
@@ -25,6 +26,7 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
 }) => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   const startCountdown = () => {
     sound.playClick();
@@ -62,11 +64,28 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
       <div className="absolute inset-0 bg-[radial-gradient(#22D3EE_1px,transparent_1px)] [background-size:20px_20px] opacity-15 pointer-events-none" />
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
-      {/* Top Bar Category */}
-      <div className="relative z-10 pt-4 text-center">
+      {/* Fullscreen Rules & Scoring Info Modal */}
+      <GameInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+      />
+
+      {/* Top Bar Header with Category & Info Button */}
+      <div className="relative z-10 pt-2 flex items-center justify-between">
+        <div className="w-9" />
+
         <span className="px-4 py-1.5 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-[0.2em] inline-block shadow-glow-cyan/20">
           {category}
         </span>
+
+        <button
+          onClick={() => { sound.playClick(); setShowInfoModal(true); }}
+          className="w-9 h-9 rounded-full bg-navy-900/90 border border-brand-cyan/40 hover:border-brand-cyan flex items-center justify-center text-brand-cyan hover:text-white transition-all shadow-glow-cyan/20 active:scale-95"
+          title="Reglas y Sistema de Puntos"
+          aria-label="Información del juego"
+        >
+          <HelpCircle className="w-5 h-5 stroke-[2.5]" />
+        </button>
       </div>
 
       {/* Center Dynamic Area (Mission Info OR Giant Countdown) */}

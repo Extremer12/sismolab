@@ -1,8 +1,9 @@
-import React from 'react';
-import { ArrowLeft, Lock, ChevronRight, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Lock, ChevronRight, Sparkles, HelpCircle } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { GameInfoModal } from '../../components/games/GameInfoModal';
 
 interface AdultsDashboardPageProps {
   user: UserProfile;
@@ -101,6 +102,8 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
   onNavigate
 }) => {
   const { t, language } = useLanguage();
+  const [showInfoModal, setShowInfoModal] = useState(false);
+
   const completedIds = user.completed_game_ids || [];
   const completedCount = ADULT_GAMES.filter(g => completedIds.includes(g.screenId)).length;
   const totalCount = ADULT_GAMES.length;
@@ -113,6 +116,12 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
     >
       {/* Dark Ambient Overlay */}
       <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+
+      {/* Rules & Scoring Modal */}
+      <GameInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+      />
 
       {/* Main Container */}
       <div className="relative z-10 p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto">
@@ -133,11 +142,22 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
             <span>🔬</span>
           </div>
 
-          {/* XP Pill */}
-          <div className="px-3.5 py-1.5 rounded-full bg-navy-900/90 border border-brand-gold/40 flex items-center gap-1.5 shadow-sm">
-            <span className="font-black text-xs text-brand-yellow tabular-nums">
-              {user.total_score.toLocaleString()} XP
-            </span>
+          {/* Info Button & XP Pill */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => { sound.playClick(); setShowInfoModal(true); }}
+              className="w-9 h-9 rounded-full bg-navy-900/90 border border-purple-400/40 hover:border-purple-400 flex items-center justify-center text-purple-300 hover:text-white transition-all shadow-sm active:scale-95"
+              title="Reglas y Sistema de Puntos"
+              aria-label="Información de juego"
+            >
+              <HelpCircle className="w-4 h-4 stroke-[2.5]" />
+            </button>
+
+            <div className="px-3 py-1.5 rounded-full bg-navy-900/90 border border-brand-gold/40 flex items-center gap-1.5 shadow-sm">
+              <span className="font-black text-xs text-brand-yellow tabular-nums">
+                {user.total_score.toLocaleString()} XP
+              </span>
+            </div>
           </div>
         </div>
 
