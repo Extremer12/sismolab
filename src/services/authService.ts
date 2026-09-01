@@ -39,8 +39,60 @@ export function generateUUID(): string {
   });
 }
 
+export async function isNicknameAvailable(
+  nickname: string,
+  excludeUserId?: string
+): Promise<{ available: boolean; error?: string }> {
+  const clean = nickname.trim();
+  if (!clean || clean.length < 3) {
+    return { available: false, error: 'El nombre debe tener al menos 3 letras' };
+  }
+  if (clean.length > 18) {
+    return { available: false, error: 'El nombre no puede tener más de 18 letras' };
+  }
+
+  // 1. Check against Supabase profiles database
+  if (supabase) {
+    try {
+      let query = supabase
+        .from('profiles')
+        .select('id, nickname')
+        .ilike('nickname', clean)
+        .limit(1);
+
+      if (excludeUserId) {
+        query = query.neq('id', excludeUserId);
+      }
+
+      const { data, error } = await query;
+      if (!error && data && data.length > 0) {
+        return { available: false, error: '¡Ese nombre ya está en uso! Por favor elegí uno diferente.' };
+      }
+    } catch {
+      // Offline fallback
+    }
+  }
+
+  // 2. Check local leaderboard copy
+  try {
+    const raw = localStorage.getItem('sismolab_leaderboard_v2');
+    if (raw) {
+      const list: any[] = JSON.parse(raw);
+      const exists = list.some(item => 
+        item.nickname?.trim().toLowerCase() === clean.toLowerCase() && 
+        item.id !== excludeUserId
+      );
+      if (exists) {
+        return { available: false, error: '¡Ese nombre ya está registrado! Elegí uno diferente.' };
+      }
+    }
+  } catch {}
+
+  return { available: true };
+}
+
 export function createGuestProfile(nickname?: string, mode: UserMode = 'kids'): UserProfile {
-  const chosenName = nickname?.trim() || `${DEFAULT_NAMES[Math.floor(Math.random() * DEFAULT_NAMES.length)]} ${Math.floor(Math.random() * 89 + 10)}`;
+  const chosenName = nickname?.trim() || '';
   const defaultAvatar = OFFICIAL_AVATARS[0];
   
   const newProfile: UserProfile = {

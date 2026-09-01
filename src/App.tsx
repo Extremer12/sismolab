@@ -126,10 +126,13 @@ function AppContent() {
   };
 
   // Handler for completing Onboarding Tutorial
-  const handleTutorialComplete = (age: number, assignedMode: UserMode) => {
+  const handleTutorialComplete = (chosenNickname: string, age: number, assignedMode: UserMode) => {
     setUser(prev => {
+      const cleanNick = chosenNickname.trim() || prev.nickname || 'Explorador';
       const updated: UserProfile = {
         ...prev,
+        nickname: cleanNick,
+        display_name: cleanNick,
         age,
         mode: assignedMode,
         has_completed_onboarding: true

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, Sparkles, LogOut } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
-import { OFFICIAL_AVATARS, AvatarOption, createGuestProfile } from '../../services/authService';
+import { OFFICIAL_AVATARS, AvatarOption, createGuestProfile, isNicknameAvailable } from '../../services/authService';
 import { supabase } from '../../services/supabase';
 import { sound } from '../../lib/sound';
 import { Modal } from '../../components/ui/Modal';
@@ -27,12 +27,21 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [avatarFilter, setAvatarFilter] = useState<'all' | 'fauna' | 'science' | 'rescue'>('all');
 
-  const handleSaveName = () => {
-    if (!nameInput.trim()) return;
+  const handleSaveName = async () => {
+    const clean = nameInput.trim();
+    if (!clean || clean.length < 3) {
+      alert(language === 'es' ? 'El nombre debe tener al menos 3 letras' : 'Nickname must have at least 3 letters');
+      return;
+    }
+    const check = await isNicknameAvailable(clean, user.id);
+    if (!check.available) {
+      alert(check.error || (language === 'es' ? '¡Ese nombre ya está en uso por otro explorador!' : 'Name already taken!'));
+      return;
+    }
     sound.playClick();
     onUpdateUser({
-      nickname: nameInput.trim().slice(0, 18),
-      display_name: nameInput.trim().slice(0, 18)
+      nickname: clean.slice(0, 18),
+      display_name: clean.slice(0, 18)
     });
     setIsEditingName(false);
   };
@@ -75,8 +84,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       {isTutorialOpen && (
         <OnboardingTutorial
           user={user}
-          onComplete={(age, mode) => {
-            onUpdateUser({ age, mode, has_completed_onboarding: true });
+          onComplete={(nickname, age, mode) => {
+            onUpdateUser({ nickname, display_name: nickname, age, mode, has_completed_onboarding: true });
             setIsTutorialOpen(false);
           }}
           onClose={() => setIsTutorialOpen(false)}

@@ -254,10 +254,11 @@ BEGIN
     total_answers = 0,
     perfect_rounds = 0,
     completed_game_ids = ARRAY[]::TEXT[],
-    updated_at = timezone('utc'::TEXT, now());
+    updated_at = timezone('utc'::TEXT, now())
+  WHERE id IS NOT NULL;
 
   -- Eliminar sesiones históricas
-  DELETE FROM public.game_sessions;
+  DELETE FROM public.game_sessions WHERE true;
 
   RETURN jsonb_build_object('success', true, 'message', 'Tabla de posiciones reiniciada exitosamente para la feria');
 END;
