@@ -138,7 +138,7 @@ export const MythOrRealityGame: React.FC<MythOrRealityGameProps> = ({
       {gameState === 'intro' && (
         <GameIntroCountdown
           title="MITO O REALIDAD"
-          category="CIENCIA SÍSMICA · MISIÓN 02"
+          category="CIENCIA SÍSMICA · MISIÓN 05"
           subtitle="Desmentí creencias populares y validá la ciencia INPRES"
           instructions="Deslizá la tarjeta física hacia la IZQUIERDA para MITO ❌ o hacia la DERECHA para REALIDAD ✅. ¡También podés usar los botones táctiles!"
           icon="⚡"

@@ -94,7 +94,7 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
       {gameState === 'intro' && (
         <GameIntroCountdown
           title="¿QUÉ HARÍAS?"
-          category="DECISIÓN EN CRISIS · MISIÓN 05"
+          category="DECISIÓN EN CRISIS · MISIÓN 04"
           subtitle="Protocolos de autoprotección ante situaciones reales"
           instructions="Tomá decisiones críticas en situaciones de emergencia en la escuela, centro comercial, calle y hogar."
           icon="📍"

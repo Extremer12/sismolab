@@ -317,7 +317,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
       {gameState === 'intro' && (
         <GameIntroCountdown
           title="MOCHILA DE 72 HORAS"
-          category="PREVENCIÓN SÍSMICA · MISIÓN 04"
+          category="PREVENCIÓN SÍSMICA · MISIÓN 02"
           subtitle="Empacá hasta 12 artículos indispensables"
           instructions="Tocá o arrastrá los objetos hacia la mochila. Cada vez que guardes uno, aparecerá el siguiente. Al finalizar, evaluaremos cuáles eran vitales y cuáles un riesgo."
           icon="🎒"
