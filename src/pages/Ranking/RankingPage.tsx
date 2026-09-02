@@ -21,14 +21,14 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
     setIsLoading(true);
     const data = await fetchLeaderboard(filterMode);
     
-    // Ensure current user is in the list if they have points and match filter
+    // Ensure current user is in the list if they have points, nickname and match filter
     const hasUserInList = data.some(p => p.id === user.id);
     let finalList = [...data];
-    if (!hasUserInList && user.total_score > 0 && (filterMode === 'all' || user.mode === filterMode)) {
+    if (!hasUserInList && user.total_score > 0 && user.nickname && user.nickname !== 'Explorador' && (filterMode === 'all' || user.mode === filterMode)) {
       finalList.push({
         id: user.id,
         rank: 0,
-        nickname: user.display_name || user.nickname || 'Explorador',
+        nickname: user.display_name || user.nickname,
         avatar_emoji: user.avatar_emoji || '🦅',
         avatar_url: user.avatar_url,
         score: user.total_score,
@@ -62,21 +62,24 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
   const playerAbove = leaderboard.find(p => p.rank === userRank - 1);
   const pointsToNext = playerAbove ? Math.max(0, playerAbove.score - user.total_score + 10) : 0;
 
-  // Helper avatar renderer
+  // Helper avatar renderer with Google avatar support and offline fallback
   const renderAvatar = (url?: string, emoji?: string, sizeClass = "w-full h-full") => {
-    if (url) {
-      return (
-        <img
-          src={url}
-          alt="Avatar"
-          className={`${sizeClass} object-cover`}
-          onError={(e) => {
-            (e.target as HTMLElement).style.display = 'none';
-          }}
-        />
-      );
-    }
-    return <span>{emoji || '🦅'}</span>;
+    const avatarSrc = url || '/images/avatar/avatar_1.webp';
+    return (
+      <img
+        src={avatarSrc}
+        alt="Avatar"
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
+        className={`${sizeClass} object-cover rounded-full`}
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          if (target.src !== window.location.origin + '/images/avatar/avatar_1.webp') {
+            target.src = '/images/avatar/avatar_1.webp';
+          }
+        }}
+      />
+    );
   };
 
   return (

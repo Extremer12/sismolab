@@ -48,9 +48,13 @@ export const TopBar: React.FC<TopBarProps> = ({ user, onNavigate }) => {
               <img
                 src={user.avatar_url}
                 alt={user.nickname}
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== window.location.origin + '/images/avatar/avatar_1.webp') {
+                    target.src = '/images/avatar/avatar_1.webp';
+                  }
                 }}
               />
             ) : (
