@@ -8,6 +8,7 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
     let query = supabase
       .from('profiles')
       .select('id, nickname, display_name, avatar_emoji, avatar_url, total_score, mode, updated_at')
+      .eq('is_active', true)
       .gt('total_score', 0)
       .order('total_score', { ascending: false })
       .order('updated_at', { ascending: true })
