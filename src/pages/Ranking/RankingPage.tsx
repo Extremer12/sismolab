@@ -22,14 +22,14 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
     const data = await fetchLeaderboard(filterMode);
     
     // Ensure current user is in the list if they have points and match filter
-    const hasUserInList = data.some(p => p.id === user.id || p.nickname === user.nickname);
+    const hasUserInList = data.some(p => p.id === user.id);
     let finalList = [...data];
     if (!hasUserInList && user.total_score > 0 && (filterMode === 'all' || user.mode === filterMode)) {
       finalList.push({
         id: user.id,
         rank: 0,
-        nickname: user.display_name || user.nickname,
-        avatar_emoji: user.avatar_emoji,
+        nickname: user.display_name || user.nickname || 'Explorador',
+        avatar_emoji: user.avatar_emoji || '🦅',
         avatar_url: user.avatar_url,
         score: user.total_score,
         mode: user.mode,

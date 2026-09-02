@@ -169,7 +169,10 @@ export async function fetchOrCreateUserProfile(sessionUser: {
   user_metadata?: Record<string, unknown>;
 }): Promise<{ profile: UserProfile; isNewUser: boolean }> {
   const meta = sessionUser.user_metadata || {};
-  const googleName = (meta.full_name || meta.name || meta.display_name || sessionUser.email?.split('@')[0] || 'Explorador') as string;
+  // Default to email username (e.g. "juan.perez" from "juan.perez@gmail.com"), fallback to full name
+  const emailUsername = sessionUser.email ? sessionUser.email.split('@')[0].slice(0, 18) : '';
+  const fullName = ((meta.full_name || meta.name || meta.display_name) as string)?.slice(0, 18);
+  const initialName = emailUsername || fullName || 'Explorador';
   const avatarUrl = (meta.avatar_url || meta.picture || OFFICIAL_AVATARS[0].url) as string;
 
   try {
@@ -184,8 +187,8 @@ export async function fetchOrCreateUserProfile(sessionUser: {
       const loaded: UserProfile = {
         id: data.id || sessionUser.id,
         auth_user_id: sessionUser.id,
-        nickname: data.nickname || googleName,
-        display_name: data.display_name || googleName,
+        nickname: data.nickname || initialName,
+        display_name: data.display_name || data.nickname || initialName,
         avatar_url: data.avatar_url || avatarUrl,
         avatar_emoji: data.avatar_emoji || '🦅',
         age: data.age || undefined,
@@ -211,8 +214,8 @@ export async function fetchOrCreateUserProfile(sessionUser: {
   const newProfile: UserProfile = {
     id: sessionUser.id,
     auth_user_id: sessionUser.id,
-    nickname: googleName,
-    display_name: googleName,
+    nickname: initialName,
+    display_name: initialName,
     avatar_url: avatarUrl,
     avatar_emoji: '🦅',
     age: undefined,
@@ -232,8 +235,8 @@ export async function fetchOrCreateUserProfile(sessionUser: {
     await supabase.from('profiles').upsert({
       id: sessionUser.id,
       auth_user_id: sessionUser.id,
-      nickname: googleName,
-      display_name: googleName,
+      nickname: initialName,
+      display_name: initialName,
       avatar_url: avatarUrl,
       avatar_emoji: '🦅',
       mode: initialMode,
