@@ -40,20 +40,32 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "SISMO LAB",
+      "name": "SISMO LAB · Prevención Sísmica Interactiva",
+      "alternateName": "SismoEdu PWA",
       "url": "https://sismolab-one.vercel.app/",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "All",
+      "description": "Plataforma educativa y lúdica de preparación y autoprotección ante sismos y terremotos. Desarrollada por Zion Code para la Escuela Policía Federal Argentina.",
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "ARS"
       },
+      "featureList": [
+        "Misión 01: ¿Qué es un Sismo? (Ciencia y fallas geológicas)",
+        "Misión 02: Casa Segura (Identificación de riesgos y zonas de seguridad)",
+        "Misión 03: ¿Qué Harías? (Toma de decisiones en crisis)",
+        "Misión 04: Mochila de 72 Horas (Armado del kit de emergencia)",
+        "Misión 05: Mitos y Realidades (Verdades científicas)",
+        "Misión 06: Desafío Final (Evaluación integral contra reloj)",
+        "Ranking en vivo con sistema de puntajes y avatares 3D",
+        "Modo Niños con lenguaje adaptado y Modo Adultos con rigor técnico",
+        "Biblioteca de recursos y guías de evacuación en PDF"
+      ],
       "author": {
         "@type": "Organization",
         "name": "Zion Code",
         "url": "https://zion-code.vercel.app/",
-        "email": "zioncode25@gmail.com",
         "founder": {
           "@type": "Person",
           "name": "Cristian Bordon"
@@ -64,18 +76,67 @@
         "name": "Escuela Policía Federal Argentina",
         "department": "Comunidad Educativa San Juan"
       },
-      "about": "Educación en prevención y autoprotección sísmica",
       "inLanguage": ["es", "en"]
     }
     </script>
     
-    <!-- Google Fonts: Plus Jakarta Sans, Outfit & Space Grotesk (High legibility and modern geometry) -->
+    <!-- Google Fonts: Plus Jakarta Sans, Outfit & Space Grotesk -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   </head>
   <body class="bg-navy-900 text-slate-100 antialiased font-sans min-h-screen">
-    <div id="root"></div>
+    <!-- Prerendered Static Content for AI Scrapers, Search Engines & Non-JS Clients -->
+    <div id="root">
+      <main style="max-width: 800px; margin: 0 auto; padding: 32px 20px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #f8fafc; background-color: #061426;">
+        <header style="text-align: center; margin-bottom: 30px;">
+          <h1 style="font-size: 28px; font-weight: 900; color: #00d2ff; margin-bottom: 8px;">SISMO LAB · Plataforma Educativa de Prevención Sísmica</h1>
+          <p style="font-size: 16px; color: #cbd5e1; line-height: 1.5;">Una experiencia interactiva y gamificada de autoprotección, ciencia de la tierra y preparación ciudadana ante terremotos.</p>
+          <p style="font-size: 13px; color: #f59e0b; font-weight: 700;">Desarrollada por Zion Code · Escuela Policía Federal Argentina · San Juan</p>
+        </header>
+
+        <section style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+          <h2 style="font-size: 20px; color: #00d2ff; margin-bottom: 12px;">🎮 Misiones y Minijuegos Educativos</h2>
+          <ul style="line-height: 1.8; font-size: 14px; color: #e2e8f0;">
+            <li><strong>Misión 1 - ¿Qué es un sismo?:</strong> Preguntas interactivas sobre epicentro, hipocentro, placas tectónicas y escalas de Richter y Mercalli.</li>
+            <li><strong>Misión 2 - Casa Segura:</strong> Escáner visual interactivo para detectar peligros en el hogar (espejos sueltos, objetos pesados en altura, calefactores) y marcar zonas de seguridad.</li>
+            <li><strong>Misión 3 - ¿Qué harías?:</strong> Escenarios de toma de decisiones rápidas en la escuela, el hogar, la calle o vehículos durante un terremoto.</li>
+            <li><strong>Misión 4 - Mochila de 72 Horas:</strong> Selección y empaque dinámico de los 12 elementos vitales (agua, linterna, radio a pilas, botiquín, silbato) descartando riesgos.</li>
+            <li><strong>Misión 5 - Mitos vs Realidades:</strong> Desmitificación de creencias populares como el 'triángulo de la vida', predicciones falsas y comportamiento animal.</li>
+            <li><strong>Misión 6 - Desafío Final:</strong> Evaluación cronometrada integral con jefes de trivia para consolidar el aprendizaje.</li>
+          </ul>
+        </section>
+
+        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px;">
+            <h3 style="color: #38bdf8; font-size: 16px;">🧒 Modo Niños</h3>
+            <p style="font-size: 13px; color: #94a3b8;">Lenguaje adaptado, visuales animados, feedback positivo y gamificación guiada.</p>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px;">
+            <h3 style="color: #fbbf24; font-size: 16px;">🧑 Modo Adultos</h3>
+            <p style="font-size: 13px; color: #94a3b8;">Mayor rigor técnico, normativas de construcción sismorresistente y protocolos de emergencia avanzados.</p>
+          </div>
+        </section>
+
+        <section style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+          <h2 style="font-size: 18px; color: #f8fafc; margin-bottom: 8px;">🏆 Tabla de Posiciones y PWA Offline</h2>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">Incluye ranking en tiempo real conectado con Supabase, personalización de avatares 3D, medallas de logros y funcionamiento 100% offline gracias a Service Workers.</p>
+        </section>
+
+        <footer style="text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+          <p>Proyecto presentado en Feria de Innovación Educativa · Caucete, San Juan, Argentina</p>
+          <p>Desarrollado con React, TypeScript, TailwindCSS, Supabase y Vite PWA por Zion Code.</p>
+        </footer>
+      </main>
+    </div>
+
+    <!-- Fallback for browsers with JavaScript disabled -->
+    <noscript>
+      <div style="padding: 20px; background: #0f172a; color: white; text-align: center;">
+        <p>Para disfrutar de la experiencia interactiva completa de SISMO LAB con sonido y minijuegos, activá JavaScript en tu navegador.</p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
