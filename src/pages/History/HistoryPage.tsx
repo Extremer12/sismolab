@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ChevronDown, Sparkles, Play, X } from 'lucide-react';
-import { ScreenId } from '../../types';
+import { ScreenId, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
 
 interface HistoryPageProps {
+  user?: UserProfile;
   onNavigate: (screen: ScreenId) => void;
   onExperienceChange?: (isActive: boolean) => void;
   onFinishGame?: (earnedScore: number, correctCount: number, totalCount: number, gameId?: string) => void;
@@ -75,9 +76,11 @@ const HISTORICAL_SLIDES: SlideEvent[] = [
   }
 ];
 
-export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperienceChange, onFinishGame }) => {
+export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onExperienceChange, onFinishGame }) => {
   const [isExperienceActive, setIsExperienceActive] = useState<boolean>(false);
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
+
+  const isClaimed = user?.completed_game_ids?.includes('history');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -460,10 +463,14 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate, onExperien
                           onNavigate('ranking');
                         }
                       }}
-                      className="w-full py-3.5 px-5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-navy-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-glow-gold hover:scale-105 active:scale-95 transition-all"
+                      className={`w-full py-3.5 px-5 rounded-full font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                        isClaimed
+                          ? 'bg-navy-900/90 text-brand-cyan border border-brand-cyan/50 hover:bg-navy-800 shadow-md'
+                          : 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-navy-950 shadow-glow-gold hover:scale-105'
+                      }`}
                     >
-                      <Sparkles className="w-4 h-4 text-navy-950" />
-                      <span>Reclamar +300 XP y Ver Ranking</span>
+                      <Sparkles className={`w-4 h-4 ${isClaimed ? 'text-brand-cyan' : 'text-navy-950'}`} />
+                      <span>{isClaimed ? '✓ 300 XP Reclamados · Ver Ranking' : 'Reclamar +300 XP y Ver Ranking'}</span>
                     </button>
                   </div>
                 )}

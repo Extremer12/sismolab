@@ -26,6 +26,16 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   const totalSlides = 4;
   const isEs = language === 'es';
 
+  // Sync with incoming user profile updates
+  useEffect(() => {
+    if (user.nickname && user.nickname !== 'Explorador' && !nickname) {
+      setNickname(user.nickname);
+    }
+    if (user.age && user.age >= 5 && selectedAge === 12) {
+      setSelectedAge(user.age);
+    }
+  }, [user.nickname, user.age]);
+
   // Debounced Nickname Verification
   useEffect(() => {
     const clean = nickname.trim();
@@ -57,7 +67,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
         setNickStatus('taken');
         setNickError(res.error || (isEs ? 'Este nombre ya está en uso' : 'This name is already taken'));
       }
-    }, 400);
+    }, 350);
 
     return () => clearTimeout(timer);
   }, [nickname, user.id, isEs]);

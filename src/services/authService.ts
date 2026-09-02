@@ -56,17 +56,22 @@ export async function isNicknameAvailable(
     try {
       let query = supabase
         .from('profiles')
-        .select('id, nickname')
+        .select('id, auth_user_id, nickname')
         .ilike('nickname', clean)
-        .limit(1);
+        .limit(5);
 
       if (excludeUserId) {
-        query = query.neq('id', excludeUserId);
+        query = query.neq('id', excludeUserId).neq('auth_user_id', excludeUserId);
       }
 
       const { data, error } = await query;
       if (!error && data && data.length > 0) {
-        return { available: false, error: '¡Ese nombre ya está en uso! Por favor elegí uno diferente.' };
+        const hasOtherUserWithSameName = data.some(
+          item => item.id !== excludeUserId && item.auth_user_id !== excludeUserId
+        );
+        if (hasOtherUserWithSameName) {
+          return { available: false, error: '¡Ese nombre ya está en uso! Por favor elegí uno diferente.' };
+        }
       }
     } catch {
       // Offline fallback
@@ -80,7 +85,8 @@ export async function isNicknameAvailable(
       const list: any[] = JSON.parse(raw);
       const exists = list.some(item => 
         item.nickname?.trim().toLowerCase() === clean.toLowerCase() && 
-        item.id !== excludeUserId
+        item.id !== excludeUserId &&
+        item.auth_user_id !== excludeUserId
       );
       if (exists) {
         return { available: false, error: '¡Ese nombre ya está registrado! Elegí uno diferente.' };
@@ -183,7 +189,8 @@ export async function fetchOrCreateUserProfile(sessionUser: {
       .maybeSingle();
 
     if (!error && data) {
-      const isNew = !data.age;
+      const hasValidAge = Boolean(data.age && typeof data.age === 'number' && data.age >= 5);
+      const isNew = !hasValidAge || !data.nickname || data.nickname === 'Explorador';
       const loaded: UserProfile = {
         id: data.id || sessionUser.id,
         auth_user_id: sessionUser.id,
@@ -191,15 +198,15 @@ export async function fetchOrCreateUserProfile(sessionUser: {
         display_name: data.display_name || data.nickname || initialName,
         avatar_url: data.avatar_url || avatarUrl,
         avatar_emoji: data.avatar_emoji || '🦅',
-        age: data.age || undefined,
-        mode: data.mode || (data.age && data.age < 13 ? 'kids' : 'adult'),
+        age: hasValidAge ? data.age : undefined,
+        mode: data.mode || (hasValidAge && data.age < 13 ? 'kids' : 'adult'),
         total_score: data.total_score || 0,
         level: Math.floor((data.total_score || 0) / 400) + 1,
         games_played: data.games_played || 0,
         completed_game_ids: data.completed_game_ids || [],
         correct_answers_count: data.correct_answers || 0,
         total_answers_count: data.total_answers || 0,
-        has_completed_onboarding: Boolean(data.age && data.age > 0),
+        has_completed_onboarding: hasValidAge,
         created_at: data.created_at || new Date().toISOString()
       };
       saveLocalProfile(loaded);

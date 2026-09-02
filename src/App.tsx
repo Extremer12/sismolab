@@ -71,12 +71,14 @@ function AppContent() {
     syncProfileWithSupabaseDebounced(user);
   }, [user]);
 
-  // Auto-launch tutorial for any user who hasn't completed onboarding
+  // Auto-launch tutorial for any user who hasn't completed onboarding or has no age/nickname
   useEffect(() => {
-    if (activeScreen !== 'splash' && (!user.has_completed_onboarding || !user.age || !user.nickname)) {
+    const isProfileIncomplete = !user.has_completed_onboarding || !user.age || !user.nickname || user.nickname === 'Explorador';
+    // If the user has an authenticated account or has entered the app, require onboarding
+    if (isProfileIncomplete && (user.auth_user_id || activeScreen !== 'splash')) {
       setShowTutorial(true);
     }
-  }, [activeScreen, user.has_completed_onboarding, user.age, user.nickname]);
+  }, [activeScreen, user.auth_user_id, user.has_completed_onboarding, user.age, user.nickname]);
 
   // Check active session & listen to Supabase OAuth login
   useEffect(() => {
@@ -87,9 +89,10 @@ function AppContent() {
       if (!isMounted) return;
 
       setUser(profile);
-      setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
+      setActiveScreen('home');
 
-      if (isNewUser || !profile.age || !profile.has_completed_onboarding || !profile.nickname) {
+      const isProfileIncomplete = isNewUser || !profile.age || !profile.has_completed_onboarding || !profile.nickname || profile.nickname === 'Explorador';
+      if (isProfileIncomplete) {
         setShowTutorial(true);
       }
 
@@ -127,9 +130,7 @@ function AppContent() {
       display_name: nickname
     }));
     setActiveScreen('home');
-    if (!user.has_completed_onboarding || !user.age || !user.nickname) {
-      setShowTutorial(true);
-    }
+    setShowTutorial(true);
   };
 
   // Handler for completing Onboarding Tutorial
@@ -227,9 +228,14 @@ function AppContent() {
       {/* Full-Screen Onboarding Tutorial & Age Verification */}
       {showTutorial && (
         <OnboardingTutorial
+          key={user.id || 'onboarding'}
           user={user}
           onComplete={handleTutorialComplete}
-          onClose={() => setShowTutorial(false)}
+          onClose={() => {
+            if (user.has_completed_onboarding && user.age) {
+              setShowTutorial(false);
+            }
+          }}
         />
       )}
 
@@ -337,6 +343,7 @@ function AppContent() {
           {/* Exploration & Management (Lazy Loaded) */}
           {activeScreen === 'history' && (
             <HistoryPage
+              user={user}
               onNavigate={setActiveScreen}
               onExperienceChange={setIsHistoryExperienceActive}
               onFinishGame={handleFinishGame}
