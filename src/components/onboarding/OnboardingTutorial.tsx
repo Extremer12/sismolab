@@ -4,6 +4,7 @@ import { UserMode, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { isNicknameAvailable } from '../../services/authService';
+import { LottieAnimation } from '../ui/LottieAnimation';
 
 interface OnboardingTutorialProps {
   user: UserProfile;
@@ -339,69 +340,73 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
 
         {/* SLIDE 2: Missions, Kit and 4s Reflexes */}
         {currentSlide === 2 && (
-          <div className="space-y-5 animate-editorial-1">
-            <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
-              <div className="absolute inset-0 bg-brand-gold/15 rounded-full blur-2xl animate-pulse" />
-              <div className="w-20 h-20 rounded-full bg-navy-900 border border-brand-gold/50 flex items-center justify-center text-brand-gold shadow-[0_0_30px_rgba(245,184,61,0.3)]">
-                <PackageCheck className="w-10 h-10" />
-              </div>
-            </div>
+           <div className="space-y-4 animate-editorial-1">
+             <div className="relative w-36 h-36 sm:w-40 sm:h-40 mx-auto flex items-center justify-center">
+               <div className="absolute inset-0 bg-brand-gold/20 rounded-full blur-2xl animate-pulse" />
+               <LottieAnimation
+                 src="/animations/tutorial-missions.json"
+                 fallbackSrc="https://lottie.host/b60639bb-282d-4e62-b88d-9953e68934a3/yl7ebVGU6n.json"
+                 className="w-32 h-32 sm:w-36 sm:h-36 relative z-10 drop-shadow-[0_0_20px_rgba(245,184,61,0.4)]"
+               />
+             </div>
 
-            <div className="space-y-2">
-              <span className="text-[10px] font-black text-brand-yellow uppercase tracking-[0.25em] block">
-                {isEs ? 'PASO 03 · ENTRENAMIENTO PRÁCTICO' : 'STEP 03 · PRACTICAL TRAINING'}
-              </span>
-              <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase leading-none">
-                {isEs ? 'Misiones & Reflejos en 4s' : 'Missions & 4s Reflexes'}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-md mx-auto pt-1">
-                {isEs
-                  ? 'Armá tu mochila de emergencia de 72 horas, descubrí peligros hogareños y entrená decisiones en 4 segundos ante una sacudida real.'
-                  : 'Pack your 72-hour survival go-bag, secure hazard points and train quick decision-making under earthquake shaking.'}
-              </p>
-            </div>
-          </div>
-        )}
+             <div className="space-y-2">
+               <span className="text-[10px] font-black text-brand-yellow uppercase tracking-[0.25em] block">
+                 {isEs ? 'PASO 03 · ENTRENAMIENTO PRÁCTICO' : 'STEP 03 · PRACTICAL TRAINING'}
+               </span>
+               <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase leading-none">
+                 {isEs ? 'Misiones & Reflejos en 4s' : 'Missions & 4s Reflexes'}
+               </h2>
+               <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-md mx-auto pt-1">
+                 {isEs
+                   ? 'Armá tu mochila de emergencia de 72 horas, descubrí peligros hogareños y entrená decisiones en 4 segundos ante una sacudida real.'
+                   : 'Pack your 72-hour survival go-bag, secure hazard points and train quick decision-making under earthquake shaking.'}
+               </p>
+             </div>
+           </div>
+         )}
 
         {/* SLIDE 3: Leaderboard Rules */}
         {currentSlide === 3 && (
-          <div className="space-y-5 animate-editorial-1">
-            <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
-              <div className="absolute inset-0 bg-purple-500/15 rounded-full blur-2xl animate-pulse" />
-              <div className="w-20 h-20 rounded-full bg-navy-900 border border-purple-500/50 flex items-center justify-center text-purple-300 shadow-[0_0_30px_rgba(168,85,247,0.3)]">
-                <Trophy className="w-10 h-10" />
-              </div>
-            </div>
+           <div className="space-y-4 animate-editorial-1">
+             <div className="relative w-36 h-36 sm:w-40 sm:h-40 mx-auto flex items-center justify-center">
+               <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-2xl animate-pulse" />
+               <LottieAnimation
+                 src="/animations/tutorial-ranking.json"
+                 fallbackSrc="https://lottie.host/d0df85bd-daad-4fc8-8599-9766da91dc9d/Ox3w4EOkHU.json"
+                 className="w-32 h-32 sm:w-36 sm:h-36 relative z-10 drop-shadow-[0_0_25px_rgba(168,85,247,0.4)]"
+               />
+             </div>
 
-            <div className="space-y-2.5">
-              <span className="text-[10px] font-black text-purple-300 uppercase tracking-[0.25em] block">
-                {isEs ? 'PASO 04 · REGLAS DE PUNTUACIÓN' : 'STEP 04 · LEADERBOARD RULES'}
-              </span>
-              <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase leading-none">
-                {isEs ? 'Reglas del Ranking' : 'Leaderboard Rules'}
-              </h2>
-              
-              <div className="space-y-2 text-left text-xs max-w-sm mx-auto pt-1">
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-slate-200">
-                    {isEs
-                      ? 'Los puntos oficiales del ranking escolar se suman compitiendo en el modo correspondiente a tu edad.'
-                      : 'Official ranking points are scored in the category matching your age.'}
-                  </p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <Shield className="w-4 h-4 text-brand-cyan shrink-0 mt-0.5" />
-                  <p className="text-slate-300">
-                    {isEs
-                      ? 'Al rejugar una misión, solo sumás puntos a tu perfil si superás tu récord anterior.'
-                      : 'When replaying a mission, you only gain extra points if you beat your personal best.'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+             <div className="space-y-2.5">
+               <span className="text-[10px] font-black text-purple-300 uppercase tracking-[0.25em] block">
+                 {isEs ? 'PASO 04 · REGLAS DE PUNTUACIÓN' : 'STEP 04 · LEADERBOARD RULES'}
+               </span>
+               <h2 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase leading-none">
+                 {isEs ? 'Reglas del Ranking' : 'Leaderboard Rules'}
+               </h2>
+               
+               <div className="space-y-2 text-left text-xs max-w-sm mx-auto pt-1">
+                 <div className="flex items-start gap-2.5">
+                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                   <p className="text-slate-200">
+                     {isEs
+                       ? 'Los puntos oficiales del ranking escolar se suman compitiendo en el modo correspondiente a tu edad.'
+                       : 'Official ranking points are scored in the category matching your age.'}
+                   </p>
+                 </div>
+                 <div className="flex items-start gap-2.5">
+                   <Shield className="w-4 h-4 text-brand-cyan shrink-0 mt-0.5" />
+                   <p className="text-slate-300">
+                     {isEs
+                       ? 'Al rejugar una misión, solo sumás puntos a tu perfil si superás tu récord anterior.'
+                       : 'When replaying a mission, you only gain extra points if you beat your personal best.'}
+                   </p>
+                 </div>
+               </div>
+             </div>
+           </div>
+         )}
 
       </div>
 
