@@ -121,8 +121,8 @@ export const GameInfoModal: React.FC<GameInfoModalProps> = ({ isOpen, onClose })
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
             {isEs
-              ? 'Cada misión completada suma puntos a tu perfil. Al rejugar una misión, ¡solo sumás puntos si superás tu propio récord personal!'
-              : 'Every completed mission adds XP to your profile. When replaying a mission, you only gain extra points if you beat your personal best!'}
+              ? '¡El puntaje es acumulativo! Cada partida completada suma puntos a tu perfil. Cuanto más juegues, mejores tus tiempos y más misiones ganes, más alto subirás en el podio.'
+              : 'Points are cumulative! Every finished game adds XP to your profile. The more you play, improve your times and win missions, the higher you climb on the podium.'}
           </p>
         </div>
 

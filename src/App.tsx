@@ -184,17 +184,8 @@ function AppContent() {
       if (isAdultPlayingKids) {
         addedScore = 0;
       } else {
-        if (!completedIds.includes(id)) {
-          // First time completing the mission: full score awarded
-          addedScore = earnedScore;
-        } else {
-          // Replay: Only award the incremental difference if the user beat their personal best
-          if (earnedScore > previousHighScore) {
-            addedScore = earnedScore - previousHighScore;
-          } else {
-            addedScore = 0; // Anti-cheat: No farming points by repeating without beating high score
-          }
-        }
+        // Fully Cumulative XP: Every match completed adds its full earned score to the total!
+        addedScore = earnedScore;
       }
 
       const newHighScore = Math.max(previousHighScore, earnedScore);
