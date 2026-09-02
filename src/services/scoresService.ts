@@ -72,7 +72,7 @@ export async function submitGameScoreToSupabase(
   // Always update locally first for zero-latency UI
   saveUserScoreLocally(user);
 
-  if (!supabase || !user.id) return;
+  if (!supabase || !user.id || !user.auth_user_id) return;
 
   try {
     // 1. Try secure Server-Side RPC first

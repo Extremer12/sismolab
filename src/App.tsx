@@ -71,14 +71,17 @@ function AppContent() {
     syncProfileWithSupabaseDebounced(user);
   }, [user]);
 
-  // Auto-launch tutorial for any user who hasn't completed onboarding or has no age/nickname
+  // Auto-launch tutorial ONLY for authenticated accounts who haven't completed onboarding
   useEffect(() => {
+    if (!user.auth_user_id) {
+      setShowTutorial(false);
+      return;
+    }
     const isProfileIncomplete = !user.has_completed_onboarding || !user.age || !user.nickname || user.nickname === 'Explorador';
-    // If the user has an authenticated account or has entered the app, require onboarding
-    if (isProfileIncomplete && (user.auth_user_id || activeScreen !== 'splash')) {
+    if (isProfileIncomplete) {
       setShowTutorial(true);
     }
-  }, [activeScreen, user.auth_user_id, user.has_completed_onboarding, user.age, user.nickname]);
+  }, [user.auth_user_id, user.has_completed_onboarding, user.age, user.nickname]);
 
   // Check active session & listen to Supabase OAuth login
   useEffect(() => {
@@ -109,10 +112,14 @@ function AppContent() {
       }
     });
 
-    // 2. Listen for auth changes (SIGNED_IN, USER_UPDATED)
+    // 2. Listen for auth changes (SIGNED_IN, SIGNED_OUT, USER_UPDATED)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED')) {
         handleSession(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setShowTutorial(false);
+        setActiveScreen('splash');
+        setUser(createGuestProfile());
       }
     });
 

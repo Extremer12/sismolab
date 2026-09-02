@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, Sparkles, LogOut } from 'lucide-react';
+import { ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, Sparkles, LogOut, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 import { ScreenId, UserProfile, UserMode } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
-import { OFFICIAL_AVATARS, AvatarOption, createGuestProfile, isNicknameAvailable } from '../../services/authService';
+import { OFFICIAL_AVATARS, AvatarOption, createGuestProfile, isNicknameAvailable, deleteUserAccount } from '../../services/authService';
 import { supabase } from '../../services/supabase';
 import { sound } from '../../lib/sound';
 import { Modal } from '../../components/ui/Modal';
@@ -24,6 +24,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user.nickname);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [avatarFilter, setAvatarFilter] = useState<'all' | 'fauna' | 'science' | 'rescue'>('all');
   const [pendingSwitch, setPendingSwitch] = useState<{
@@ -402,23 +404,101 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               sound.playClick();
               try {
                 await supabase.auth.signOut();
-              } catch {
-                // Fallback
-              }
+              } catch {}
+              localStorage.removeItem('sismolab_user_profile_v2');
+              localStorage.removeItem('sismolab_leaderboard_v2');
               const newGuest = createGuestProfile();
               onUpdateUser(newGuest);
               onNavigate('splash');
             }
           }}
-          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-950/20 transition-colors"
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-950/20 transition-colors"
         >
           <div className="flex items-center gap-2.5">
-            <LogOut className="w-4 h-4 text-rose-400" />
+            <LogOut className="w-4 h-4 text-amber-400" />
             <span className="font-bold">{t.profile.logoutBtn}</span>
           </div>
-          <ChevronRight className="w-4 h-4 text-rose-500" />
+          <ChevronRight className="w-4 h-4 text-amber-500" />
+        </button>
+
+        {/* Delete Account Permanently */}
+        <button
+          onClick={() => {
+            sound.playClick();
+            setIsDeleteModalOpen(true);
+          }}
+          className="w-full py-2.5 px-2 flex items-center justify-between text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-950/30 transition-colors border-t border-rose-950/40 mt-1"
+        >
+          <div className="flex items-center gap-2.5">
+            <Trash2 className="w-4 h-4 text-rose-500" />
+            <span className="font-bold">{language === 'es' ? 'Eliminar Cuenta Permanentemente' : 'Delete Account Permanently'}</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-rose-600" />
         </button>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => !isDeleting && setIsDeleteModalOpen(false)}
+        title={language === 'es' ? 'Eliminar Cuenta' : 'Delete Account'}
+      >
+        <div className="space-y-4 py-2 text-center select-none">
+          <div className="w-16 h-16 rounded-full bg-rose-500/15 border-2 border-rose-500/40 text-rose-500 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(244,63,94,0.3)]">
+            <Trash2 className="w-8 h-8 stroke-[2.5]" />
+          </div>
+
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-black text-white uppercase tracking-tight">
+              {language === 'es' ? '¿Eliminar tu cuenta permanentemente?' : 'Delete your account permanently?'}
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+              {language === 'es'
+                ? 'Esta acción es irreversible. Se borrarán todos tus datos personales, estadísticas de juego, medallas, puntajes y tu posición en el ranking de la feria.'
+                : 'This action is irreversible. All your personal data, game stats, badges, scores and leaderboard position will be deleted.'}
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => { sound.playClick(); setIsDeleteModalOpen(false); }}
+              className="flex-1 h-11 rounded-full bg-navy-900 border border-white/20 text-slate-300 font-bold text-xs hover:text-white transition-all active:scale-95 disabled:opacity-50"
+            >
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </button>
+
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={async () => {
+                sound.playWrong();
+                setIsDeleting(true);
+                await deleteUserAccount(user.id);
+                setIsDeleting(false);
+                setIsDeleteModalOpen(false);
+                const newGuest = createGuestProfile();
+                onUpdateUser(newGuest);
+                onNavigate('splash');
+              }}
+              className="flex-1 h-11 rounded-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(225,29,72,0.4)] active:scale-95 transition-all disabled:opacity-50"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>{language === 'es' ? 'Borrando...' : 'Deleting...'}</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  <span>{language === 'es' ? 'Sí, Eliminar Cuenta' : 'Yes, Delete Account'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* 3D Character Avatar Picker Modal */}
       <Modal

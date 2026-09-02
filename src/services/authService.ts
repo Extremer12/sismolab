@@ -267,11 +267,13 @@ export async function fetchOrCreateUserProfile(sessionUser: {
 export async function syncProfileWithSupabase(profile: UserProfile): Promise<void> {
   saveLocalProfile(profile);
 
-  if (!supabase || !profile.id) return;
+  // Only sync to remote database if the user is authenticated with Google/Supabase
+  if (!supabase || !profile.id || !profile.auth_user_id) return;
 
   try {
     const profilePayload: Record<string, unknown> = {
       id: profile.id,
+      auth_user_id: profile.auth_user_id,
       nickname: profile.nickname,
       display_name: profile.display_name || profile.nickname,
       avatar_url: profile.avatar_url,
@@ -288,10 +290,6 @@ export async function syncProfileWithSupabase(profile: UserProfile): Promise<voi
       updated_at: new Date().toISOString()
     };
 
-    if (profile.auth_user_id) {
-      profilePayload.auth_user_id = profile.auth_user_id;
-    }
-
     await supabase.from('profiles').upsert(profilePayload, { onConflict: 'id' });
   } catch (err) {
     console.warn('Sync profile fallback to local:', err);
@@ -303,6 +301,8 @@ let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 export function syncProfileWithSupabaseDebounced(profile: UserProfile, delayMs: number = 450): void {
   saveLocalProfile(profile);
 
+  if (!profile.auth_user_id) return;
+
   if (syncDebounceTimer) {
     clearTimeout(syncDebounceTimer);
   }
@@ -311,4 +311,30 @@ export function syncProfileWithSupabaseDebounced(profile: UserProfile, delayMs: 
     syncProfileWithSupabase(profile);
   }, delayMs);
 }
+
+export async function deleteUserAccount(userId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (supabase && userId) {
+      try {
+        await supabase.rpc('delete_user_account', { p_user_id: userId });
+      } catch {}
+      try {
+        await supabase.from('game_sessions').delete().eq('player_id', userId);
+      } catch {}
+      try {
+        await supabase.from('profiles').delete().or(`id.eq.${userId},auth_user_id.eq.${userId}`);
+      } catch {}
+      try {
+        await supabase.auth.signOut();
+      } catch {}
+    }
+    localStorage.removeItem(PROFILE_STORAGE_KEY);
+    localStorage.removeItem('sismolab_leaderboard_v2');
+    return { success: true };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Error al eliminar la cuenta';
+    return { success: false, error: errorMsg };
+  }
+}
+
 
