@@ -71,6 +71,13 @@ function AppContent() {
     syncProfileWithSupabaseDebounced(user);
   }, [user]);
 
+  // Auto-launch tutorial for any user who hasn't completed onboarding
+  useEffect(() => {
+    if (activeScreen !== 'splash' && (!user.has_completed_onboarding || !user.age || !user.nickname)) {
+      setShowTutorial(true);
+    }
+  }, [activeScreen, user.has_completed_onboarding, user.age, user.nickname]);
+
   // Check active session & listen to Supabase OAuth login
   useEffect(() => {
     let isMounted = true;
@@ -82,7 +89,7 @@ function AppContent() {
       setUser(profile);
       setActiveScreen(curr => (curr === 'splash' ? 'home' : curr));
 
-      if (isNewUser || !profile.age || !profile.has_completed_onboarding) {
+      if (isNewUser || !profile.age || !profile.has_completed_onboarding || !profile.nickname) {
         setShowTutorial(true);
       }
 
@@ -120,7 +127,7 @@ function AppContent() {
       display_name: nickname
     }));
     setActiveScreen('home');
-    if (!user.has_completed_onboarding || !user.age) {
+    if (!user.has_completed_onboarding || !user.age || !user.nickname) {
       setShowTutorial(true);
     }
   };
@@ -247,7 +254,12 @@ function AppContent() {
             <SplashScreen
               user={user}
               onLoginSuccess={handleLoginSuccess}
-              onContinue={() => setActiveScreen('home')}
+              onContinue={() => {
+                setActiveScreen('home');
+                if (!user.has_completed_onboarding || !user.age || !user.nickname) {
+                  setShowTutorial(true);
+                }
+              }}
             />
           )}
 

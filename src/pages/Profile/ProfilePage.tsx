@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, ChevronRight, HelpCircle, Sparkles, LogOut } from 'lucide-react';
-import { ScreenId, UserProfile } from '../../types';
+import { ScreenId, UserProfile, UserMode } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
 import { OFFICIAL_AVATARS, AvatarOption, createGuestProfile, isNicknameAvailable } from '../../services/authService';
 import { supabase } from '../../services/supabase';
@@ -26,6 +26,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [avatarFilter, setAvatarFilter] = useState<'all' | 'fauna' | 'science' | 'rescue'>('all');
+  const [pendingSwitch, setPendingSwitch] = useState<{
+    nickname: string;
+    age: number;
+    mode: UserMode;
+  } | null>(null);
 
   const handleSaveName = async () => {
     const clean = nameInput.trim();
@@ -44,6 +49,26 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       display_name: clean.slice(0, 18)
     });
     setIsEditingName(false);
+  };
+
+  const handleConfirmSwitchAndReset = () => {
+    if (!pendingSwitch) return;
+    sound.playClick();
+    onUpdateUser({
+      nickname: pendingSwitch.nickname,
+      display_name: pendingSwitch.nickname,
+      age: pendingSwitch.age,
+      mode: pendingSwitch.mode,
+      total_score: 0,
+      level: 1,
+      games_played: 0,
+      correct_answers_count: 0,
+      total_answers_count: 0,
+      completed_game_ids: [],
+      game_high_scores: {},
+      has_completed_onboarding: true
+    });
+    setPendingSwitch(null);
   };
 
   const handleSelectAvatar = (avatar: AvatarOption) => {
@@ -84,12 +109,70 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       {isTutorialOpen && (
         <OnboardingTutorial
           user={user}
-          onComplete={(nickname, age, mode) => {
-            onUpdateUser({ nickname, display_name: nickname, age, mode, has_completed_onboarding: true });
-            setIsTutorialOpen(false);
+          onComplete={(newNick, newAge, newMode) => {
+            const isChangingCategory = user.mode !== newMode || (user.age && ((user.age >= 13 && newAge < 13) || (user.age < 13 && newAge >= 13)));
+            const hasPointsToLose = user.total_score > 0 || user.games_played > 0;
+
+            if (isChangingCategory && hasPointsToLose) {
+              setPendingSwitch({ nickname: newNick, age: newAge, mode: newMode });
+              setIsTutorialOpen(false);
+            } else {
+              onUpdateUser({
+                nickname: newNick,
+                display_name: newNick,
+                age: newAge,
+                mode: newMode,
+                has_completed_onboarding: true
+              });
+              setIsTutorialOpen(false);
+            }
           }}
           onClose={() => setIsTutorialOpen(false)}
         />
+      )}
+
+      {/* Mode / Category Switch & Points Reset Warning Modal */}
+      {pendingSwitch && (
+        <Modal
+          isOpen={true}
+          onClose={() => setPendingSwitch(null)}
+          title={language === 'es' ? '⚠️ ¿Cambiar Categoría y Reiniciar Puntos?' : '⚠️ Change Category & Reset Score?'}
+        >
+          <div className="space-y-4 text-left font-sans">
+            <div className="p-3.5 rounded-2xl bg-rose-950/80 border border-rose-500/50 space-y-2">
+              <span className="text-[11px] font-black text-rose-400 uppercase tracking-wider block">
+                {language === 'es' ? 'ADVERTENCIA DE JUEGO JUSTO' : 'FAIR PLAY WARNING'}
+              </span>
+              <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                {language === 'es' ? (
+                  <>
+                    Estás por cambiar a la categoría <strong>{pendingSwitch.mode === 'kids' ? 'Modo Niños (6-12 años)' : 'Modo Jóvenes y Adultos (+13)'}</strong>. Para evitar el farmeo de puntos entre modos y mantener el ranking escolar justo, <strong>tus {user.total_score.toLocaleString()} XP actuales se reiniciarán a 0</strong>.
+                  </>
+                ) : (
+                  <>
+                    You are switching to <strong>{pendingSwitch.mode === 'kids' ? 'Kids Category (6-12 yrs)' : 'Youth & Adults (+13)'}</strong>. To ensure fair competition, your current <strong>{user.total_score.toLocaleString()} XP will be reset to 0</strong>.
+                  </>
+                )}
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <button
+                onClick={handleConfirmSwitchAndReset}
+                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-black text-xs uppercase tracking-wider shadow-lg active:scale-98 transition-all"
+              >
+                {language === 'es' ? 'Sí, Reiniciar Puntos y Cambiar' : 'Yes, Reset Score & Switch'}
+              </button>
+
+              <button
+                onClick={() => setPendingSwitch(null)}
+                className="w-full py-3 px-4 rounded-xl bg-navy-900 border border-white/15 text-slate-300 hover:text-white font-bold text-xs uppercase transition-colors"
+              >
+                {language === 'es' ? 'Cancelar y Mantener Mis Puntos' : 'Cancel and Keep Score'}
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {/* Header */}
