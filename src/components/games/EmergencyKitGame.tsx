@@ -14,6 +14,7 @@ interface EmergencyKitGameProps {
 }
 
 const MAX_BACKPACK_CAPACITY = 12;
+const VISIBLE_SLOTS_COUNT = 4;
 
 // Fisher-Yates uniform shuffle
 function getShuffledKitItems(): EmergencyKitItem[] {
@@ -31,25 +32,49 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   onNavigate
 }) => {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'evaluation' | 'result'>('intro');
-  const [shuffledItems, setShuffledItems] = useState<EmergencyKitItem[]>(() => getShuffledKitItems());
+  const [visibleSlots, setVisibleSlots] = useState<(EmergencyKitItem | null)[]>([]);
+  const [waitingDeck, setWaitingDeck] = useState<EmergencyKitItem[]>([]);
   const [packedItemIds, setPackedItemIds] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState<number>(45);
 
-  // Dragging state
-  const [draggingItem, setDraggingItem] = useState<EmergencyKitItem | null>(null);
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
+  // Dragging state (Hardware-accelerated)
+  const [activeDragItem, setActiveDragItem] = useState<EmergencyKitItem | null>(null);
   const [isOverBackpack, setIsOverBackpack] = useState<boolean>(false);
   const [backpackBouncing, setBackpackBouncing] = useState<boolean>(false);
 
   const backpackRef = useRef<HTMLDivElement>(null);
+  const ghostRef = useRef<HTMLDivElement>(null);
+  const dragContextRef = useRef<{
+    item: EmergencyKitItem;
+    slotIdx: number;
+    startX: number;
+    startY: number;
+    hasMoved: boolean;
+    backpackRect: DOMRect | null;
+  } | null>(null);
 
   const essentialItems = EMERGENCY_KIT_ITEMS.filter(i => i.isEssential);
   const packedItems = EMERGENCY_KIT_ITEMS.filter(i => packedItemIds.includes(i.id));
-  const availableItems = shuffledItems.filter(i => !packedItemIds.includes(i.id));
 
   const correctPackedItems = packedItems.filter(i => i.isEssential);
   const wrongPackedItems = packedItems.filter(i => !i.isEssential);
   const missedVitalItems = essentialItems.filter(i => !packedItemIds.includes(i.id));
+
+  // Initialize deck and slots
+  const initGameDeck = () => {
+    const allShuffled = getShuffledKitItems();
+    const slots = allShuffled.slice(0, VISIBLE_SLOTS_COUNT);
+    const rest = allShuffled.slice(VISIBLE_SLOTS_COUNT);
+    setVisibleSlots(slots);
+    setWaitingDeck(rest);
+    setPackedItemIds([]);
+    setTimeLeft(45);
+  };
+
+  const handleStartGame = () => {
+    initGameDeck();
+    setGameState('playing');
+  };
 
   // Timer countdown
   useEffect(() => {
@@ -67,21 +92,8 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
     return () => clearInterval(timer);
   }, [timeLeft, gameState]);
 
-  // Re-shuffle items
-  const handleShuffleAvailable = () => {
-    sound.playClick();
-    setShuffledItems(getShuffledKitItems());
-  };
-
-  const handleStartGame = () => {
-    setShuffledItems(getShuffledKitItems());
-    setPackedItemIds([]);
-    setTimeLeft(45);
-    setGameState('playing');
-  };
-
-  // Pack item helper
-  const packItemById = (item: EmergencyKitItem) => {
+  // Pack an item from a slot into the backpack and replenish the slot immediately
+  const packItemFromSlot = (item: EmergencyKitItem, slotIdx: number) => {
     if (packedItemIds.includes(item.id) || packedItemIds.length >= MAX_BACKPACK_CAPACITY) {
       sound.playWrong();
       return;
@@ -90,71 +102,186 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
     sound.playPackItem();
     setPackedItemIds(prev => [...prev, item.id]);
     setBackpackBouncing(true);
-    setTimeout(() => setBackpackBouncing(false), 400);
+    setTimeout(() => setBackpackBouncing(false), 350);
+
+    // Replenish this specific slot with the next card from the deck
+    setWaitingDeck(prevDeck => {
+      if (prevDeck.length > 0) {
+        const nextItem = prevDeck[0];
+        const remainingDeck = prevDeck.slice(1);
+        setVisibleSlots(prevSlots => {
+          const newSlots = [...prevSlots];
+          newSlots[slotIdx] = nextItem;
+          return newSlots;
+        });
+        return remainingDeck;
+      } else {
+        setVisibleSlots(prevSlots => {
+          const newSlots = [...prevSlots];
+          newSlots[slotIdx] = null;
+          return newSlots;
+        });
+        return prevDeck;
+      }
+    });
   };
 
-  // Remove packed item from backpack
+  // Skip an item from a slot: sends it to the back of the waiting queue and pulls the next one
+  const handleSkipSlotItem = (slotIdx: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const currentItem = visibleSlots[slotIdx];
+    if (!currentItem) return;
+
+    sound.playClick();
+    setWaitingDeck(prevDeck => {
+      if (prevDeck.length > 0) {
+        const nextItem = prevDeck[0];
+        const updatedDeck = [...prevDeck.slice(1), currentItem];
+        setVisibleSlots(prevSlots => {
+          const newSlots = [...prevSlots];
+          newSlots[slotIdx] = nextItem;
+          return newSlots;
+        });
+        return updatedDeck;
+      }
+      return prevDeck;
+    });
+  };
+
+  // Rotate all 4 visible slots with the deck
+  const handleRotateAllSlots = () => {
+    sound.playClick();
+    const activeItems = visibleSlots.filter((item): item is EmergencyKitItem => item !== null);
+    if (waitingDeck.length === 0 && activeItems.length <= 1) return;
+
+    const fullPool = [...waitingDeck, ...activeItems];
+    const newSlots: (EmergencyKitItem | null)[] = fullPool.slice(0, VISIBLE_SLOTS_COUNT);
+    const newDeck = fullPool.slice(VISIBLE_SLOTS_COUNT);
+    while (newSlots.length < VISIBLE_SLOTS_COUNT) {
+      newSlots.push(null);
+    }
+    setVisibleSlots(newSlots);
+    setWaitingDeck(newDeck);
+  };
+
+  // Unpack an item back to waiting queue
   const handleUnpackItem = (itemId: string) => {
     sound.playClick();
+    const itemToRestore = EMERGENCY_KIT_ITEMS.find(i => i.id === itemId);
     setPackedItemIds(prev => prev.filter(id => id !== itemId));
+
+    if (itemToRestore) {
+      // Check if there's an empty slot to fill first
+      setVisibleSlots(prevSlots => {
+        const emptyIdx = prevSlots.findIndex(s => s === null);
+        if (emptyIdx !== -1) {
+          const newSlots = [...prevSlots];
+          newSlots[emptyIdx] = itemToRestore;
+          return newSlots;
+        } else {
+          setWaitingDeck(prev => [itemToRestore, ...prev]);
+          return prevSlots;
+        }
+      });
+    }
   };
 
-  // POINTER-BASED REAL-TIME DRAGGING (100% Mobile Touch & Desktop Mouse Compatible)
-  const handlePointerDown = (e: React.PointerEvent, item: EmergencyKitItem) => {
-    e.preventDefault();
-    setDraggingItem(item);
-    setDragPos({ x: e.clientX, y: e.clientY });
-    setIsOverBackpack(false);
+  // ==========================================
+  // ZERO-LAG 60FPS POINTER DRAG & TAP HANDLER
+  // ==========================================
+  const handlePointerDownItem = (e: React.PointerEvent, item: EmergencyKitItem, slotIdx: number) => {
+    // Only capture primary mouse button or touch
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    const backpackRect = backpackRef.current?.getBoundingClientRect() || null;
+    dragContextRef.current = {
+      item,
+      slotIdx,
+      startX: e.clientX,
+      startY: e.clientY,
+      hasMoved: false,
+      backpackRect
+    };
+
+    setActiveDragItem(item);
+    if (ghostRef.current) {
+      ghostRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+      ghostRef.current.style.opacity = '0';
+    }
   };
 
   useEffect(() => {
-    if (!draggingItem) return;
+    if (!activeDragItem) return;
 
-    const handlePointerMove = (e: PointerEvent) => {
-      setDragPos({ x: e.clientX, y: e.clientY });
+    const onPointerMove = (e: PointerEvent) => {
+      const ctx = dragContextRef.current;
+      if (!ctx) return;
 
-      if (backpackRef.current) {
-        const rect = backpackRef.current.getBoundingClientRect();
-        const over = (
-          e.clientX >= rect.left &&
-          e.clientX <= rect.right &&
-          e.clientY >= rect.top &&
-          e.clientY <= rect.bottom
-        );
-        setIsOverBackpack(over);
-      }
-    };
+      const dx = Math.abs(e.clientX - ctx.startX);
+      const dy = Math.abs(e.clientY - ctx.startY);
 
-    const handlePointerUp = (e: PointerEvent) => {
-      if (backpackRef.current) {
-        const rect = backpackRef.current.getBoundingClientRect();
-        const over = (
-          e.clientX >= rect.left &&
-          e.clientX <= rect.right &&
-          e.clientY >= rect.top &&
-          e.clientY <= rect.bottom
-        );
-
-        if (over && draggingItem) {
-          packItemById(draggingItem);
+      if (!ctx.hasMoved && (dx > 8 || dy > 8)) {
+        ctx.hasMoved = true;
+        if (ghostRef.current) {
+          ghostRef.current.style.opacity = '1';
         }
       }
 
-      setDraggingItem(null);
-      setDragPos(null);
-      setIsOverBackpack(false);
+      if (ctx.hasMoved && ghostRef.current) {
+        ghostRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+
+        if (ctx.backpackRect) {
+          const rect = ctx.backpackRect;
+          const over = (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+          );
+          setIsOverBackpack(over);
+        }
+      }
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('pointercancel', handlePointerUp);
+    const onPointerUp = (e: PointerEvent) => {
+      const ctx = dragContextRef.current;
+      if (ctx) {
+        if (!ctx.hasMoved) {
+          // TAP detected! Instant pack!
+          packItemFromSlot(ctx.item, ctx.slotIdx);
+        } else if (ctx.backpackRect) {
+          // DRAG DROP detected!
+          const rect = ctx.backpackRect;
+          const over = (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+          );
+          if (over) {
+            packItemFromSlot(ctx.item, ctx.slotIdx);
+          }
+        }
+      }
+
+      dragContextRef.current = null;
+      setActiveDragItem(null);
+      setIsOverBackpack(false);
+      if (ghostRef.current) {
+        ghostRef.current.style.opacity = '0';
+      }
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
 
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('pointercancel', handlePointerUp);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
     };
-  }, [draggingItem, packedItemIds]);
+  }, [activeDragItem, packedItemIds]);
 
   const handleEvaluate = () => {
     sound.playWinFanfare();
@@ -172,15 +299,16 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   const finalScore = calculateFinalScore();
 
   const handleReplay = () => {
-    setShuffledItems(getShuffledKitItems());
-    setPackedItemIds([]);
-    setTimeLeft(45);
+    initGameDeck();
     setGameState('intro');
   };
 
+  // Count of total remaining items not yet packed
+  const totalUnpackedCount = visibleSlots.filter(s => s !== null).length + waitingDeck.length;
+
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden touch-none"
+      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 flex flex-col justify-between p-3.5 sm:p-5 pb-20 max-w-md mx-auto overflow-x-hidden"
       style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
     >
       <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
@@ -190,8 +318,8 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
         <GameIntroCountdown
           title="MOCHILA DE 72 HORAS"
           category="PREVENCIÓN SÍSMICA · MISIÓN 04"
-          subtitle="Arrastrá hasta 12 artículos indispensables"
-          instructions="Mantené presionado y arrastrá los objetos directamente hacia la mochila de emergencia. Al finalizar, evaluaremos cuáles eran vitales y cuáles un riesgo."
+          subtitle="Empacá hasta 12 artículos indispensables"
+          instructions="Tocá o arrastrá los objetos hacia la mochila. Cada vez que guardes uno, aparecerá el siguiente. Al finalizar, evaluaremos cuáles eran vitales y cuáles un riesgo."
           icon="🎒"
           rewardXp={500}
           timeLimitSec={45}
@@ -222,7 +350,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
               <button
                 type="button"
                 onClick={() => { sound.playClick(); onNavigate(userMode === 'kids' ? 'kids' : 'adults'); }}
-                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all cursor-pointer"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -244,103 +372,158 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             </div>
 
             {/* Instruction Tip */}
-            <div className="text-center flex items-center justify-center gap-1.5 text-xs text-brand-cyan font-black uppercase tracking-wider pt-1">
-              <Hand className="w-4 h-4 animate-bounce" />
-              <span>Arrastrá los objetos hacia la mochila</span>
+            <div className="text-center flex items-center justify-center gap-1.5 text-xs text-brand-cyan font-black uppercase tracking-wider pt-0.5">
+              <Hand className="w-3.5 h-3.5 animate-bounce" />
+              <span>Tocá o arrastrá hacia la mochila</span>
             </div>
           </div>
 
-          {/* Central 3D Backpack Drop Zone (No background box) */}
+          {/* Central 3D Backpack Drop Zone */}
           <div className="relative z-10 my-auto py-1 flex flex-col items-center justify-center">
             <div
               ref={backpackRef}
-              className={`relative flex flex-col items-center justify-center transition-all duration-300 ${
+              className={`relative flex flex-col items-center justify-center transition-all duration-200 ${
                 isOverBackpack
-                  ? 'scale-115 filter drop-shadow-[0_0_35px_rgba(34,211,238,0.9)]'
+                  ? 'scale-115 filter drop-shadow-[0_0_35px_rgba(34,211,238,1)]'
                   : backpackBouncing
-                  ? 'scale-110 filter drop-shadow-[0_0_25px_rgba(16,185,129,0.9)]'
-                  : 'filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]'
+                  ? 'scale-110 filter drop-shadow-[0_0_25px_rgba(16,185,129,1)]'
+                  : 'filter drop-shadow-[0_12px_25px_rgba(0,0,0,0.8)]'
               }`}
             >
               {/* 3D Backpack Image */}
               <img
                 src="/images/kit/mochila.png"
                 alt="Mochila de Emergencia 72H"
-                className="w-36 h-36 sm:w-40 sm:h-40 object-contain pointer-events-none transition-transform"
+                className="w-32 h-32 sm:w-36 sm:h-36 object-contain pointer-events-none transition-transform"
               />
 
-              {/* Capacity Indicator Floating Badge */}
-              <div className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-navy-950/90 border border-brand-cyan/60 text-brand-cyan font-black text-[11px] shadow-lg">
-                {packedItemIds.length}/{MAX_BACKPACK_CAPACITY} OBJETOS
+              {/* Capacity Floating Badge */}
+              <div className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-navy-950/95 border border-brand-cyan text-brand-cyan font-black text-[11px] shadow-lg">
+                {packedItemIds.length}/{MAX_BACKPACK_CAPACITY} EMPACADOS
               </div>
             </div>
 
             {/* Packed Items Miniature Drawer */}
             {packedItems.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 max-w-xs">
+              <div className="flex flex-wrap items-center justify-center gap-1 mt-3.5 max-w-xs max-h-16 overflow-y-auto pr-1">
                 {packedItems.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => handleUnpackItem(item.id)}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-navy-950/90 border border-brand-cyan/40 text-xs text-slate-100 hover:border-rose-400 active:scale-95 transition-all group shadow-sm cursor-pointer"
-                    title="Quitar"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-navy-950/95 border border-brand-cyan/40 text-[11px] text-slate-100 hover:border-rose-400 active:scale-95 transition-all group shadow-sm cursor-pointer"
+                    title="Quitar de la mochila"
                   >
                     {item.image ? (
-                      <img src={item.image} alt={item.name} className="w-3.5 h-3.5 object-contain pointer-events-none" />
+                      <img src={item.image} alt={item.name} className="w-3 h-3 object-contain pointer-events-none" />
                     ) : (
-                      <span className="text-xs pointer-events-none">{item.icon}</span>
+                      <span className="text-[11px] pointer-events-none">{item.icon}</span>
                     )}
-                    <X className="w-2.5 h-2.5 text-slate-400 group-hover:text-rose-300" />
+                    <span className="truncate max-w-[65px] text-[10px] pointer-events-none">{item.name}</span>
+                    <X className="w-2.5 h-2.5 text-slate-400 group-hover:text-rose-300 pointer-events-none" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Floating Transparent Item Tray (No heavy background boxes) */}
-          <div className="relative z-10 space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 px-1">
-              <span>ARTÍCULOS ({availableItems.length}):</span>
-              <button
-                type="button"
-                onClick={handleShuffleAvailable}
-                className="px-2 py-0.5 rounded-lg bg-navy-900/90 border border-brand-cyan/30 text-[10px] text-brand-cyan hover:bg-navy-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
-              >
-                <span>🔀 Mezclar</span>
-              </button>
+          {/* DYNAMIC 4-SLOT TRAY (No cramped scroll box) */}
+          <div className="relative z-10 space-y-2">
+            {/* Header info */}
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 px-1">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-brand-cyan animate-ping" />
+                <span className="uppercase text-brand-cyan font-black tracking-wider">
+                  Objetos por clasificar ({totalUnpackedCount})
+                </span>
+              </div>
+
+              {waitingDeck.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleRotateAllSlots}
+                  className="px-2.5 py-1 rounded-lg bg-navy-900/90 border border-brand-cyan/40 text-[11px] text-brand-cyan hover:bg-navy-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer font-bold shadow-sm"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Rotar (+{waitingDeck.length})</span>
+                </button>
+              )}
             </div>
 
-            {/* Transparent Items Shelf */}
-            <div className="grid grid-cols-3 gap-2.5 max-h-44 overflow-y-auto pr-1 py-1 scrollbar-none">
-              {availableItems.map((item) => (
-                <div
-                  key={item.id}
-                  onPointerDown={(e) => handlePointerDown(e, item)}
-                  className="flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing group p-1 transition-transform active:scale-95 touch-none select-none"
-                >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-14 h-14 object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.7)] group-hover:scale-110 transition-transform pointer-events-none"
-                    />
-                  ) : (
-                    <span className="text-4xl filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.7)] group-hover:scale-110 transition-transform pointer-events-none">
-                      {item.icon}
+            {/* 4 Crisp Dynamic Slots Grid */}
+            <div className="grid grid-cols-2 gap-2">
+              {visibleSlots.map((item, idx) => {
+                if (!item) {
+                  return (
+                    <div
+                      key={`empty-slot-${idx}`}
+                      className="h-24 rounded-2xl border-2 border-dashed border-white/10 bg-navy-950/40 flex items-center justify-center text-slate-500 text-xs font-bold"
+                    >
+                      <span>✓ Clasificado</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={item.id}
+                    onPointerDown={(e) => handlePointerDownItem(e, item, idx)}
+                    className="relative p-2 rounded-2xl bg-gradient-to-b from-navy-900/95 to-navy-950/95 border border-brand-cyan/40 shadow-lg flex flex-col items-center justify-between text-center cursor-pointer hover:border-brand-cyan hover:scale-[1.02] active:scale-95 transition-all group touch-none select-none"
+                  >
+                    {/* Item Visual */}
+                    <div className="w-12 h-12 flex items-center justify-center pointer-events-none mt-0.5">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] group-hover:scale-110 transition-transform"
+                        />
+                      ) : (
+                        <span className="text-3xl filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] group-hover:scale-110 transition-transform">
+                          {item.icon}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Item Name */}
+                    <span className="text-[11px] font-black text-slate-100 leading-tight mt-1 line-clamp-1 pointer-events-none">
+                      {item.name}
                     </span>
-                  )}
-                  <span className="text-[10px] font-bold text-slate-200 leading-tight mt-1 line-clamp-2 pointer-events-none drop-shadow">
-                    {item.name}
-                  </span>
-                </div>
-              ))}
+
+                    {/* Action Buttons Row */}
+                    <div className="w-full flex items-center gap-1 mt-1 pt-1 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          packItemFromSlot(item, idx);
+                        }}
+                        className="flex-1 py-1 rounded-lg bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <span>Empacar</span>
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      </button>
+
+                      {waitingDeck.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleSkipSlotItem(idx, e)}
+                          className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors cursor-pointer"
+                          title="Pasar al final"
+                        >
+                          <span>↷</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Finalize Button */}
             <div className="pt-1">
               <Button
-                variant={packedItemIds.length >= 8 ? 'primary' : 'secondary'}
+                variant={packedItemIds.length >= 6 ? 'primary' : 'secondary'}
                 size="md"
                 fullWidth
                 onClick={handleEvaluate}
@@ -351,28 +534,31 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             </div>
           </div>
 
-          {/* FLOATING GHOST ITEM UNDER FINGER/POINTER WHILE DRAGGING */}
-          {draggingItem && dragPos && (
-            <div
-              className="fixed pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center animate-in zoom-in-75 duration-75"
-              style={{ left: `${dragPos.x}px`, top: `${dragPos.y}px` }}
-            >
-              {draggingItem.image ? (
-                <img
-                  src={draggingItem.image}
-                  alt={draggingItem.name}
-                  className="w-16 h-16 object-contain filter drop-shadow-[0_0_20px_rgba(34,211,238,0.9)]"
-                />
-              ) : (
-                <span className="text-5xl filter drop-shadow-[0_0_20px_rgba(34,211,238,0.9)]">
-                  {draggingItem.icon}
+          {/* HARDWARE-ACCELERATED GHOST ELEMENT (Rendered via transform, 0ms lag) */}
+          <div
+            ref={ghostRef}
+            className="fixed pointer-events-none z-50 -top-8 -left-8 flex flex-col items-center transition-opacity duration-75"
+            style={{ opacity: 0 }}
+          >
+            {activeDragItem && (
+              <>
+                {activeDragItem.image ? (
+                  <img
+                    src={activeDragItem.image}
+                    alt={activeDragItem.name}
+                    className="w-16 h-16 object-contain filter drop-shadow-[0_0_25px_rgba(34,211,238,1)]"
+                  />
+                ) : (
+                  <span className="text-5xl filter drop-shadow-[0_0_25px_rgba(34,211,238,1)]">
+                    {activeDragItem.icon}
+                  </span>
+                )}
+                <span className="mt-1 px-2.5 py-0.5 rounded-full bg-navy-950/95 border border-brand-cyan text-[10px] font-black text-white shadow-2xl">
+                  {activeDragItem.name}
                 </span>
-              )}
-              <span className="mt-1 px-2 py-0.5 rounded-full bg-navy-950/90 border border-brand-cyan text-[10px] font-black text-white shadow-xl">
-                {draggingItem.name}
-              </span>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </>
       )}
 
