@@ -9,7 +9,8 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
       .from('profiles')
       .select('id, nickname, display_name, avatar_emoji, avatar_url, total_score, mode, updated_at')
       .eq('is_active', true)
-      .gt('total_score', 0)
+      .neq('nickname', '')
+      .gte('total_score', 0)
       .order('total_score', { ascending: false })
       .order('updated_at', { ascending: true })
       .limit(100);
@@ -34,7 +35,7 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
     console.warn('Leaderboard Supabase fallback to local:', err);
   }
 
-  // Local Storage Fallback with only real played sessions
+  // Local Storage Fallback
   try {
     const raw = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
     let list: RankEntry[] = raw ? JSON.parse(raw) : [];
@@ -44,7 +45,7 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
     }
 
     return list
-      .filter(item => item.score > 0)
+      .filter(item => item.nickname && item.nickname.trim().length > 0)
       .sort((a, b) => b.score - a.score)
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
   } catch {

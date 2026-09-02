@@ -21,17 +21,17 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
     setIsLoading(true);
     const data = await fetchLeaderboard(filterMode);
     
-    // Ensure current user is in the list if they have points, nickname and match filter
+    // Ensure current user is in the list if they have nickname and match filter
     const hasUserInList = data.some(p => p.id === user.id);
     let finalList = [...data];
-    if (!hasUserInList && user.total_score > 0 && user.nickname && user.nickname !== 'Explorador' && (filterMode === 'all' || user.mode === filterMode)) {
+    if (!hasUserInList && user.nickname && user.nickname.trim().length > 0 && user.nickname !== 'Explorador' && (filterMode === 'all' || user.mode === filterMode)) {
       finalList.push({
         id: user.id,
         rank: 0,
         nickname: user.display_name || user.nickname,
         avatar_emoji: user.avatar_emoji || '🦅',
         avatar_url: user.avatar_url,
-        score: user.total_score,
+        score: user.total_score || 0,
         mode: user.mode,
         isCurrentUser: true
       });
