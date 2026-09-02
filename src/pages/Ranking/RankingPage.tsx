@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, RefreshCw, Trophy, Sparkles } from 'lucide-react';
 import { ScreenId, UserProfile, RankEntry, UserMode } from '../../types';
 import { fetchLeaderboard, calculateUserRank } from '../../services/scoresService';
+import { supabase } from '../../services/supabase';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { UiverseLoader } from '../../components/ui/UiverseLoader';
@@ -46,6 +47,22 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
 
   useEffect(() => {
     loadData();
+
+    // Real-Time Live WebSocket updates from Supabase
+    const channel = supabase
+      .channel('realtime_ranking_feed')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          loadData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [loadData]);
 
   const userRank = calculateUserRank(user.total_score, leaderboard);

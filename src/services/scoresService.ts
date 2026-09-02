@@ -20,8 +20,8 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
     }
 
     const { data, error } = await query;
-    if (!error && data && data.length > 0) {
-      return data.map((item, idx) => ({
+    if (!error && data !== null) {
+      const mapped = data.map((item, idx) => ({
         id: item.id,
         rank: idx + 1,
         nickname: item.display_name || item.nickname || 'Explorador',
@@ -30,12 +30,21 @@ export async function fetchLeaderboard(filterMode: 'all' | UserMode = 'all'): Pr
         score: item.total_score || 0,
         mode: item.mode as UserMode
       }));
+
+      // If fetching all, sync fresh leaderboard to local storage cache
+      if (filterMode === 'all') {
+        try {
+          localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(mapped));
+        } catch {}
+      }
+
+      return mapped;
     }
   } catch (err) {
-    console.warn('Leaderboard Supabase fallback to local:', err);
+    console.warn('Leaderboard Supabase fallback to local (offline):', err);
   }
 
-  // Local Storage Fallback
+  // Offline Fallback Only when network fails
   try {
     const raw = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
     let list: RankEntry[] = raw ? JSON.parse(raw) : [];
