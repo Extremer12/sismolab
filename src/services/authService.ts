@@ -272,7 +272,6 @@ export async function syncProfileWithSupabase(profile: UserProfile): Promise<voi
       age: profile.age || null,
       mode: profile.mode,
       total_score: profile.total_score,
-      level: profile.level || 1,
       games_played: profile.games_played,
       correct_answers: profile.correct_answers_count,
       total_answers: profile.total_answers_count,

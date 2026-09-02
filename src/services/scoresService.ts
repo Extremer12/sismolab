@@ -95,7 +95,6 @@ export async function submitGameScoreToSupabase(
       age: user.age || null,
       mode: user.mode,
       total_score: user.total_score,
-      level: user.level || 1,
       games_played: user.games_played,
       correct_answers: user.correct_answers_count,
       total_answers: user.total_answers_count,
