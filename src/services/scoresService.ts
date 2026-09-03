@@ -201,9 +201,20 @@ export interface LiveAdminMetrics {
   total_visitors: number;
   total_games: number;
   avg_score: number;
+  max_score?: number;
   kids_count: number;
   adults_count: number;
-  popular_games: { game_id: string; session_count: number }[];
+  total_correct?: number;
+  total_questions?: number;
+  global_accuracy?: number;
+  popular_games: {
+    game_id: string;
+    session_count: number;
+    avg_score?: number;
+    total_correct?: number;
+    total_questions?: number;
+    accuracy_pct?: number;
+  }[];
   profiles: {
     id: string;
     nickname: string;
@@ -213,6 +224,7 @@ export interface LiveAdminMetrics {
     games_played: number;
     correct_answers: number;
     total_answers: number;
+    accuracy_pct?: number;
     updated_at: string;
   }[];
 }
