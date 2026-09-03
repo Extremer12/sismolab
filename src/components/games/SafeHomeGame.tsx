@@ -5,6 +5,8 @@ import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { REFLEX_SCENARIOS_EN } from '../../services/gamesContentEn';
 
 interface ReflexScenario {
   id: string;
@@ -204,8 +206,13 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const { language } = useLanguage();
+  const isEs = language === 'es';
+
   const roundTimeSec = userMode === 'kids' ? 6.5 : 4.0;
-  const scenarios = userMode === 'kids' ? KIDS_REFLEX_SCENARIOS : REFLEX_SCENARIOS;
+  const scenarios = isEs
+    ? (userMode === 'kids' ? KIDS_REFLEX_SCENARIOS : REFLEX_SCENARIOS)
+    : (userMode === 'kids' ? REFLEX_SCENARIOS_EN : REFLEX_SCENARIOS_EN);
 
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'feedback' | 'result'>('intro');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -221,20 +228,15 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
 
   const currentScenario = scenarios[currentIndex] || scenarios[0];
 
-  // Shuffle button options on new round
   useEffect(() => {
     if (!currentScenario) return;
     const opts = [
       { isSafe: true, text: currentScenario.optionSafe, image: currentScenario.imageSafe },
       { isSafe: false, text: currentScenario.optionDanger, image: currentScenario.imageDanger }
-    ].sort(() => Math.random() - 0.5);
+    ].sort(() => 0.5 - Math.random());
     setShuffledOptions(opts);
-    setTimeLeft(roundTimeSec);
-    setIsTimeOut(false);
-    setLastAnswerCorrect(null);
-  }, [currentIndex, roundTimeSec]);
+  }, [currentIndex, currentScenario]);
 
-  // Fast countdown timer
   useEffect(() => {
     if (gameState !== 'playing') return;
 
@@ -252,51 +254,62 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
 
   const handleTimeOut = () => {
     sound.playWrong();
-    setIsTimeOut(true);
-    setLastAnswerCorrect(false);
+    setLives(prev => Math.max(0, prev - 1));
     setStreak(0);
-    const newLives = lives - 1;
-    setLives(newLives);
+    setLastAnswerCorrect(false);
+    setIsTimeOut(true);
     setGameState('feedback');
   };
 
   const handleSelectOption = (isSafe: boolean) => {
     if (gameState !== 'playing') return;
 
+    setIsTimeOut(false);
     if (isSafe) {
-      sound.playPackItem();
-      const speedBonus = timeLeft > 2.0 ? 50 : 20;
+      sound.playCorrect();
       const newStreak = streak + 1;
       setStreak(newStreak);
       if (newStreak > maxStreak) setMaxStreak(newStreak);
 
-      const roundScore = 100 + speedBonus + (newStreak > 1 ? 25 * (newStreak - 1) : 0);
+      const speedBonus = timeLeft >= (roundTimeSec * 0.5) ? 50 : 0;
+      const streakBonus = newStreak > 1 ? (newStreak - 1) * 30 : 0;
+      const roundScore = 100 + speedBonus + streakBonus;
+
       setTotalScore(prev => prev + roundScore);
       setCorrectCount(prev => prev + 1);
       setLastAnswerCorrect(true);
-      setGameState('feedback');
+
+      if (newStreak >= 2) {
+        sound.playComboStreak(newStreak);
+      }
     } else {
       sound.playWrong();
+      setLives(prev => Math.max(0, prev - 1));
       setStreak(0);
-      const newLives = lives - 1;
-      setLives(newLives);
       setLastAnswerCorrect(false);
-      setGameState('feedback');
     }
+
+    setGameState('feedback');
   };
 
   const handleNextRound = () => {
+    sound.playClick();
     if (lives <= 0 || currentIndex + 1 >= scenarios.length) {
       sound.playWinFanfare();
       setGameState('result');
-    } else {
-      setCurrentIndex(prev => prev + 1);
-      setGameState('playing');
+      return;
     }
+
+    setCurrentIndex(prev => prev + 1);
+    setTimeLeft(roundTimeSec);
+    setLastAnswerCorrect(null);
+    setIsTimeOut(false);
+    setGameState('playing');
   };
 
   const handleReplay = () => {
     setCurrentIndex(0);
+    setTimeLeft(roundTimeSec);
     setLives(3);
     setStreak(0);
     setMaxStreak(0);
@@ -314,13 +327,14 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
     >
       <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
 
-      {/* 1. INTRO SCREEN */}
       {gameState === 'intro' && (
         <GameIntroCountdown
-          title="REFLEJOS DE SUPERVIVENCIA"
-          category="DECISIONES CRÍTICAS · MISIÓN 03"
-          subtitle="Tenés solo 4 segundos para reaccionar ante cada sismo"
-          instructions="En un terremoto real no hay tiempo para dudar. Elegí la acción segura en segundos, acumulá rachas de fuego y demostrá tus reflejos de supervivencia."
+          title={isEs ? 'REFLEJOS DE SUPERVIVENCIA' : 'SURVIVAL REFLEXES'}
+          category={isEs ? 'DECISIONES CRÍTICAS · MISIÓN 03' : 'CRITICAL DECISIONS · MISSION 03'}
+          subtitle={isEs ? 'Tenés solo 4 segundos para reaccionar ante cada sismo' : 'You have only 4 seconds to react to each earthquake'}
+          instructions={isEs
+            ? 'En un terremoto real no hay tiempo para dudar. Elegí la acción segura en segundos, acumulá rachas de fuego y demostrá tus reflejos de supervivencia.'
+            : 'In a real earthquake there is no time to hesitate. Choose the safe action in seconds, build fire streaks, and prove your survival reflexes.'}
           icon="⚡"
           rewardXp={600}
           timeLimitSec={userMode === 'kids' ? 6.5 : 4}
@@ -328,10 +342,9 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
         />
       )}
 
-      {/* 2. RESULT SCREEN */}
       {gameState === 'result' && (
         <GameResultScreen
-          gameTitle="Reflejos de Supervivencia"
+          gameTitle={isEs ? 'Reflejos de Supervivencia' : 'Survival Reflexes'}
           earnedScore={totalScore}
           correctCount={correctCount}
           totalCount={scenarios.length}
@@ -342,10 +355,8 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
         />
       )}
 
-      {/* 3. ACTIVE PLAYING & FEEDBACK STATES */}
       {(gameState === 'playing' || gameState === 'feedback') && (
         <>
-          {/* Top Status Bar */}
           <div className="relative z-10 space-y-2">
             <div className="flex items-center justify-between">
               <button
@@ -355,7 +366,6 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
-              {/* Lives (Hearts) */}
               <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-navy-900/90 border border-rose-500/40 shadow-sm">
                 {[1, 2, 3].map((heartIdx) => (
                   <Heart
@@ -369,7 +379,6 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                 ))}
               </div>
 
-              {/* Score & Streak */}
               <div className="flex items-center gap-2">
                 {streak >= 2 && (
                   <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-950 border border-orange-500 text-orange-400 font-black text-xs shadow-md animate-bounce">
@@ -383,7 +392,6 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
               </div>
             </div>
 
-            {/* Rapid Countdown Progress Bar */}
             <div className="space-y-1 pt-1">
               <div className="w-full h-2.5 rounded-full bg-navy-950 border border-white/10 overflow-hidden p-0.5">
                 <div
@@ -398,7 +406,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                 />
               </div>
               <div className="flex justify-between items-center text-[10px] font-black uppercase text-slate-400">
-                <span>Ronda {currentIndex + 1} de {scenarios.length}</span>
+                <span>{isEs ? `Ronda ${currentIndex + 1} de ${scenarios.length}` : `Round ${currentIndex + 1} of ${scenarios.length}`}</span>
                 <span className={timeLeft <= 1.2 ? 'text-rose-400 font-extrabold animate-pulse' : 'text-brand-cyan'}>
                   ⏱️ {timeLeft.toFixed(1)}s
                 </span>
@@ -406,28 +414,23 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
             </div>
           </div>
 
-          {/* Scenario Center Card */}
           <div className="relative z-10 my-auto py-2 space-y-3">
             <div className="sismo-card p-5 rounded-3xl border-brand-cyan/40 bg-navy-950/90 backdrop-blur-xl text-center space-y-2 shadow-2xl relative overflow-hidden">
-              {/* Context Tag */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-black text-[10px] uppercase tracking-wider">
                 <span>{currentScenario.contextTag}</span>
               </div>
 
-              {/* Central Icon & Danger Tremor Visual */}
               <div className="py-2">
                 <span className="text-6xl sm:text-7xl block filter drop-shadow animate-pulse">
                   {currentScenario.icon}
                 </span>
               </div>
 
-              {/* The Situation Text */}
               <h2 className="font-black text-lg sm:text-xl text-white uppercase tracking-tight leading-tight">
                 {currentScenario.situation}
               </h2>
             </div>
 
-            {/* Decision Image Cards (Playing State) */}
             {gameState === 'playing' && (
               <div className="grid grid-cols-2 gap-3 pt-1">
                 {shuffledOptions.map((opt, idx) => (
@@ -436,15 +439,13 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                     onClick={() => handleSelectOption(opt.isSafe)}
                     className="relative flex flex-col justify-between rounded-2xl overflow-hidden bg-gradient-to-b from-navy-900/95 to-navy-950/95 border-2 border-white/20 hover:border-brand-cyan hover:scale-[1.03] active:scale-[0.97] transition-all text-center p-2.5 shadow-xl group"
                   >
-                    {/* Option Tag Badge */}
                     <div className="flex items-center justify-between w-full pb-1.5">
                       <span className="px-2 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[9px] uppercase tracking-wider">
-                        {idx === 0 ? 'OPCIÓN A' : 'OPCIÓN B'}
+                        {idx === 0 ? (isEs ? 'OPCIÓN A' : 'OPTION A') : (isEs ? 'OPCIÓN B' : 'OPTION B')}
                       </span>
                       <Zap className="w-3.5 h-3.5 text-brand-cyan opacity-40 group-hover:opacity-100 transition-opacity" />
                     </div>
 
-                    {/* Image Area with Fallback */}
                     <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-navy-900 border border-white/10 flex items-center justify-center mb-2 shadow-inner">
                       {opt.image ? (
                         <img
@@ -456,13 +457,11 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                           }}
                         />
                       ) : null}
-                      {/* Fallback Icon if image not loaded */}
                       <span className="text-3xl filter drop-shadow">
                         {opt.isSafe ? '🛡️' : '⚠️'}
                       </span>
                     </div>
 
-                    {/* Concise Label */}
                     <span className="font-extrabold text-[11px] sm:text-xs text-slate-100 group-hover:text-white leading-tight line-clamp-3">
                       {opt.text}
                     </span>
@@ -471,7 +470,6 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
               </div>
             )}
 
-            {/* Immediate Educational Feedback (Feedback State) */}
             {gameState === 'feedback' && (
               <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
                 <div className={`sismo-card p-4 rounded-2xl border-2 text-left space-y-2 ${
@@ -484,14 +482,16 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                       <>
                         <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
                         <span className="font-black text-sm uppercase text-emerald-300">
-                          ¡REFLEJO CORRECTO! (+100 XP)
+                          {isEs ? '¡REFLEJO CORRECTO! (+100 XP)' : '¡CORRECT REFLEX! (+100 XP)'}
                         </span>
                       </>
                     ) : (
                       <>
                         <XCircle className="w-6 h-6 text-rose-400 shrink-0" />
                         <span className="font-black text-sm uppercase text-rose-300">
-                          {isTimeOut ? '¡TIEMPO AGOTADO!' : '¡ACCIÓN DE ALTO RIESGO! (-1 VIDA)'}
+                          {isTimeOut
+                            ? (isEs ? '¡TIEMPO AGOTADO!' : '¡TIME EXPIRED!')
+                            : (isEs ? '¡ACCIÓN DE ALTO RIESGO! (-1 VIDA)' : '¡HIGH RISK ACTION! (-1 LIFE)')}
                         </span>
                       </>
                     )}
@@ -508,7 +508,11 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                   fullWidth
                   onClick={handleNextRound}
                 >
-                  <span>{currentIndex + 1 >= scenarios.length || lives <= 0 ? 'Ver Resultados Finales' : 'Siguiente Situación ⚡'}</span>
+                  <span>
+                    {currentIndex + 1 >= scenarios.length || lives <= 0
+                      ? (isEs ? 'Ver Resultados Finales' : 'View Final Results')
+                      : (isEs ? 'Siguiente Situación ⚡' : 'Next Situation ⚡')}
+                  </span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

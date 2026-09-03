@@ -36,7 +36,9 @@ import {
   SCENARIO_CHOICES_EN,
   KIDS_SCENARIO_CHOICES_EN,
   NUMERIC_QUESTIONS_ADULTS_EN,
-  NUMERIC_QUESTIONS_KIDS_EN
+  NUMERIC_QUESTIONS_KIDS_EN,
+  EMERGENCY_KIT_ITEMS_EN,
+  REFLEX_SCENARIOS_EN
 } from './gamesContentEn';
 
 // Re-export constants for full backwards compatibility
@@ -47,6 +49,8 @@ export {
   KIDS_SEISMIC_QUESTIONS,
   SAFE_HOME_HAZARDS,
   EMERGENCY_KIT_ITEMS,
+  EMERGENCY_KIT_ITEMS_EN,
+  REFLEX_SCENARIOS_EN,
   SCENARIO_CHOICES,
   KIDS_SCENARIO_CHOICES,
   MYTH_STATEMENTS,
@@ -56,7 +60,7 @@ export {
   OFFICIAL_ACHIEVEMENTS
 };
 
-function getCurrentLanguage(): 'es' | 'en' {
+export function getCurrentLanguage(): 'es' | 'en' {
   if (typeof window !== 'undefined') {
     const lang = localStorage.getItem('sismolab_app_lang_v1');
     if (lang === 'en') return 'en';
@@ -117,3 +121,16 @@ export function getRandomMyths(count: number = 5, userMode: UserMode = 'kids', l
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
+
+// 5. Selector de Ítems Mochila de Emergencia
+export function getEmergencyKitItems(lang?: 'es' | 'en'): EmergencyKitItem[] {
+  const currentLang = lang || getCurrentLanguage();
+  return currentLang === 'en' ? EMERGENCY_KIT_ITEMS_EN : EMERGENCY_KIT_ITEMS;
+}
+
+// 6. Selector de Escenarios de Reflejos
+export function getReflexScenarios(lang?: 'es' | 'en') {
+  const currentLang = lang || getCurrentLanguage();
+  return currentLang === 'en' ? REFLEX_SCENARIOS_EN : undefined;
+}
+

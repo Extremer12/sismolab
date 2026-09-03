@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ChevronDown, Sparkles, Play, X } from 'lucide-react';
 import { ScreenId, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface HistoryPageProps {
   user?: UserProfile;
@@ -22,7 +23,7 @@ interface SlideEvent {
   isCurrentEra?: boolean;
 }
 
-const HISTORICAL_SLIDES: SlideEvent[] = [
+const HISTORICAL_SLIDES_ES: SlideEvent[] = [
   {
     id: '1894',
     year: '1894',
@@ -76,7 +77,65 @@ const HISTORICAL_SLIDES: SlideEvent[] = [
   }
 ];
 
+const HISTORICAL_SLIDES_EN: SlideEvent[] = [
+  {
+    id: '1894',
+    year: '1894',
+    title: 'THE HISTORICAL EARTHQUAKE',
+    location: 'Colonial San Juan',
+    dateStr: 'October 27, 1894',
+    stats: 'Magnitude ~7.5 • Intensity IX • Widespread Impact',
+    description: 'The largest seismic event recorded in Argentine history. Nearly all adobe structures suffered heavy damage, sparking the first modern seismic engineering debates in the nation.',
+    imagePath: '/images/history_1894.png'
+  },
+  {
+    id: '1944',
+    year: '1944',
+    title: 'TURNING POINT & SOLIDARITY',
+    location: 'City of San Juan',
+    dateStr: 'January 15, 1944',
+    stats: 'Magnitude 7.0 • Intensity IX • Depth 11 km',
+    description: 'Marked the rebirth of San Juan. From the ruins emerged the nation’s first earthquake-resistant building code and the comprehensive planning of a modern, resilient city.',
+    imagePath: '/images/history_1944.png'
+  },
+  {
+    id: '1977',
+    year: '1977',
+    title: 'THE CAUCETE EARTHQUAKE',
+    location: 'Pie de Palo Mountain Range',
+    dateStr: 'November 23, 1977',
+    stats: 'Magnitude 7.4 • Intensity IX • Caucete',
+    description: 'A major magnitude event that proved the effectiveness of the new earthquake-resistant structures and consolidated the establishment of INPRES for nationwide seismic monitoring.',
+    imagePath: '/images/history_1977.png'
+  },
+  {
+    id: '2021',
+    year: '2021',
+    title: 'TEST OF MODERN RESILIENCE',
+    location: 'Pocito, San Juan',
+    dateStr: 'January 18, 2021',
+    stats: 'Magnitude 6.4 • Intensity VII • Depth 8 km',
+    description: 'Despite strong night shaking, structures engineered under INPRES standards proved their life-saving effectiveness, preventing collapses and minimizing structural damage.',
+    imagePath: '/images/history_2021.png'
+  },
+  {
+    id: '2026',
+    year: '2026',
+    title: 'SAN JUAN TODAY: CAPITAL OF PREPAREDNESS',
+    location: 'San Juan, Present Day',
+    dateStr: 'Present & Future',
+    stats: 'Digital Monitoring • INPRES Codes • Public Education',
+    description: 'San Juan is an international benchmark in urban seismic resilience. Through science, youth education, and SISMO LAB digital technology, we remain prepared.',
+    imagePath: '/images/2026.png',
+    isCurrentEra: true
+  }
+];
+
 export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onExperienceChange, onFinishGame }) => {
+  const { language } = useLanguage();
+  const isEs = language === 'es';
+  const slides = isEs ? HISTORICAL_SLIDES_ES : HISTORICAL_SLIDES_EN;
+
   const [isExperienceActive, setIsExperienceActive] = useState<boolean>(false);
   const [activeIdx, setActiveIdx] = useState(0); // 0 = Intro slide, 1..5 = Historical years
 
@@ -84,7 +143,6 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
 
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isFirstSlideChange = useRef(true);
   const activeIdxRef = useRef(0);
   const isExperienceActiveRef = useRef(false);
 
@@ -114,7 +172,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
       if (!audioRef.current || !isExperienceActiveRef.current) return;
       const time = audioRef.current.currentTime;
 
-      // 1. At 0:22: Automatically transition to Slide 1 (1894) (1s earlier for perfect audio sync)
+      // 1. At 0:22: Automatically transition to Slide 1 (1894)
       if (time >= 22 && time < 35) {
         if (activeIdxRef.current < 1) {
           scrollToSlide(1);
@@ -210,7 +268,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
     const scrollPos = containerRef.current.scrollTop;
     const slideHeight = containerRef.current.clientHeight;
     const newIdx = Math.round(scrollPos / slideHeight);
-    if (newIdx !== activeIdx && newIdx >= 0 && newIdx <= HISTORICAL_SLIDES.length) {
+    if (newIdx !== activeIdx && newIdx >= 0 && newIdx <= slides.length) {
       setActiveIdx(newIdx);
     }
   };
@@ -224,14 +282,14 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
           <button
             onClick={() => { sound.playClick(); onNavigate('home'); }}
             className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 flex items-center justify-center text-white pointer-events-auto active:scale-95 transition-all backdrop-blur-md"
-            aria-label="Volver a Inicio"
+            aria-label={isEs ? 'Volver a Inicio' : 'Back to Home'}
           >
             <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
         ) : (
           <div className="flex items-center gap-2 pointer-events-auto">
             <span className="px-3 py-1 rounded-full bg-black/50 border border-brand-cyan/40 text-brand-cyan text-[10px] font-black uppercase tracking-widest backdrop-blur-md animate-pulse">
-              ● Experiencia en curso
+              {isEs ? '● Experiencia en curso' : '● Live Experience'}
             </span>
           </div>
         )}
@@ -242,20 +300,20 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
             <button
               onClick={endExperience}
               className="px-3.5 py-1.5 rounded-full border border-white/20 bg-black/50 hover:bg-black/80 text-slate-300 hover:text-white flex items-center gap-1.5 transition-all backdrop-blur-md active:scale-95 text-[10px] font-bold uppercase tracking-wider"
-              title="Salir al modo libre"
+              title={isEs ? 'Salir al modo libre' : 'Exit to free mode'}
             >
               <X className="w-3.5 h-3.5 text-slate-400" />
-              <span>Modo Libre</span>
+              <span>{isEs ? 'Modo Libre' : 'Free Mode'}</span>
             </button>
           ) : (
             /* In Free Mode: Start Experience CTA */
             <button
               onClick={startExperience}
               className="px-4 py-2 rounded-full border border-brand-cyan/50 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan flex items-center gap-2 transition-all backdrop-blur-md active:scale-95 text-[11px] font-extrabold uppercase tracking-wider shadow-glow-cyan/20"
-              title="Iniciar relato cinematográfico con audio y avance sincronizado"
+              title={isEs ? 'Iniciar relato cinematográfico con audio y avance sincronizado' : 'Start cinematic story with synchronized audio and auto-advance'}
             >
               <Play className="w-3.5 h-3.5 fill-brand-cyan" />
-              <span>Experiencia</span>
+              <span>{isEs ? 'Experiencia' : 'Experience'}</span>
             </button>
           )}
         </div>
@@ -268,7 +326,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
           onClick={() => !isExperienceActive && scrollToSlide(0)}
           disabled={isExperienceActive}
           className={`group flex items-center gap-2 justify-end transition-all ${isExperienceActive ? 'cursor-default' : 'cursor-pointer'}`}
-          aria-label="Ir a la Introducción"
+          aria-label={isEs ? 'Ir a la Introducción' : 'Go to Introduction'}
         >
           <span className={`text-[9px] font-black tracking-wider transition-all duration-300 ${
             activeIdx === 0 ? 'text-brand-cyan opacity-100' : 'text-slate-400 opacity-0 group-hover:opacity-100'
@@ -283,7 +341,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
         </button>
 
         {/* Years Dots (Index 1..5) */}
-        {HISTORICAL_SLIDES.map((event, idx) => {
+        {slides.map((event, idx) => {
           const slideIndex = idx + 1;
           const isActive = slideIndex === activeIdx;
 
@@ -293,7 +351,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
               onClick={() => !isExperienceActive && scrollToSlide(slideIndex)}
               disabled={isExperienceActive}
               className={`group flex items-center gap-2 justify-end transition-all ${isExperienceActive ? 'cursor-default' : 'cursor-pointer'}`}
-              aria-label={`Ir a ${event.year}`}
+              aria-label={isEs ? `Ir a ${event.year}` : `Go to ${event.year}`}
             >
               <span className={`text-[9px] font-black tracking-wider transition-all duration-300 ${
                 isActive ? 'text-brand-cyan opacity-100' : 'text-slate-400 opacity-0 group-hover:opacity-100'
@@ -323,9 +381,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
         }`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {/* =========================================================================
-            SLIDE 0: MINIMALIST CINEMATIC INTRO
-           ========================================================================= */}
+        {/* SLIDE 0: MINIMALIST CINEMATIC INTRO */}
         <div className="relative w-full h-screen snap-start flex flex-col justify-between p-6 sm:p-8 pb-16 overflow-hidden">
           {/* Uiverse Stars Background */}
           <div className="stars-container pointer-events-none">
@@ -345,16 +401,29 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
           <div className="relative z-20 my-auto text-center space-y-4 max-w-md mx-auto pointer-events-auto">
             <div className="animate-intro-title">
               <h1 className="font-black text-5xl sm:text-7xl text-white tracking-tight uppercase leading-none drop-shadow-[0_8px_40px_rgba(0,0,0,0.95)]">
-                MEMORIA & <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-sky-300 to-brand-electric">
-                  RESILIENCIA
-                </span>
+                {isEs ? (
+                  <>
+                    MEMORIA & <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-sky-300 to-brand-electric">
+                      RESILIENCIA
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    MEMORY & <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-sky-300 to-brand-electric">
+                      RESILIENCE
+                    </span>
+                  </>
+                )}
               </h1>
             </div>
 
             <div className="animate-intro-desc">
               <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)] max-w-sm mx-auto">
-                Un viaje por los sismos que forjaron la ingeniería, la ciencia y el coraje de nuestra provincia.
+                {isEs
+                  ? 'Un viaje por los sismos que forjaron la ingeniería, la ciencia y el coraje de nuestra provincia.'
+                  : 'A journey through the earthquakes that shaped the engineering, science, and courage of our province.'}
               </p>
             </div>
 
@@ -366,7 +435,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
                   className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-brand-cyan to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-navy-950 font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-500/25 active:scale-95 transition-all"
                 >
                   <Play className="w-4 h-4 fill-navy-950" />
-                  VIVIR LA EXPERIENCIA
+                  <span>{isEs ? 'VIVIR LA EXPERIENCIA' : 'LIVE THE EXPERIENCE'}</span>
                 </button>
               </div>
             )}
@@ -380,7 +449,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
                 className="group inline-flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors"
               >
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-brand-cyan">
-                  O explorar libremente
+                  {isEs ? 'O explorar libremente' : 'Or explore freely'}
                 </span>
                 <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-brand-cyan animate-bounce" />
               </button>
@@ -388,10 +457,8 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
           </div>
         </div>
 
-        {/* =========================================================================
-            SLIDES 1..5: HISTORICAL PHOTO SLIDES (Pure Minimalist Overlaid Typography)
-           ========================================================================= */}
-        {HISTORICAL_SLIDES.map((event, idx) => {
+        {/* SLIDES 1..5: HISTORICAL PHOTO SLIDES */}
+        {slides.map((event, idx) => {
           const slideIndex = idx + 1;
           const isActive = slideIndex === activeIdx;
 
@@ -408,10 +475,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
                 style={{ backgroundImage: `url('${event.imagePath}')` }}
               />
 
-              {/* Dark Gradient Vignette for perfect text readability */}
+              {/* Dark Gradient Vignette for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/55 z-0 pointer-events-none" />
 
-              {/* Minimalist Typographic Layout (No boxes) */}
+              {/* Minimalist Typographic Layout */}
               <div className={`relative z-20 space-y-3 max-w-md mx-auto w-full transition-all duration-700 transform pointer-events-auto ${
                 isActive ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
               }`}>
@@ -425,7 +492,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
                     </span>
                     {event.isCurrentEra && (
                       <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[9px] uppercase tracking-wider">
-                        <Sparkles className="w-3 h-3" /> PRESENTE
+                        <Sparkles className="w-3 h-3" /> {isEs ? 'PRESENTE' : 'PRESENT'}
                       </span>
                     )}
                   </div>
@@ -446,13 +513,13 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
                   </p>
                 </div>
 
-                {/* Narrative Description (Directly over the image) */}
+                {/* Narrative Description */}
                 <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-medium drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-sm">
                   {event.description}
                 </p>
 
                 {/* Final Completion CTA on Last Slide */}
-                {slideIndex === HISTORICAL_SLIDES.length && (
+                {slideIndex === slides.length && (
                   <div className="pt-3 max-w-xs mx-auto">
                     <button
                       onClick={() => {
@@ -470,18 +537,22 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
                       }`}
                     >
                       <Sparkles className={`w-4 h-4 ${isClaimed ? 'text-brand-cyan' : 'text-navy-950'}`} />
-                      <span>{isClaimed ? '✓ 300 XP Reclamados · Ver Ranking' : 'Reclamar +300 XP y Ver Ranking'}</span>
+                      <span>
+                        {isClaimed
+                          ? (isEs ? '✓ 300 XP Reclamados · Ver Ranking' : '✓ 300 XP Claimed · View Leaderboard')
+                          : (isEs ? 'Reclamar +300 XP y Ver Ranking' : 'Claim +300 XP & View Leaderboard')}
+                      </span>
                     </button>
                   </div>
                 )}
 
                 {/* Next Slide Arrow in Free Mode */}
-                {!isExperienceActive && slideIndex < HISTORICAL_SLIDES.length && (
+                {!isExperienceActive && slideIndex < slides.length && (
                   <div className="pt-2 text-center">
                     <button
                       onClick={() => scrollToSlide(slideIndex + 1)}
                       className="mx-auto w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-all animate-bounce shadow-lg"
-                      aria-label="Siguiente hito"
+                      aria-label={isEs ? 'Siguiente hito' : 'Next milestone'}
                     >
                       <ChevronDown className="w-4 h-4" />
                     </button>
@@ -495,4 +566,3 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ user, onNavigate, onEx
     </div>
   );
 };
-

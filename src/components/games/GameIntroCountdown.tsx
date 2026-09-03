@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Timer, Zap, Play, Flame, HelpCircle } from 'lucide-react';
 import { sound } from '../../lib/sound';
 import { GameInfoModal } from './GameInfoModal';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface GameIntroCountdownProps {
   title: string;
@@ -24,6 +25,9 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
   timeLimitSec,
   onStart
 }) => {
+  const { language } = useLanguage();
+  const isEs = language === 'es';
+
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -81,7 +85,7 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
         <button
           onClick={() => { sound.playClick(); setShowInfoModal(true); }}
           className="w-9 h-9 rounded-full bg-navy-900/90 border border-brand-cyan/40 hover:border-brand-cyan flex items-center justify-center text-brand-cyan hover:text-white transition-all shadow-glow-cyan/20 active:scale-95"
-          title="Reglas y Sistema de Puntos"
+          title={isEs ? 'Reglas y Sistema de Puntos' : 'Rules & Scoring System'}
           aria-label="Información del juego"
         >
           <HelpCircle className="w-5 h-5 stroke-[2.5]" />
@@ -113,7 +117,7 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
             {/* Mission Instructions Card */}
             <div className="sismo-card p-4 text-left border-white/15 bg-navy-900/90 space-y-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                📋 OBJETIVO DEL DESAFÍO:
+                {isEs ? '📋 OBJETIVO DEL DESAFÍO:' : '📋 MISSION OBJECTIVE:'}
               </span>
               <p className="text-xs text-slate-200 font-medium leading-relaxed">
                 {instructions}
@@ -122,13 +126,13 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
               {timeLimitSec && (
                 <div className="flex items-center gap-1.5 text-xs text-brand-yellow font-black pt-1 border-t border-white/10">
                   <Timer className="w-3.5 h-3.5" />
-                  <span>Tiempo límite por ronda: {timeLimitSec} segundos</span>
+                  <span>{isEs ? `Tiempo límite por ronda: ${timeLimitSec} segundos` : `Time limit per round: ${timeLimitSec} seconds`}</span>
                 </div>
               )}
             </div>
           </div>
         ) : (
-          /* Giant Minimalist Cinematic Countdown (No enclosing circle) */
+          /* Giant Minimalist Cinematic Countdown */
           <div className="space-y-4 py-8 flex flex-col items-center justify-center animate-in zoom-in-50 duration-200">
             <div className="flex items-center justify-center h-36">
               {countdown > 0 ? (
@@ -137,13 +141,15 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
                 </span>
               ) : (
                 <span className="font-black text-6xl sm:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-amber-300 to-yellow-500 tracking-widest drop-shadow-[0_0_40px_rgba(250,204,21,0.9)]">
-                  ¡YA!
+                  {isEs ? '¡YA!' : 'GO!'}
                 </span>
               )}
             </div>
 
             <p className="text-sm font-extrabold text-brand-cyan tracking-wider uppercase">
-              {countdown > 0 ? '¡PREPARATE!' : '¡DEMOSTRÁ LO QUE SABÉS!'}
+              {countdown > 0
+                ? (isEs ? '¡PREPARATE!' : 'GET READY!')
+                : (isEs ? '¡DEMOSTRÁ LO QUE SABÉS!' : 'SHOW WHAT YOU KNOW!')}
             </p>
           </div>
         )}
@@ -157,7 +163,7 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
             className="w-full h-14 rounded-full bg-gradient-to-r from-brand-electric via-brand-blue to-brand-cyan text-navy-950 font-black text-base uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_6px_30px_rgba(0,184,255,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Play className="w-5 h-5 fill-navy-950" />
-            <span>¡Comenzar Desafío!</span>
+            <span>{isEs ? '¡Comenzar Desafío!' : 'Start Mission!'}</span>
           </button>
         )}
       </div>

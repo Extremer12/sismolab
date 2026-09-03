@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface FinalBossChallengeGameProps {
   userMode: UserMode;
@@ -23,14 +24,16 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const { language } = useLanguage();
+  const isEs = language === 'es';
+
   const bossTimeLimit = userMode === 'kids' ? 16 : 12;
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
 
-  // Build a 6-step final gauntlet: 2 Science + 2 Myths + 2 Crisis Scenarios
-  const [steps, setSteps] = useState<ChallengeStep[]>(() => {
-    const q = getRandomQuestions(2, userMode);
-    const m = getRandomMyths(2, userMode);
-    const s = getRandomScenarios(2, userMode);
+  const generateSteps = (): ChallengeStep[] => {
+    const q = getRandomQuestions(2, userMode, language);
+    const m = getRandomMyths(2, userMode, language);
+    const s = getRandomScenarios(2, userMode, language);
     return [
       { type: 'quiz', data: q[0] },
       { type: 'myth', data: m[0] },
@@ -39,7 +42,10 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
       { type: 'scenario', data: s[0] },
       { type: 'scenario', data: s[1] }
     ];
-  });
+  };
+
+  // Build a 6-step final gauntlet: 2 Science + 2 Myths + 2 Crisis Scenarios
+  const [steps, setSteps] = useState<ChallengeStep[]>(generateSteps);
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState<any>(null);
@@ -50,8 +56,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
   const [maxStreak, setMaxStreak] = useState(0);
   const [timer, setTimer] = useState(bossTimeLimit);
 
-  const step = steps[currentIdx];
-  const progressPercent = ((currentIdx + 1) / steps.length) * 100;
+  const step = steps[currentIdx] || steps[0];
 
   // Boss countdown timer per step
   useEffect(() => {
@@ -113,22 +118,13 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
       setIsAnswered(false);
       setTimer(bossTimeLimit);
     } else {
+      sound.playWinFanfare();
       setGameState('result');
     }
   };
 
   const handleReplay = () => {
-    const q = getRandomQuestions(2, userMode);
-    const m = getRandomMyths(2, userMode);
-    const s = getRandomScenarios(2, userMode);
-    setSteps([
-      { type: 'quiz', data: q[0] },
-      { type: 'myth', data: m[0] },
-      { type: 'quiz', data: q[1] },
-      { type: 'myth', data: m[1] },
-      { type: 'scenario', data: s[0] },
-      { type: 'scenario', data: s[1] }
-    ]);
+    setSteps(generateSteps());
     setCurrentIdx(0);
     setSelectedChoice(null);
     setIsAnswered(false);
@@ -141,9 +137,9 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
   };
 
   const getStepTitle = () => {
-    if (step.type === 'quiz') return 'FASE 1: CIENCIA RELÁMPAGO';
-    if (step.type === 'myth') return 'FASE 2: MITO O REALIDAD';
-    return 'FASE 3: DECISIÓN DE CRISIS';
+    if (step.type === 'quiz') return isEs ? 'Fase de Sismología' : 'Seismology Phase';
+    if (step.type === 'myth') return isEs ? 'Fase de Mitos y Verdades' : 'Myths & Facts Phase';
+    return isEs ? 'Fase de Decisión en Crisis' : 'Crisis Decision Phase';
   };
 
   return (
@@ -156,10 +152,12 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
       {/* 1. INTRO COUNTDOWN */}
       {gameState === 'intro' && (
         <GameIntroCountdown
-          title="GRAN DESAFÍO FINAL"
-          category="MISIÓN 06 · PRUEBA SUPREMA"
-          subtitle="La prueba definitiva para graduarte como Experto Sísmico"
-          instructions="6 rondas extremas combinando Ciencia, Mitos y Decisiones de Emergencia contra el reloj. ¡Conseguí la máxima puntuación del stand!"
+          title={isEs ? 'GRAN DESAFÍO FINAL' : 'GRAND FINAL CHALLENGE'}
+          category={isEs ? 'MISIÓN 06 · PRUEBA SUPREMA' : 'MISSION 06 · SUPREME TEST'}
+          subtitle={isEs ? 'La prueba definitiva para graduarte como Experto Sísmico' : 'The ultimate test to graduate as a Seismic Expert'}
+          instructions={isEs
+            ? '6 rondas extremas combinando Ciencia, Mitos y Decisiones de Emergencia contra el reloj. ¡Conseguí la máxima puntuación del stand!'
+            : '6 extreme rounds combining Science, Myths, and Emergency Decisions against the clock. Achieve the top booth score!'}
           icon="🏆"
           rewardXp={1000}
           timeLimitSec={12}
@@ -170,7 +168,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
       {/* 2. RESULT SCREEN */}
       {gameState === 'result' && (
         <GameResultScreen
-          gameTitle="Gran Desafío Final"
+          gameTitle={isEs ? 'Gran Desafío Final' : 'Grand Final Challenge'}
           earnedScore={earnedScore + (correctCount === steps.length ? 300 : 0)}
           correctCount={correctCount}
           totalCount={steps.length}
@@ -198,7 +196,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
               {streak >= 2 && (
                 <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-orange-950/90 border border-orange-500 text-orange-400 font-black text-xs animate-bounce shadow-[0_0_15px_rgba(249,115,22,0.4)]">
                   <Flame className="w-4 h-4 fill-orange-500" />
-                  <span>RACHA x{streak}</span>
+                  <span>{isEs ? `RACHA x${streak}` : `STREAK x${streak}`}</span>
                 </div>
               )}
 
@@ -239,7 +237,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-navy-950/80 border border-brand-gold/40 text-brand-yellow font-black text-[9px] uppercase tracking-wider backdrop-blur-md">
-                    DESAFÍO FINAL
+                    {isEs ? 'DESAFÍO FINAL' : 'FINAL CHALLENGE'}
                   </div>
                 </div>
               )}
@@ -301,7 +299,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
                       : 'bg-rose-950/90 border-rose-500 text-rose-100 hover:scale-105 active:scale-95'
                   }`}
                 >
-                  <span>❌ MITO</span>
+                  <span>{isEs ? '❌ MITO' : '❌ MYTH'}</span>
                 </button>
 
                 <button
@@ -315,7 +313,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
                       : 'bg-emerald-950/90 border-emerald-400 text-emerald-100 hover:scale-105 active:scale-95'
                   }`}
                 >
-                  <span>✅ REALIDAD</span>
+                  <span>{isEs ? '✅ REALIDAD' : '✅ REALITY'}</span>
                 </button>
               </div>
             )}
@@ -356,7 +354,7 @@ export const FinalBossChallengeGame: React.FC<FinalBossChallengeGameProps> = ({
                   fullWidth
                   onClick={handleNext}
                 >
-                  <span>{currentIdx + 1 < steps.length ? 'Siguiente Desafío Boss' : '¡Ver Coronación Final!'}</span>
+                  <span>{currentIdx + 1 < steps.length ? (isEs ? 'Siguiente Desafío Boss' : 'Next Boss Challenge') : (isEs ? '¡Ver Coronación Final!' : 'View Final Coronation!')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

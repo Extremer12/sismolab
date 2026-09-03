@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Timer, Sparkles, ArrowRight, ShieldCheck, Check, X, RotateCcw, Hand } from 'lucide-react';
 import { ScreenId, EmergencyKitItem, UserMode } from '../../types';
-import { EMERGENCY_KIT_ITEMS } from '../../services/gamesService';
+import { getEmergencyKitItems } from '../../services/gamesService';
 import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface EmergencyKitGameProps {
   userMode?: UserMode;
@@ -16,21 +17,15 @@ interface EmergencyKitGameProps {
 const MAX_BACKPACK_CAPACITY = 12;
 const VISIBLE_SLOTS_COUNT = 4;
 
-// Fisher-Yates uniform shuffle
-function getShuffledKitItems(): EmergencyKitItem[] {
-  const array = [...EMERGENCY_KIT_ITEMS];
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
 export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   userMode = 'kids',
   onFinishGame,
   onNavigate
 }) => {
+  const { language } = useLanguage();
+  const isEs = language === 'es';
+  const allKitItems = getEmergencyKitItems(language);
+
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'evaluation' | 'result'>('intro');
   const [visibleSlots, setVisibleSlots] = useState<(EmergencyKitItem | null)[]>([]);
   const [waitingDeck, setWaitingDeck] = useState<EmergencyKitItem[]>([]);
@@ -53,18 +48,22 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
     backpackRect: DOMRect | null;
   } | null>(null);
 
-  const essentialItems = EMERGENCY_KIT_ITEMS.filter(i => i.isEssential);
-  const packedItems = EMERGENCY_KIT_ITEMS.filter(i => packedItemIds.includes(i.id));
+  const essentialItems = allKitItems.filter(i => i.isEssential);
+  const packedItems = allKitItems.filter(i => packedItemIds.includes(i.id));
 
   const correctPackedItems = packedItems.filter(i => i.isEssential);
   const wrongPackedItems = packedItems.filter(i => !i.isEssential);
   const missedVitalItems = essentialItems.filter(i => !packedItemIds.includes(i.id));
 
-  // Initialize deck and slots
+  // Initialize deck and slots with uniform shuffle
   const initGameDeck = () => {
-    const allShuffled = getShuffledKitItems();
-    const slots = allShuffled.slice(0, VISIBLE_SLOTS_COUNT);
-    const rest = allShuffled.slice(VISIBLE_SLOTS_COUNT);
+    const array = [...allKitItems];
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    const slots = array.slice(0, VISIBLE_SLOTS_COUNT);
+    const rest = array.slice(VISIBLE_SLOTS_COUNT);
     setVisibleSlots(slots);
     setWaitingDeck(rest);
     setPackedItemIds([]);
@@ -167,7 +166,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   // Unpack an item back to waiting queue
   const handleUnpackItem = (itemId: string) => {
     sound.playClick();
-    const itemToRestore = EMERGENCY_KIT_ITEMS.find(i => i.id === itemId);
+    const itemToRestore = allKitItems.find(i => i.id === itemId);
     setPackedItemIds(prev => prev.filter(id => id !== itemId));
 
     if (itemToRestore) {
@@ -316,10 +315,12 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
       {/* 1. INTRO SCREEN */}
       {gameState === 'intro' && (
         <GameIntroCountdown
-          title="MOCHILA DE 72 HORAS"
-          category="PREVENCIÓN SÍSMICA · MISIÓN 02"
-          subtitle="Empacá hasta 12 artículos indispensables"
-          instructions="Tocá o arrastrá los objetos hacia la mochila. Cada vez que guardes uno, aparecerá el siguiente. Al finalizar, evaluaremos cuáles eran vitales y cuáles un riesgo."
+          title={isEs ? 'MOCHILA DE 72 HORAS' : '72-HOUR SURVIVAL KIT'}
+          category={isEs ? 'PREVENCIÓN SÍSMICA · MISIÓN 02' : 'SEISMIC PREPAREDNESS · MISSION 02'}
+          subtitle={isEs ? 'Empacá hasta 12 artículos indispensables' : 'Pack up to 12 essential supplies'}
+          instructions={isEs
+            ? 'Tocá o arrastrá los objetos hacia la mochila. Cada vez que guardes uno, aparecerá el siguiente. Al finalizar, evaluaremos cuáles eran vitales y cuáles un riesgo.'
+            : 'Tap or drag items into the backpack. Each time you pack one, the next will appear. When finished, we will evaluate vital items vs hazards.'}
           icon="🎒"
           rewardXp={500}
           timeLimitSec={45}
@@ -330,7 +331,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
       {/* 2. RESULT SUMMARY */}
       {gameState === 'result' && (
         <GameResultScreen
-          gameTitle="Mochila de Emergencia"
+          gameTitle={isEs ? 'Mochila de Emergencia' : 'Emergency Go-Bag'}
           earnedScore={finalScore}
           correctCount={correctPackedItems.length}
           totalCount={essentialItems.length}
@@ -374,7 +375,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             {/* Instruction Tip */}
             <div className="text-center flex items-center justify-center gap-1.5 text-xs text-brand-cyan font-black uppercase tracking-wider pt-0.5">
               <Hand className="w-3.5 h-3.5 animate-bounce" />
-              <span>Tocá o arrastrá hacia la mochila</span>
+              <span>{isEs ? 'Tocá o arrastrá hacia la mochila' : 'Tap or drag into backpack'}</span>
             </div>
           </div>
 
@@ -399,7 +400,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
 
               {/* Capacity Floating Badge */}
               <div className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-navy-950/95 border border-brand-cyan text-brand-cyan font-black text-[11px] shadow-lg">
-                {packedItemIds.length}/{MAX_BACKPACK_CAPACITY} EMPACADOS
+                {packedItemIds.length}/{MAX_BACKPACK_CAPACITY} {isEs ? 'EMPACADOS' : 'PACKED'}
               </div>
             </div>
 
@@ -412,7 +413,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                     type="button"
                     onClick={() => handleUnpackItem(item.id)}
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-navy-950/95 border border-brand-cyan/40 text-[11px] text-slate-100 hover:border-rose-400 active:scale-95 transition-all group shadow-sm cursor-pointer"
-                    title="Quitar de la mochila"
+                    title={isEs ? 'Quitar de la mochila' : 'Remove from backpack'}
                   >
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="w-3 h-3 object-contain pointer-events-none" />
@@ -427,14 +428,14 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             )}
           </div>
 
-          {/* DYNAMIC 4-SLOT TRAY (No cramped scroll box) */}
+          {/* DYNAMIC 4-SLOT TRAY */}
           <div className="relative z-10 space-y-2">
             {/* Header info */}
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 px-1">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-brand-cyan animate-ping" />
                 <span className="uppercase text-brand-cyan font-black tracking-wider">
-                  Objetos por clasificar ({totalUnpackedCount})
+                  {isEs ? `Objetos por clasificar (${totalUnpackedCount})` : `Items to classify (${totalUnpackedCount})`}
                 </span>
               </div>
 
@@ -445,7 +446,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                   className="px-2.5 py-1 rounded-lg bg-navy-900/90 border border-brand-cyan/40 text-[11px] text-brand-cyan hover:bg-navy-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer font-bold shadow-sm"
                 >
                   <RotateCcw className="w-3 h-3" />
-                  <span>Rotar (+{waitingDeck.length})</span>
+                  <span>{isEs ? `Rotar (+${waitingDeck.length})` : `Rotate (+${waitingDeck.length})`}</span>
                 </button>
               )}
             </div>
@@ -459,7 +460,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                       key={`empty-slot-${idx}`}
                       className="h-24 rounded-2xl border-2 border-dashed border-white/10 bg-navy-950/40 flex items-center justify-center text-slate-500 text-xs font-bold"
                     >
-                      <span>✓ Clasificado</span>
+                      <span>{isEs ? '✓ Clasificado' : '✓ Classified'}</span>
                     </div>
                   );
                 }
@@ -500,7 +501,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                         }}
                         className="flex-1 py-1 rounded-lg bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-colors cursor-pointer"
                       >
-                        <span>Empacar</span>
+                        <span>{isEs ? 'Empacar' : 'Pack'}</span>
                         <Check className="w-3 h-3 stroke-[3]" />
                       </button>
 
@@ -509,7 +510,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                           type="button"
                           onClick={(e) => handleSkipSlotItem(idx, e)}
                           className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors cursor-pointer"
-                          title="Pasar al final"
+                          title={isEs ? 'Pasar al final' : 'Skip to back'}
                         >
                           <span>↷</span>
                         </button>
@@ -528,13 +529,13 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                 fullWidth
                 onClick={handleEvaluate}
               >
-                <span>¡CERRAR Y EVALUAR! ({packedItemIds.length}/{MAX_BACKPACK_CAPACITY})</span>
+                <span>{isEs ? `¡CERRAR Y EVALUAR! (${packedItemIds.length}/${MAX_BACKPACK_CAPACITY})` : `CLOSE & EVALUATE! (${packedItemIds.length}/${MAX_BACKPACK_CAPACITY})`}</span>
                 <ShieldCheck className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
-          {/* HARDWARE-ACCELERATED GHOST ELEMENT (Rendered via transform, 0ms lag) */}
+          {/* HARDWARE-ACCELERATED GHOST ELEMENT */}
           <div
             ref={ghostRef}
             className="fixed pointer-events-none z-50 -top-8 -left-8 flex flex-col items-center transition-opacity duration-75"
@@ -568,22 +569,22 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
           {/* Header Summary */}
           <div className="sismo-card p-4 rounded-3xl border-brand-cyan/40 bg-navy-950/95 text-center space-y-2 shadow-2xl">
             <h2 className="font-black text-xl text-white uppercase tracking-tight">
-              EVALUACIÓN DE LA MOCHILA
+              {isEs ? 'EVALUACIÓN DE LA MOCHILA' : 'GO-BAG EVALUATION'}
             </h2>
 
             {/* Counts */}
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center">
               <div className="p-2 rounded-xl bg-emerald-950/80 border border-emerald-500/50">
                 <span className="font-black text-base text-emerald-300 block">{correctPackedItems.length}</span>
-                <span className="text-[9px] font-bold text-emerald-400 uppercase">Correctos</span>
+                <span className="text-[9px] font-bold text-emerald-400 uppercase">{isEs ? 'Correctos' : 'Correct'}</span>
               </div>
               <div className="p-2 rounded-xl bg-rose-950/80 border border-rose-500/50">
                 <span className="font-black text-base text-rose-300 block">{wrongPackedItems.length}</span>
-                <span className="text-[9px] font-bold text-rose-400 uppercase">Riesgos</span>
+                <span className="text-[9px] font-bold text-rose-400 uppercase">{isEs ? 'Riesgos' : 'Hazards'}</span>
               </div>
               <div className="p-2 rounded-xl bg-amber-950/80 border border-amber-500/50">
                 <span className="font-black text-base text-amber-300 block">{missedVitalItems.length}</span>
-                <span className="text-[9px] font-bold text-amber-400 uppercase">Faltantes</span>
+                <span className="text-[9px] font-bold text-amber-400 uppercase">{isEs ? 'Faltantes' : 'Missing'}</span>
               </div>
             </div>
           </div>
@@ -633,8 +634,8 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-xs text-amber-200 truncate">{item.name} (Faltante)</h4>
-                    <span className="text-[10px] font-bold text-amber-400 shrink-0 ml-1">Vital</span>
+                    <h4 className="font-bold text-xs text-amber-200 truncate">{item.name} {isEs ? '(Faltante)' : '(Missing)'}</h4>
+                    <span className="text-[10px] font-bold text-amber-400 shrink-0 ml-1">{isEs ? 'Vital' : 'Vital'}</span>
                   </div>
                   <p className="text-[10px] text-slate-300 leading-snug mt-0.5">{item.reason}</p>
                 </div>
@@ -649,7 +650,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
             fullWidth
             onClick={() => setGameState('result')}
           >
-            <span>Ver Puntuación Final (+{finalScore} XP)</span>
+            <span>{isEs ? `Ver Puntuación Final (+${finalScore} XP)` : `View Final Score (+${finalScore} XP)`}</span>
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>

@@ -567,3 +567,108 @@ export const NUMERIC_QUESTIONS_KIDS_EN: NumericQuestion[] = [
     difficulty: 'easy'
   }
 ];
+
+// ==========================================
+// 4. ENGLISH EMERGENCY GO-BAG (18 ITEMS)
+// ==========================================
+export const EMERGENCY_KIT_ITEMS_EN: EmergencyKitItem[] = [
+  // Vital essentials
+  { id: 'water', name: 'Bottled drinking water', icon: '💧', image: '/images/kit/agua.png', isEssential: true, category: 'vital', reason: 'At least 2 liters per person per day for 72 hours of survival.' },
+  { id: 'flashlight', name: 'Battery LED flashlight', icon: '🔦', image: '/images/kit/linterna.png', isEssential: true, category: 'vital', reason: 'Provides illumination safely without risk of gas leak explosions.' },
+  { id: 'radio', name: 'Battery radio with spares', icon: '📻', image: '/images/kit/radio.png', isEssential: true, category: 'vital', reason: 'Only official communication channel if cellular networks and internet collapse.' },
+  { id: 'first_aid', name: 'First aid medical kit', icon: '🩹', image: '/images/kit/botiquin.png', isEssential: true, category: 'vital', reason: 'Sterile gauze, bandages, antiseptic, and essential personal prescriptions.' },
+  { id: 'whistle', name: 'Emergency rescue whistle', icon: '🔊', image: '/images/kit/silbato.png', isEssential: true, category: 'vital', reason: 'Signals for help using far less energy and breath than screaming under debris.' },
+  { id: 'canned_food', name: 'Non-perishable canned food', icon: '🥫', image: '/images/kit/alimentos.png', isEssential: true, category: 'vital', reason: 'Provides immediate calories without requiring cooking or refrigeration.' },
+  { id: 'docs', name: 'Copies of IDs and deeds', icon: '📄', isEssential: true, category: 'vital', reason: 'Stored in waterproof sealed plastic pouches for post-disaster procedures.' },
+  { id: 'blanket', name: 'Lightweight thermal blanket', icon: '🧥', image: '/images/kit/manta.png', isEssential: true, category: 'vital', reason: 'Prevents nocturnal hypothermia during open-air outdoor evacuations.' },
+  { id: 'powerbank', name: 'Charged external battery pack', icon: '🔋', image: '/images/kit/powerbank.png', isEssential: true, category: 'vital', reason: 'Keeps a mobile phone powered for vital emergency calls and geolocation.' },
+  { id: 'multitool', name: 'Pocket knife or multitool', icon: '🔧', image: '/images/kit/multiherramienta.png', isEssential: true, category: 'vital', reason: 'Essential for opening cans, cutting ropes, and making temporary repairs.' },
+  { id: 'matches_waterproof', name: 'Matches in waterproof case', icon: '🔥', image: '/images/kit/fosforos.png', isEssential: true, category: 'vital', reason: 'For controlled fires in designated safe outdoor gathering areas.' },
+  { id: 'hygiene', name: 'Sanitation kit (alcohol/soap)', icon: '🧼', isEssential: true, category: 'vital', reason: 'Prevents infections and waterborne illnesses during utility outages.' },
+
+  // Non-essentials / Distractors
+  { id: 'console', name: 'Handheld gaming console', icon: '🎮', image: '/images/kit/consola.png', isEssential: false, category: 'no-essential', reason: 'Heavy, fragile, and non-essential for basic 72-hour survival.' },
+  { id: 'candles', name: 'Open wax candles', icon: '🕯️', isEssential: false, category: 'no-essential', reason: 'Critical hazard! Open flames instantly ignite undetected gas leaks.' },
+  { id: 'dishes', name: 'Heavy ceramic dinner plates', icon: '🍽️', isEssential: false, category: 'no-essential', reason: 'Adds unnecessary dead weight and can break, ripping through backpack fabric.' },
+  { id: 'books', name: 'Encyclopedias and heavy books', icon: '📚', isEssential: false, category: 'no-essential', reason: 'In the 72-hour go-bag, strictly carry vital survival supplies.' },
+  { id: 'hairdryer', name: 'Electric hair dryer', icon: '💨', isEssential: false, category: 'no-essential', reason: 'Useless without power grid and takes up valuable space.' },
+  { id: 'heavy_jewelry', name: 'Large jewelry box with jewels', icon: '💎', isEssential: false, category: 'no-essential', reason: 'Prioritize human life and essential documents over luxury valuables.' }
+];
+
+// ==========================================
+// 5. ENGLISH 4-SECOND REFLEX SCENARIOS
+// ==========================================
+export const REFLEX_SCENARIOS_EN = [
+  {
+    id: 'r1',
+    contextTag: 'SCHOOL / OFFICE',
+    icon: '🏫',
+    situation: 'The floor shakes violently and walls begin to creak.',
+    optionSafe: '🛡️ Drop, Cover under desk and Hold On',
+    optionDanger: '🏃 Rush frantically towards the stairs',
+    imageSafe: '/images/reflexes/adults/r1_safe.webp',
+    imageDanger: '/images/reflexes/adults/r1_danger.webp',
+    safeExplanation: 'Vital reflex! Protecting head and neck under sturdy furniture prevents injury from falling plaster and lights.',
+    dangerExplanation: 'Deadly hazard! Running on stairs during shaking is the #1 cause of falls and severe fractures.'
+  },
+  {
+    id: 'r2',
+    contextTag: 'POST-EARTHQUAKE AT HOME',
+    icon: '🔌',
+    situation: 'Shaking stopped, electricity is out and you smell gas.',
+    optionSafe: '🔧 Shut off main gas valve, do not touch switches and evacuate',
+    optionDanger: '🕯️ Light a candle or broken flashlight to inspect damage',
+    imageSafe: '/images/reflexes/adults/r2_safe.webp',
+    imageDanger: '/images/reflexes/adults/r2_danger.webp',
+    safeExplanation: 'Impeccable action! You neutralize fire hazards and evacuate safely without sparking.',
+    dangerExplanation: 'Explosion risk! An open flame instantly detonates accumulated gas leaks.'
+  },
+  {
+    id: 'r3',
+    contextTag: 'HIGH-RISE BUILDING',
+    icon: '🏢',
+    situation: 'You are on the 4th floor and the building sways strongly.',
+    optionSafe: '🛡️ Shelter beside a structural column or under sturdy table',
+    optionDanger: '🛗 Take the elevator to rush down to the street',
+    imageSafe: '/images/reflexes/adults/r3_safe.webp',
+    imageDanger: '/images/reflexes/adults/r3_danger.webp',
+    safeExplanation: 'Correct! Modern earthquake-engineered buildings will not collapse. Stay sheltered in place.',
+    dangerExplanation: 'Death trap! Power failures or misaligned rails will leave you trapped inside the elevator shaft.'
+  },
+  {
+    id: 'r4',
+    contextTag: 'DRIVING A VEHICLE',
+    icon: '🚗',
+    situation: 'Driving along the avenue, you feel ground vibration and lose steering control.',
+    optionSafe: '🛑 Turn on hazards, brake smoothly away from poles and stay inside',
+    optionDanger: '⚡ Step on the gas to speed across the bridge',
+    imageSafe: '/images/reflexes/adults/r4_safe.webp',
+    imageDanger: '/images/reflexes/adults/r4_danger.webp',
+    safeExplanation: 'Perfect! The car chassis shields against falling power lines while you wait for shaking to cease.',
+    dangerExplanation: 'Critical danger! Speeding on bridges during an earthquake causes rollovers and fatal crashes.'
+  },
+  {
+    id: 'r5',
+    contextTag: 'CITY CENTER / STREET',
+    icon: '🚶',
+    situation: 'Walking downtown, window glass begins falling from buildings.',
+    optionSafe: '🌳 Move calmly towards the open center of the public square',
+    optionDanger: '🏢 Press against building walls under commercial awnings',
+    imageSafe: '/images/reflexes/adults/r5_safe.webp',
+    imageDanger: '/images/reflexes/adults/r5_danger.webp',
+    safeExplanation: 'Very good! You stay clear of shattering glass, falling facade masonry and power cables.',
+    dangerExplanation: 'Impact zone! Glass and masonry cascade directly along the sidewalk edge.'
+  },
+  {
+    id: 'r6',
+    contextTag: 'NIGHTTIME IN BED',
+    icon: '🛏️',
+    situation: 'A violent earthquake awakens you in total darkness.',
+    optionSafe: '🛌 Stay in bed, protect head with pillow face-down',
+    optionDanger: '🏃 Leap up and run barefoot in the dark',
+    imageSafe: '/images/reflexes/adults/r6_safe.webp',
+    imageDanger: '/images/reflexes/adults/r6_danger.webp',
+    safeExplanation: 'Great decision! Moving in the dark over broken glass causes severe lacerations and falls.',
+    dangerExplanation: 'Severe injury risk! Stepping on shattered glass and colliding in darkness is dangerous.'
+  }
+];
