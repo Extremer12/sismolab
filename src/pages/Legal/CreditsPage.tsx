@@ -160,6 +160,12 @@ export const CreditsPage: React.FC<CreditsPageProps> = ({ onNavigate }) => {
           <span className="font-black text-brand-yellow text-sm">Vanessa Lewyle</span>
         </div>
 
+        <p className="text-[11px] text-slate-400 italic pt-1 leading-relaxed">
+          {language === 'es'
+            ? 'Nota aclaratoria (Políticas de Google Play): La Escuela Policía Federal Argentina es un establecimiento escolar público de nivel primario y secundario de la Provincia de San Juan. Este software educativo es una iniciativa desarrollada independientemente por Zion Code y no representa a la institución policial ni a organismos gubernamentales.'
+            : 'Disclaimer (Google Play Policies): Escuela Policía Federal Argentina is a public school institution located in San Juan, Argentina. This educational software was created independently by Zion Code and does not represent the federal police or any government entity.'}
+        </p>
+
         <div className="editorial-divider-gold mt-4" />
       </section>
 

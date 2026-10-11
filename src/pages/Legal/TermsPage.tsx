@@ -51,6 +51,18 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
         <div className="editorial-divider-gold" />
       </header>
 
+      {/* Official Government Apps & Real Emergency Disclaimer */}
+      <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200 leading-relaxed space-y-1.5 animate-editorial-1">
+        <p className="font-bold uppercase tracking-wider text-amber-300">
+          ⚖️ {language === 'es' ? 'Descargo de Responsabilidad Institucional:' : 'Institutional Disclaimer:'}
+        </p>
+        <p>
+          {language === 'es'
+            ? 'SISMO LAB es una iniciativa educativa independiente de Zion Code. No representa a una entidad gubernamental ni a la Policía Federal Argentina ni al Gobierno de San Juan. No es una alarma de sismos en tiempo real.'
+            : 'SISMO LAB is an independent educational initiative by Zion Code. It does not represent any government entity or the Argentine Federal Police. It is not a real-time earthquake warning system.'}
+        </p>
+      </div>
+
       {/* 3. Editorial Legal Articles (Streamline No-Card Architecture) */}
       <div className="space-y-8 pt-4 text-xs text-slate-300 leading-relaxed animate-editorial-2">
         

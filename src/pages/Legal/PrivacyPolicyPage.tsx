@@ -51,6 +51,18 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
         <div className="editorial-divider" />
       </header>
 
+      {/* Government & Safety Policy Disclaimers (Google Play Compliant) */}
+      <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200 leading-relaxed space-y-1.5 animate-editorial-1">
+        <p className="font-bold uppercase tracking-wider text-amber-300">
+          ⚖️ {language === 'es' ? 'Descargo de Responsabilidad Institucional:' : 'Institutional Disclaimer:'}
+        </p>
+        <p>
+          {language === 'es'
+            ? 'SISMO LAB es una iniciativa de software educativo desarrollada de forma independiente por Zion Code para la comunidad escolar de la Escuela Policía Federal Argentina (San Juan). Esta aplicación NO representa, no es una aplicación oficial, ni actúa en representación de la Policía Federal Argentina, del Gobierno de San Juan, del INPRES ni de ningún organismo estatal o gubernamental. La información sismológica y geológica proviene de registros públicos del INPRES (www.inpres.gob.ar).'
+            : 'SISMO LAB is an independent educational software initiative engineered by Zion Code for the school community. This app does not represent, is not an official app of, and does not act on behalf of the Argentine Federal Police, the Government of San Juan, INPRES, or any government entity. Seismic scientific data references public records from INPRES (www.inpres.gob.ar).'}
+        </p>
+      </div>
+
       {/* 3. Editorial Legal Articles (Streamline No-Card Architecture) */}
       <div className="space-y-8 pt-4 text-xs text-slate-300 leading-relaxed animate-editorial-2">
         
@@ -63,11 +75,11 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
           <p className="pl-5 text-slate-300">
             {language === 'es' ? (
               <>
-                La plataforma interactiva <strong>SISMO LAB</strong> es un software educativo desarrollado por la empresa <strong>Zion Code</strong> para la <strong>Escuela Policía Federal Argentina</strong> (San Juan), con fines de investigación y entrenamiento lúdico en autoprotección sísmica comunitaria.
+                La plataforma interactiva <strong>SISMO LAB</strong> es un software educativo desarrollado por <strong>Zion Code</strong> con fines de divulgación científica, investigación pedagógica y entrenamiento lúdico en autoprotección sísmica comunitaria.
               </>
             ) : (
               <>
-                The interactive platform <strong>SISMO LAB</strong> is educational software engineered by <strong>Zion Code</strong> for <strong>Escuela Policía Federal Argentina</strong> (San Juan), focused on earthquake self-protection training.
+                The interactive platform <strong>SISMO LAB</strong> is educational software engineered by <strong>Zion Code</strong>, focused on earthquake self-protection training and scientific dissemination.
               </>
             )}
           </p>
@@ -133,16 +145,28 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
           <p className="pl-5 text-slate-300">
             {language === 'es' ? (
               <>
-                En cumplimiento de la Ley 25.326, cualquier usuario o tutor legal puede solicitar la supresión de sus registros escribiendo directamente a <strong>Zion Code</strong>.
+                En cumplimiento de la Ley 25.326 y las políticas de Google Play, cualquier usuario o tutor legal puede solicitar la supresión inmediata de sus registros y cuenta desde la app o a través de nuestra web dedicada de eliminación de datos.
               </>
             ) : (
               <>
-                Under Argentine Law 25.326, any user or legal guardian can request data deletion by contacting <strong>Zion Code</strong>.
+                Under Argentine Law 25.326 and Google Play User Data policies, any user or legal guardian can delete their account instantly in-app or via our web deletion portal.
               </>
             )}
           </p>
 
-          <div className="pl-5 flex flex-col sm:flex-row gap-2 pt-1">
+          <div className="pl-5 pt-1">
+            <a
+              href="/delete-account.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 py-2 px-3.5 rounded-full bg-rose-950/60 border border-rose-500/40 hover:border-rose-400 text-[11px] font-bold text-rose-300 transition-colors"
+            >
+              <ExternalLink className="w-3 h-3 text-rose-400" />
+              <span>{language === 'es' ? 'Portal Web de Eliminación de Cuenta y Datos →' : 'Web Account & Data Deletion Portal →'}</span>
+            </a>
+          </div>
+
+          <div className="pl-5 flex flex-col sm:flex-row gap-2 pt-2">
             <a
               href="mailto:zioncode25@gmail.com"
               className="py-2.5 px-4 rounded-full bg-navy-900 border border-white/10 hover:border-brand-yellow flex items-center justify-between text-xs text-slate-200 transition-colors"

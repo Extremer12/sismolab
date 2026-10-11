@@ -1,6 +1,7 @@
 # 🚀 Guía Maestra de Publicación en Google Play Store · SISMO LAB
+### Cumplimiento Total de las Políticas para Desarrolladores de Google Play (Google Play Developer Content Policy)
 
-Esta guía contiene **todo** lo necesario para publicar **SISMO LAB** en Google Play Store paso a paso, con los archivos exactos, textos oficiales ya redactados y respuestas preconfiguradas para los cuestionarios de Google.
+Esta guía contiene **todo** lo necesario para publicar **SISMO LAB** en Google Play Store paso a paso, con los textos exactos, descargos de responsabilidad obligatorios y respuestas preconfiguradas para que tu aplicación sea aprobada **sin observaciones ni rechazos** por el equipo de revisión de Google Play.
 
 ---
 
@@ -19,7 +20,7 @@ Ya generamos y verificamos los recursos obligatorios con los tamaños exactos qu
 
 ---
 
-## 📦 2. Cómo Generar el Paquete `.aab` en 2 Minutos (Vía PWABuilder)
+## 📦 2. Cómo Generar el Paquete `.aab` (Vía PWABuilder)
 
 Para empaquetar tu PWA como una aplicación nativa de Android (.aab) firmada:
 
@@ -33,28 +34,27 @@ Para empaquetar tu PWA como una aplicación nativa de Android (.aab) firmada:
    * **Short Name**: `SISMO LAB`
    * **Version Code**: `1`
    * **Version Name**: `1.0.0`
-   * **Signing Key**: Selecciona **Generate a new key** (o genera una nueva).
+   * **Signing Key**: Selecciona **Generate a new key** (o sube la keystore existente en `playstore-assets/sismolab-release.keystore`).
 6. Haz clic en **Generate Package** / **Download**.
-7. Te descargará un archivo `.zip`. Al descomprimirlo tendrás:
-   * `app-release.aab` (¡Este es el archivo que se sube a Google Play!).
-   * `signing.keystore` (Guarda este archivo bajo llave, es la clave de firma de tu app).
-   * Un archivo de texto con las contraseñas de la clave.
-   * `assetlinks.json` con tu huella digital SHA-256.
+7. Te descargará un archivo `.zip` que contiene `app-release.aab` (el archivo para subir a Google Play Console).
 
 ---
 
-## 🔗 3. Vincular tu Dominio Web con la App (Ocultar Barra del Navegador)
+## 🔗 3. Vincular tu Dominio Web con la App (Experiencia Nativa Pantalla Completa)
 
-Para que Android reconozca que la app y la web son del mismo dueño y **no muestre la barra de Chrome** (experiencia 100% nativa de pantalla completa):
+Para que Android reconozca que la app y la web son del mismo titular y **no muestre la barra de navegación de Chrome**:
 
 1. En el archivo `assetlinks.json` que descargaste de PWABuilder (o desde Google Play Console > *Firma de apps de Play*), copia el valor de `sha256_cert_fingerprints`.
-2. Pégalo en el archivo [`public/.well-known/assetlinks.json`](file:///c:/Users/julian/Desktop/WEBS/Proyectos%20Terminados/SismoEdu/public/.well-known/assetlinks.json) de este proyecto.
-3. Haz un `git push` a tu repositorio para que Vercel lo despliegue.
-4. Puedes verificarlo abriendo en tu navegador: `https://sismolab-one.vercel.app/.well-known/assetlinks.json`.
+2. Pégalo en el archivo [`public/.well-known/assetlinks.json`](file:///c:/Users/julian/Desktop/WEBS/Proyectos%20Terminados/SismoEdu/public/.well-known/assetlinks.json).
+3. Haz `git push` para desplegarlo en Vercel.
+4. Verifica que responda abriendo: `https://sismolab-one.vercel.app/.well-known/assetlinks.json`.
 
 ---
 
-## 📝 4. Textos para la Ficha de Play Store (Copiar y Pegar)
+## 📝 4. Textos para la Ficha de Play Store (Optimizados y 100% Conformes a Políticas)
+
+> [!IMPORTANT]
+> Google Play exige que cualquier aplicación que mencione instituciones escolares, policiales o científicas incluya un **Descargo de Responsabilidad claro** para no infringir la política de *Impersonation & Government Apps*. El siguiente texto ya incluye todas las cláusulas requeridas.
 
 ### Nombre de la app (Máx. 30 caracteres)
 ```text
@@ -96,8 +96,8 @@ Línea de tiempo interactiva con fichas técnicas y mapas de los grandes hitos s
 • 1977: Terremoto de Caucete y licuación de suelos.
 • 2021: Terremoto de Pocito / Media Agua.
 
-📶 100% OFFLINE:
-Funciona completamente sin conexión a internet una vez descargada, ideal para el aula o zonas con baja señal.
+📶 100% OFFLINE Y SIN ANUNCIOS:
+Funciona completamente sin conexión a internet una vez descargada. Cero anuncios publicitarios comerciales y cero costos ocultos.
 
 🎭 AVATARES Y LOGROS:
 Colecciona avatares representativos de la fauna autóctona cuyana (Cóndor, Guanaco, Puma, Zorro) y profesionales de la geología y protección civil.
@@ -106,56 +106,86 @@ Colecciona avatares representativos de la fauna autóctona cuyana (Cóndor, Guan
 Disponible en Español y en Inglés.
 
 ---
-Desarrollado por Zion Code para la Escuela Policía Federal Argentina (San Juan).
-Educación y preparación ciudadana para salvar vidas.
+⚖️ DESCARGO DE RESPONSABILIDAD INSTITUCIONAL (POLÍTICA DE GOOGLE PLAY):
+SISMO LAB es una iniciativa de desarrollo de software educativo concebida por Zion Code para la comunidad escolar de la Escuela Policía Federal Argentina (San Juan). 
+Esta aplicación NO representa, no es una aplicación oficial, ni actúa en representación de la Policía Federal Argentina, del Gobierno de la Provincia de San Juan, del Instituto Nacional de Prevención Sísmica (INPRES) ni de ninguna entidad estatal o gubernamental.
+La información científica y geológica citada en la app es de divulgación pública general y proviene de los registros del INPRES (www.inpres.gob.ar) con fines exclusivamente pedagógicos y escolares.
+
+🚨 AVISO DE SEGURIDAD ANTE EMERGENCIAS:
+SISMO LAB es una herramienta de simulación formativa y entrenamiento escolar. NO es un detector ni un sistema de alerta sísmica en tiempo real. Ante un evento sísmico real, siga siempre las directivas oficiales de Protección Civil, Bomberos y organismos de emergencia.
 ```
 
 ---
 
-## ⚖️ 5. Enlace Legal y Configuración de Privacidad
+## ⚖️ 5. Enlaces Obligatorios de Privacidad y Eliminación de Datos
 
-* **URL de Política de Privacidad**:
-  ```text
-  https://sismolab-one.vercel.app/privacy.html
-  ```
-  *(Ya creada y validada en `public/privacy.html`).*
+Google Play Console exige obligatoriamente dos URLs activas en la ficha de la tienda:
+
+1. **URL de Política de Privacidad (Privacy Policy)**:
+   ```text
+   https://sismolab-one.vercel.app/privacy.html
+   ```
+2. **URL para solicitud de eliminación de cuentas y datos (Data Deletion URL)**:
+   ```text
+   https://sismolab-one.vercel.app/delete-account.html
+   ```
 
 ---
 
-## 📋 6. Cuestionarios en Google Play Console
+## 📋 6. Cuestionarios en Google Play Console (Paso a Paso)
 
-### A. Clasificación de contenido (IARC)
-* **Correo de contacto**: Tu correo (ej. `zioncode25@gmail.com`).
-* **Categoría**: *Educación* o *Juegos / Preguntas*.
-* **Violencia, sangre, lenguaje soez, sustancias**: Responder **NO** a todo.
-* **Resultado esperado**: Clasificación PEGI 3 / ESRB Everyone / Apta para todo público.
+### A. Acceso a la app
+* Seleccionar: **Todas las funciones están disponibles sin restricciones de acceso** (los evaluadores de Google pueden ingresar inmediatamente en modo Explorador sin necesidad de contraseña).
 
-### B. Seguridad de los datos (Data Safety)
-* ¿Tu app recopila o comparte datos personales obligatorios?: **NO**.
-* ¿La app permite crear una cuenta o iniciar sesión?: **SÍ (Opcional mediante Google Login / Supabase para guardar el puntaje del ranking)**.
+### B. Anuncios (Ads)
+* ¿Tu app contiene anuncios?: **NO**.
+
+### C. Aplicaciones gubernamentales (Government Apps)
+* ¿Esta app representa a una entidad gubernamental?: **NO**.
+  *(Selecciona "No, mi aplicación no representa a una entidad gubernamental").*
+
+### D. Seguridad de los datos (Data Safety)
+* ¿Tu app recopila o comparte datos personales obligatorios?: **NO** (el uso es 100% anónimo por defecto).
+* ¿La app permite crear una cuenta o iniciar sesión?: **SÍ** (Inicio opcional con Google OAuth / Supabase para guardar puntaje en ranking).
 * Tipos de datos recopilados:
-  * *Información personal*: Nombre / Correo (solo para autenticación y guardado de progreso escolar).
-  * *Actividad en la app*: Interacciones con el juego (puntaje en el ranking).
-* ¿Los datos se transfieren a través de una conexión cifrada?: **SÍ (HTTPS)**.
-* ¿Los usuarios pueden solicitar que se eliminen sus datos?: **SÍ (mediante el correo de contacto)**.
+  * **Información personal**:
+    * *Nombre o apodo*: Recopilado con fin de funcionalidad de la app (ranking escolar). Opcional. No se comparte.
+    * *Dirección de correo electrónico*: Recopilado con fin de autenticación y gestión de cuentas. Opcional. No se comparte.
+  * **Actividad en la app**:
+    * *Interacciones con la app*: Puntuación de misiones y progreso. Opcional. No se comparte.
+  * **Identificadores del dispositivo o de otro tipo**:
+    * *ID de usuario*: Identificador de usuario de autenticación. Opcional. No se comparte.
+* ¿Los datos recopilados se transfieren a través de una conexión segura y cifrada?: **SÍ (HTTPS / TLS)**.
+* ¿Los usuarios pueden solicitar que se eliminen sus datos?: **SÍ**.
+* **URL de solicitud de eliminación de cuentas**: `https://sismolab-one.vercel.app/delete-account.html`.
 
-### C. Público objetivo y Familias (Recomendación Estratégica)
-* En el paso de *Público objetivo*:
-  * Si marcas niños (menores de 13 años), Google te exigirá cumplir con la **Política de Familias (Families Policy)** y la normativa COPPA.
-  * **Recomendación para tu primera aprobación rápida**: Marca **13 a 17 años y 18 años o más** (o declara que "también puede resultar atractivo para niños"). Esto te permite aprobar la app sin las auditorías complejas de SDKs infantiles en tu primera publicación.
+### E. Público objetivo y Familias (Target Audience & Families)
+* SISMO LAB está diseñada para todo público:
+  * Rangos etarios a marcar: **Menores de 13 años (o 5 y menores, 6 a 8, 9 a 12), 13 a 17 años, y 18 años o más**.
+  * ¿La app puede atraer a menores de 13 años?: **SÍ**.
+  * Cumplimiento de la Política de Familias:
+    * ✅ No contiene anuncios comerciales.
+    * ✅ No utiliza SDKs de publicidad.
+    * ✅ No recopila información personal sensible ni ubicación GPS.
+    * ✅ La política de privacidad detalla la protección especial a la niñez (COPPA).
+    * ✅ Cuenta con descargo de responsabilidad institucional.
+
+### F. Clasificación de contenido (IARC)
+* **Correo de contacto**: `zioncode25@gmail.com`.
+* **Categoría**: *Educación* o *Juegos / Preguntas*.
+* **Violencia, sangre, lenguaje soez, sustancias, apuestas**: Responder **NO** a todo.
+* **Resultado esperado**: Clasificación PEGI 3 / ESRB Everyone / Apta para todo público.
 
 ---
 
 ## 👥 7. La Regla de los 20 Testers (Closed Testing)
 
-Si tu cuenta de Google Play es Personal:
+Si tu cuenta de Google Play es Personal (creada después de noviembre de 2023):
 1. Ve a **Pruebas cerradas (Closed testing)** en Play Console.
 2. Crea una pista de prueba cerrada (ej. "Prueba Alfa").
 3. Sube tu archivo `app-release.aab`.
 4. En la pestaña **Evaluadores (Testers)**:
-   * Crea una lista de correos con al menos **20 cuentas de Gmail** (amigos, familiares, docentes, compañeros).
-   * O crea un grupo de Google (Google Group) y añade a los evaluadores.
-5. Copia el enlace de invitación de prueba (*"Unirse en la Web"* o *"Unirse en Android"*).
-6. Los 20 evaluadores deben hacer clic en el enlace, aceptar ser testers y descargar/abrir la app en su teléfono.
-7. Deben mantenerla instalada durante **14 días continuos**.
-8. Al cumplirse los 14 días, Play Console te habilitará el botón **"Solicitar acceso a producción"**.
+   * Añade una lista con al menos **20 cuentas de Gmail**.
+5. Comparte el enlace de invitación de prueba (*"Unirse en la Web"* o *"Unirse en Android"*).
+6. Los 20 evaluadores deben aceptar la prueba y mantener instalada la app durante **14 días continuos**.
+7. Al cumplirse los 14 días, Play Console te habilitará el botón **"Solicitar acceso a producción"**.
