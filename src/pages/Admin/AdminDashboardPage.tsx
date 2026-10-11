@@ -98,14 +98,14 @@ const GAME_METADATA: Record<string, { title: string; subtitle: string; icon: str
   },
   'game-myth-reality': {
     title: 'Mitos vs Realidades',
-    subtitle: 'Desmitificación científica INPRES de falsas creencias',
+    subtitle: 'Desmitificación científica de falsas creencias',
     icon: '💡',
     badgeColor: 'text-purple-400 border-purple-500/40 bg-purple-500/10',
     printDiagnostic: 'Eficaz para desterrar mitos arraigados (relación sismos-clima/calor y predicciones).'
   },
   'myth-reality': {
     title: 'Mitos vs Realidades',
-    subtitle: 'Desmitificación científica INPRES de falsas creencias',
+    subtitle: 'Desmitificación científica de falsas creencias',
     icon: '💡',
     badgeColor: 'text-purple-400 border-purple-500/40 bg-purple-500/10',
     printDiagnostic: 'Eficaz para desterrar mitos arraigados (relación sismos-clima/calor y predicciones).'
@@ -416,7 +416,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block">
-                    SISTEMA OFICIAL INPRES · FERIA SAN JUAN 2026
+                    SISTEMA DE PREVENCIÓN SÍSMICA · SAN JUAN 2026
                   </span>
                 </div>
                 <h1 className="font-black text-xl sm:text-2xl text-white tracking-tight uppercase">
@@ -938,7 +938,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
               />
               <div>
                 <span className="text-[10pt] font-extrabold uppercase tracking-widest text-black block">
-                  GOBIERNO DE SAN JUAN · MINISTERIO DE EDUCACIÓN · INPRES
+                  GOBIERNO DE SAN JUAN · MINISTERIO DE EDUCACIÓN
                 </span>
                 <h1 className="text-[15pt] font-black text-black leading-tight uppercase">
                   DOSSIER OFICIAL DE EVALUACIÓN Y RENDIMIENTO SÍSMICO
@@ -1160,7 +1160,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
 
             <div className="pt-8 border-t border-black">
               <div className="font-black text-black">Autoridad / Supervisor</div>
-              <div className="text-black">Ministerio de Educación / INPRES</div>
+              <div className="text-black">Ministerio de Educación / Dirección Escolar</div>
               <div className="text-[7.5pt] text-black">Sello de Recepción Feria 2026</div>
             </div>
           </div>

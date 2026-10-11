@@ -1,4 +1,4 @@
-# ⚡ SISMO LAB · INPRES San Juan
+# ⚡ SISMO LAB · Prevención Sísmica San Juan
 ### *Plataforma Educativa, Gamificada e Interactiva de Prevención Sísmica y Ciencias de la Tierra*
 
 <div align="center">
@@ -10,7 +10,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![PWA](https://img.shields.io/badge/PWA-100%25%20Offline%20Ready-FFA000?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 
-**[🌍 Sitio Web Oficial / Demo](https://sismo-edu.vercel.app/)** • **[📖 Zion Code](https://zion-code.vercel.app/)**
+**[🌍 Sitio Web Oficial / Demo](https://sismolab-one.vercel.app/)** • **[📖 Zion Code](https://zion-code.vercel.app/)**
 
 </div>
 
@@ -18,7 +18,7 @@
 
 ## 📖 Acerca del Proyecto
 
-**SISMO LAB** es una **Progressive Web App (PWA)** educativa, inmersiva y de alto rendimiento diseñada para concientizar y entrenar a niños, jóvenes y adultos sobre el fenómeno sísmico, la historia geológica de la provincia de San Juan y las pautas oficiales de autoprotección establecidas por el **Instituto Nacional de Prevención Sísmica (INPRES)**.
+**SISMO LAB** es una **Progressive Web App (PWA)** educativa, inmersiva y de alto rendimiento diseñada para concientizar y entrenar a niños, jóvenes y adultos sobre el fenómeno sísmico, la historia geológica de la provincia de San Juan y las pautas oficiales de autoprotección ciudadana.
 
 El proyecto combina pedagogía sismológica, gamificación moderna, diseño visual cinematográfico y funcionamiento **100% Offline** para su uso en ferias educativas, escuelas, stands interactivos y dispositivos móviles familiares.
 

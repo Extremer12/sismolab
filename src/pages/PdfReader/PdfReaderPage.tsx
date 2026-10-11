@@ -191,7 +191,7 @@ export const PdfReaderPage: React.FC<PdfReaderPageProps> = ({ onNavigate, onFini
     if (navigator.share) {
       try {
         await navigator.share({
-          title: isEs ? 'Historia Sísmica de San Juan · INPRES' : 'Seismic History of San Juan · INPRES',
+          title: isEs ? 'Historia Sísmica de San Juan' : 'Seismic History of San Juan',
           text: isEs ? 'Descargá la guía histórica completa sobre sismos y prevención de San Juan.' : 'Download the complete historical guide on earthquakes and prevention in San Juan.',
           url: window.location.href,
         });
@@ -220,7 +220,7 @@ export const PdfReaderPage: React.FC<PdfReaderPageProps> = ({ onNavigate, onFini
 
         <div className="px-3.5 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
           <FileText className="w-3.5 h-3.5" />
-          <span>{isEs ? 'GUÍA HISTÓRICA INPRES' : 'INPRES HISTORICAL GUIDE'}</span>
+          <span>{isEs ? 'GUÍA HISTÓRICA SÍSMICA' : 'SEISMIC HISTORICAL GUIDE'}</span>
         </div>
 
         <button
@@ -315,7 +315,7 @@ export const PdfReaderPage: React.FC<PdfReaderPageProps> = ({ onNavigate, onFini
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-navy-950/90 border border-brand-cyan/50 text-brand-cyan font-black text-[10px] tracking-wider uppercase backdrop-blur-md">
-                    {ch.year} · INPRES
+                    {ch.year} · SAN JUAN
                   </div>
                 </div>
 

@@ -64,7 +64,7 @@ async function createFeatureGraphic() {
         <!-- Category Pill Badge -->
         <rect x="130" y="72" width="230" height="28" rx="14" fill="url(#badgeGlow)" stroke="#38bdf8" stroke-width="1.2" />
         <circle cx="146" cy="86" r="4" fill="#38bdf8" />
-        <text x="160" y="90" font-family="-apple-system, Roboto, sans-serif" font-size="11" font-weight="800" fill="#38bdf8" letter-spacing="1.5">INPRES · SAN JUAN</text>
+        <text x="160" y="90" font-family="-apple-system, Roboto, sans-serif" font-size="11" font-weight="800" fill="#38bdf8" letter-spacing="1.5">PREVENCIÓN SÍSMICA</text>
 
         <!-- Main Title -->
         <text x="130" y="148" font-family="-apple-system, Roboto, 'Segoe UI', sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="-1">SISMO LAB</text>

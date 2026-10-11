@@ -19,7 +19,7 @@ export default defineConfig({
         'sonidos/*.m4a'
       ],
       manifest: {
-        name: 'SISMO LAB · INPRES San Juan',
+        name: 'SISMO LAB · Prevención Sísmica',
         short_name: 'SISMO LAB',
         description: 'PWA educativa, interactiva y gamificada sobre sismología y prevención sísmica de San Juan.',
         theme_color: '#061426',
@@ -80,7 +80,7 @@ export default defineConfig({
           {
             name: 'Guía y Prevención',
             short_name: 'Adultos',
-            description: 'Guías de prevención y protocolos INPRES',
+            description: 'Guías de prevención y protocolos de autoprotección',
             url: '/adultos',
             icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
           }

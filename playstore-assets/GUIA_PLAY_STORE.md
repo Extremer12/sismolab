@@ -68,10 +68,10 @@ Plataforma interactiva y gamificada de prevención y ciencia sísmica de San Jua
 
 ### Descripción completa (Hasta 4000 caracteres)
 ```text
-⚡ SISMO LAB · INPRES San Juan & Zion Code
+⚡ SISMO LAB · Prevención Sísmica San Juan & Zion Code
 Plataforma Educativa, Gamificada e Interactiva de Prevención Sísmica y Ciencias de la Tierra.
 
-SISMO LAB es una aplicación educativa interactiva diseñada para concientizar y entrenar a niños, jóvenes y adultos sobre el fenómeno sísmico, la historia geológica de la provincia de San Juan y las pautas oficiales de autoprotección establecidas por el Instituto Nacional de Prevención Sísmica (INPRES).
+SISMO LAB es una aplicación educativa interactiva diseñada para concientizar y entrenar a niños, jóvenes y adultos sobre el fenómeno sísmico, la historia geológica de la provincia de San Juan y las pautas oficiales de autoprotección comunitaria.
 
 El proyecto combina pedagogía sismológica, gamificación moderna, gráficos envolventes y funcionamiento 100% Offline para su uso en escuelas, stands interactivos, ferias de ciencias y dispositivos familiares.
 

@@ -1,7 +1,7 @@
 {
-  "name": "SISMO LAB · INPRES San Juan",
+  "name": "SISMO LAB · Prevención Sísmica",
   "short_name": "SISMO LAB",
-  "description": "Aprendé. Jugá. Preparáte. PWA educativa, interactiva y gamificada sobre sismos para INPRES San Juan.",
+  "description": "Aprendé. Jugá. Preparáte. PWA educativa, interactiva y gamificada sobre sismos y prevención.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
