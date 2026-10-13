@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Calendar, FileText, Play, CheckCircle2, Target, Trophy } from 'lucide-react';
+import { ArrowRight, ChevronRight, Calendar, FileText } from 'lucide-react';
 import { UserProfile, ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -29,100 +29,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     onNavigate('adults');
   };
 
-  // 1. Calculate user's seismic learning progression
-  const completedIds = user.completed_game_ids || [];
-  const totalMissions = 6;
-  const completedCount = Math.min(totalMissions, completedIds.length);
-  const progressPercent = Math.round((completedCount / totalMissions) * 100);
-
-  // 2. Determine next pedagogical mission based on completed activities
-  const getNextMission = (): {
-    id: ScreenId;
-    title: string;
-    stepNumber: number;
-    category: string;
-    desc: string;
-    iconEmoji: string;
-  } => {
-    if (!completedIds.includes('game-what-is')) {
-      return {
-        id: 'game-what-is',
-        stepNumber: 1,
-        title: language === 'es' ? '¿Qué es un sismo?' : 'What is an Earthquake?',
-        category: language === 'es' ? 'Fundamentos' : 'Basics',
-        desc: language === 'es'
-          ? 'Comprendé cómo se originan las fallas geológicas y las ondas sísmicas en San Juan.'
-          : 'Understand how geological faults and seismic waves originate in San Juan.',
-        iconEmoji: '🌍'
-      };
-    }
-    if (!completedIds.includes('game-emergency-kit')) {
-      return {
-        id: 'game-emergency-kit',
-        stepNumber: 2,
-        title: language === 'es' ? 'Mochila de Emergencia' : 'Emergency Backpack',
-        category: language === 'es' ? 'Preparación' : 'Preparedness',
-        desc: language === 'es'
-          ? 'Aprendé a equipar los suministros indispensables para resistir 72 horas.'
-          : 'Learn to pack the essential supplies to endure 72 hours safely.',
-        iconEmoji: '🎒'
-      };
-    }
-    if (!completedIds.includes('game-safe-home')) {
-      return {
-        id: 'game-safe-home',
-        stepNumber: 3,
-        title: language === 'es' ? 'Inspección de Casa Segura' : 'Safe Home Inspection',
-        category: language === 'es' ? 'Prevención' : 'Prevention',
-        desc: language === 'es'
-          ? 'Detectá riesgos estructurales en el hogar y asegurá objetos peligrosos.'
-          : 'Detect structural hazards at home and secure heavy objects before a quake.',
-        iconEmoji: '🏠'
-      };
-    }
-    if (!completedIds.includes('game-myth-reality')) {
-      return {
-        id: 'game-myth-reality',
-        stepNumber: 4,
-        title: language === 'es' ? 'Mitos y Realidades' : 'Myths & Realities',
-        category: language === 'es' ? 'Conocimiento' : 'Knowledge',
-        desc: language === 'es'
-          ? 'Derribá creencias falsas y aprendé las conductas científicamente validadas.'
-          : 'Debunk misconceptions and learn scientifically proven safety protocols.',
-        iconEmoji: '🔍'
-      };
-    }
-    if (!completedIds.includes('game-what-would-you-do')) {
-      return {
-        id: 'game-what-would-you-do',
-        stepNumber: 5,
-        title: language === 'es' ? 'Toma de Decisiones' : 'Decision Making',
-        category: language === 'es' ? 'Reacción' : 'Reaction',
-        desc: language === 'es'
-          ? 'Reaccioná a tiempo: agacharse, cubrirse, sujetarse y buscar zonas seguras.'
-          : 'React in time: drop, cover, hold on, and identify safe zones.',
-        iconEmoji: '⚡'
-      };
-    }
-    return {
-      id: 'game-final-challenge',
-      stepNumber: 6,
-      title: language === 'es' ? 'Desafío Sísmico Final' : 'Final Seismic Challenge',
-      category: language === 'es' ? 'Evaluación' : 'Mastery',
-      desc: language === 'es'
-        ? '¡Poné a prueba tu preparación total y consolidá tu puntaje máximo en el ranking!'
-        : 'Test your total preparedness and lock in your top ranking score!',
-      iconEmoji: '🏆'
-    };
-  };
-
-  const nextMission = getNextMission();
-
-  const handleLaunchMission = (screenId: ScreenId) => {
-    sound.playClick();
-    onNavigate(screenId);
-  };
-
   return (
     <div
       className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 overflow-x-hidden"
@@ -144,18 +50,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <span className="text-brand-cyan">{t.home.heroTitle2}</span>
             </h1>
 
-            <p className="text-sm text-slate-300 font-medium leading-snug">
-              {t.home.heroDesc}{' '}
-              <button
-                onClick={() => { sound.playClick(); onNavigate('ranking'); }}
-                className="text-brand-yellow font-bold underline decoration-brand-yellow/60 hover:text-white transition-colors"
-              >
-                {t.home.rankingLink}
-              </button>
-            </p>
-
             {/* Subtle Seismic Waveform */}
-            <div className="pt-1 w-28 opacity-80">
+            <div className="pt-1.5 w-28 opacity-85">
               <svg viewBox="0 0 120 18" fill="none" className="w-full text-brand-cyan">
                 <path
                   d="M0 9 H25 L32 2 L38 16 L45 5 L52 13 L58 9 H120"
@@ -184,77 +80,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. CONTINUAR APRENDIENDO / PRÓXIMA MISIÓN (Centro Pedagógico)            */}
-        {/* ========================================================================= */}
-        <div className="sismo-card-featured p-4 sm:p-5 space-y-3.5 relative overflow-hidden">
-          {/* Subtle Ambient Glow */}
-          <div className="absolute -right-8 -top-8 w-28 h-28 bg-brand-cyan/15 rounded-full blur-2xl pointer-events-none" />
-
-          {/* Header Row: Badge & Progress Percentage */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/35 text-brand-cyan font-black text-xs uppercase tracking-wider">
-              <Target className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>{t.home.continueLearningBadge}</span>
-            </div>
-
-            <span className="text-xs font-black text-slate-300 tabular-nums">
-              {completedCount}/{totalMissions} ({progressPercent}%)
-            </span>
-          </div>
-
-          {/* Mission Content */}
-          <div className="flex items-start gap-3.5 pt-0.5">
-            <div className="w-12 h-12 rounded-2xl bg-navy-950 border border-brand-cyan/30 flex items-center justify-center text-2xl shrink-0 shadow-inner">
-              {nextMission.iconEmoji}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-brand-cyan">
-                  {nextMission.category}
-                </span>
-                <span className="text-slate-500 text-xs">·</span>
-                <span className="text-[11px] font-bold text-slate-400">
-                  {language === 'es' ? `Misión ${nextMission.stepNumber} de 6` : `Mission ${nextMission.stepNumber} of 6`}
-                </span>
-              </div>
-              
-              <h2 className="font-black text-base sm:text-lg text-white tracking-tight leading-snug mt-0.5">
-                {nextMission.title}
-              </h2>
-
-              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed mt-1">
-                {nextMission.desc}
-              </p>
-            </div>
-          </div>
-
-          {/* Overall Progress Bar */}
-          <div className="space-y-1.5 pt-1">
-            <div className="flex justify-between text-[11px] font-bold text-slate-400">
-              <span>{t.home.overallProgress}</span>
-              <span className="text-brand-cyan">{progressPercent}%</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-navy-950/90 border border-white/10 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-brand-cyan via-brand-cyan to-brand-electric transition-all duration-500 shadow-glow-cyan"
-                style={{ width: `${Math.max(5, progressPercent)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Primary Action Button (CTA Continuar Aprendiendo) */}
-          <button
-            onClick={() => handleLaunchMission(nextMission.id)}
-            className="w-full sismo-btn-primary flex items-center justify-center gap-2 text-sm uppercase tracking-wider transition-all duration-200 mt-2"
-          >
-            <Play className="w-4 h-4 fill-navy-950" />
-            <span>{progressPercent === 100 ? (language === 'es' ? 'Repasar Misión' : 'Review Mission') : t.home.continueLearningTitle}</span>
-          </button>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 3. RECORRIDOS EDUCATIVOS POR EDAD                                        */}
+        {/* 2. RECORRIDOS EDUCATIVOS POR EDAD                                        */}
         {/* ========================================================================= */}
         <div className="space-y-3 pt-1">
           <div className="flex items-center justify-between px-1">
@@ -326,7 +152,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* 4. RECURSOS COMPLEMENTARIOS: Historia Interactiva + Documento PDF         */}
+        {/* 3. RECURSOS COMPLEMENTARIOS: Historia Interactiva + Documento PDF         */}
         {/* ========================================================================= */}
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between px-1">
@@ -381,7 +207,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* 5. FOOTER INSTITUCIONAL                                                  */}
+        {/* 4. FOOTER INSTITUCIONAL                                                  */}
         {/* ========================================================================= */}
         <button
           onClick={() => { sound.playClick(); onNavigate('credits'); }}
