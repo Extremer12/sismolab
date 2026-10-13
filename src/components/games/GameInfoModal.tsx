@@ -136,7 +136,7 @@ export const GameInfoModal: React.FC<GameInfoModalProps> = ({ isOpen, onClose })
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
             {isEs
-              ? 'Para cuidar el ranking escolar, los mayores de 12 años pueden practicar las misiones infantiles libremente pero sin alterar el ranking de los más chicos.'
+              ? 'Para cuidar el ranking oficial, los mayores de 12 años pueden practicar las misiones infantiles libremente pero sin alterar el ranking de los más chicos.'
               : 'To protect the kids leaderboard, players 13+ can freely explore kids missions in Practice Mode without affecting the children rankings.'}
           </p>
         </div>

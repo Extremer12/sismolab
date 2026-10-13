@@ -905,10 +905,10 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
         <div className="sismo-card p-4 rounded-2xl border border-white/10 bg-navy-950/60 flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 block">
-              ZONA DE CONTROL CRÍTICO DEL STAND
+              ZONA DE CONTROL CRÍTICO DEL SISTEMA
             </span>
             <p className="text-xs text-slate-400">
-              Reiniciar la tabla borrará las puntuaciones y partidas históricas para iniciar una nueva jornada en la feria.
+              Reiniciar la tabla borrará las puntuaciones y partidas históricas para iniciar un nuevo ciclo en la plataforma.
             </p>
           </div>
 
@@ -944,7 +944,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
                   DOSSIER OFICIAL DE EVALUACIÓN Y RENDIMIENTO SÍSMICO
                 </h1>
                 <span className="text-[9.5pt] font-bold text-black block">
-                  Feria Provincial de Innovación Educativa, Ciencias y Tecnología · San Juan 2026
+                  Programa Provincial de Educación y Prevención Sísmica · San Juan 2026
                 </span>
               </div>
             </div>
@@ -1161,7 +1161,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
             <div className="pt-8 border-t border-black">
               <div className="font-black text-black">Autoridad / Supervisor</div>
               <div className="text-black">Ministerio de Educación / Dirección Escolar</div>
-              <div className="text-[7.5pt] text-black">Sello de Recepción Feria 2026</div>
+              <div className="text-[7.5pt] text-black">Sello de Validación Institucional 2026</div>
             </div>
           </div>
 

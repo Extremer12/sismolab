@@ -113,11 +113,11 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
           <p className="pl-5 text-slate-300">
             {language === 'es' ? (
               <>
-                El código fuente, arquitectura de software, algoritmos y diseño interactivo son propiedad de <strong>Zion Code</strong>. Se autoriza su uso público y gratuito con fines educativos para escuelas, ferias de ciencias, docentes, alumnos y familias.
+                El código fuente, arquitectura de software, algoritmos y diseño interactivo son propiedad de <strong>Zion Code</strong>. Se autoriza su uso público y gratuito con fines educativos para instituciones educativas, docentes, alumnos y familias.
               </>
             ) : (
               <>
-                Source code, software architecture and interactive design are the intellectual property of <strong>Zion Code</strong>. Public free use is granted for schools, science fairs, teachers, students and educational institutions.
+                Source code, software architecture and interactive design are the intellectual property of <strong>Zion Code</strong>. Public free use is granted for schools, teachers, students, families and educational institutions.
               </>
             )}
           </p>

@@ -998,7 +998,7 @@ export const OFFICIAL_ACHIEVEMENTS: Achievement[] = [
     id: 'ach_campeon',
     name: 'CAMPEÓN',
     slug: 'campeon',
-    description: 'Alcanzaste más de 1.500 puntos en el ranking de la feria.',
+    description: 'Alcanzaste más de 1.500 puntos en el ranking oficial de SISMO LAB.',
     icon: '🏆',
     condition_type: 'score',
     condition_value: 1500

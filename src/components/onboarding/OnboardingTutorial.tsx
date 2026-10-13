@@ -391,7 +391,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                    <p className="text-slate-200">
                      {isEs
-                       ? 'Los puntos oficiales del ranking escolar se suman compitiendo en el modo correspondiente a tu edad.'
+                       ? 'Los puntos oficiales del ranking se suman compitiendo en el modo correspondiente a tu edad.'
                        : 'Official ranking points are scored in the category matching your age.'}
                    </p>
                  </div>

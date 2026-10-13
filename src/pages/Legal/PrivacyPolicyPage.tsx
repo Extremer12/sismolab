@@ -111,7 +111,7 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
             <h2>{language === 'es' ? 'Datos Técnicos y Finalidad Pedagógica' : 'Technical Data & Pedagogical Purpose'}</h2>
           </div>
           <ul className="pl-9 list-disc space-y-1 text-slate-300">
-            <li><strong>{language === 'es' ? 'Puntajes y progreso de juego:' : 'Game scores and progress:'}</strong> {language === 'es' ? 'Puntos, nivel, misiones completadas, edad y respuestas para calcular el ranking escolar y diagnosticar conceptos a reforzar.' : 'Points, level, completed missions, age and answers to compute leaderboard ranks and diagnose learning areas.'}</li>
+            <li><strong>{language === 'es' ? 'Puntajes y progreso de juego:' : 'Game scores and progress:'}</strong> {language === 'es' ? 'Puntos, nivel, misiones completadas, edad y respuestas para calcular el ranking oficial y diagnosticar conceptos a reforzar.' : 'Points, level, completed missions, age and answers to compute leaderboard ranks and diagnose learning areas.'}</li>
             <li><strong>{language === 'es' ? 'Autenticación Google OAuth:' : 'Google OAuth login:'}</strong> {language === 'es' ? 'Nombre público de perfil y correo para persistir el progreso de juego en la nube.' : 'Public display name and email to persist gameplay progress across devices.'}</li>
             <li><strong>{language === 'es' ? 'Almacenamiento Local (PWA Offline):' : 'Local Storage (Offline PWA):'}</strong> {language === 'es' ? 'La aplicación guarda configuraciones y caché para funcionar sin conexión a internet en escuelas o zonas rurales.' : 'The application caches assets locally so it can run fully offline in schools or remote rural areas.'}</li>
           </ul>

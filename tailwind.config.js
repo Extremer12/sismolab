@@ -8,26 +8,33 @@ export default {
     extend: {
       colors: {
         navy: {
-          950: '#040E1B',
-          900: '#061426', // Deep Navy
-          850: '#081C33', // Dark Navy
-          800: '#0C2746',
-          700: '#11355E',
-          600: '#18477C',
+          950: '#061321', // Fondo base oficial
+          900: '#0D2235', // Superficies y tarjetas oficiales
+          850: '#122B43', // Elevación sutil
+          800: '#173654',
+          700: '#20466B',
+          600: '#2B5784',
         },
         brand: {
           blue: '#0D5FFF',
-          electric: '#00B8FF',
-          cyan: '#22D3EE',
-          purple: '#7C3AED',
-          yellow: '#FACC15',
-          gold: '#F5B83D',
+          electric: '#20D9F5',
+          cyan: '#20D9F5',   // Acciones y estados activos (#20D9F5)
+          purple: '#8B5CF6', // Categorías y Jóvenes/Adultos (#8B5CF6)
+          yellow: '#F6C453', // Recompensas y logros (#F6C453)
+          gold: '#F6C453',   // Recompensas excepcionales
+        },
+        surface: {
+          base: '#061321',
+          card: '#0D2235',
+          cardHover: '#122B43',
+          border: 'rgba(255, 255, 255, 0.08)',
+          borderActive: 'rgba(32, 217, 245, 0.4)',
         },
         accent: {
           success: '#22C55E',
           error: '#EF4444',
           gray: '#94A3B8',
-          white: '#F8FAFC',
+          white: '#E8F1FA',  // Texto principal de alto contraste
         }
       },
       fontFamily: {
@@ -37,12 +44,12 @@ export default {
         tech: ['"Space Grotesk"', 'sans-serif'],
       },
       boxShadow: {
-        'glow-cyan': '0 0 25px rgba(34, 211, 238, 0.35)',
-        'glow-electric': '0 0 25px rgba(0, 184, 255, 0.4)',
-        'glow-gold': '0 0 25px rgba(245, 184, 61, 0.4)',
-        'glow-purple': '0 0 25px rgba(124, 58, 237, 0.4)',
-        'card-navy': '0 8px 32px rgba(4, 14, 27, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-        'card-hover': '0 12px 40px rgba(0, 184, 255, 0.25), inset 0 1px 0 rgba(34, 211, 238, 0.3)',
+        'glow-cyan': '0 0 20px rgba(32, 217, 245, 0.35)',
+        'glow-electric': '0 0 20px rgba(32, 217, 245, 0.35)',
+        'glow-gold': '0 0 20px rgba(246, 196, 83, 0.35)',
+        'glow-purple': '0 0 20px rgba(139, 92, 246, 0.35)',
+        'card-navy': '0 6px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+        'card-hover': '0 10px 30px rgba(6, 19, 33, 0.6), inset 0 1px 0 rgba(32, 217, 245, 0.25)',
       },
       borderRadius: {
         'card': '20px',

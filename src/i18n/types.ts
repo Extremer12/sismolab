@@ -69,6 +69,10 @@ export interface Translations {
     pdfTitle: string;
     pdfDesc: string;
     creditsButton: string;
+    continueLearningTitle: string;
+    continueLearningBadge: string;
+    continueLearningAction: string;
+    overallProgress: string;
   };
   kids: {
     badge: string;

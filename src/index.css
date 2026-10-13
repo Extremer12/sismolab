@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    background-color: #061426;
-    color: #F8FAFC;
+    background-color: #061321;
+    color: #E8F1FA;
     font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -92,27 +92,37 @@
   }
 }
 .sismo-card {
-  background: rgba(8, 28, 51, 0.85);
+  background: rgba(13, 34, 53, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(34, 211, 238, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(4, 14, 27, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .sismo-card:hover {
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: 0 12px 36px rgba(0, 184, 255, 0.2);
+  border-color: rgba(32, 217, 245, 0.35);
+  box-shadow: 0 8px 28px rgba(6, 19, 33, 0.5);
+}
+
+.sismo-card-featured {
+  background: linear-gradient(145deg, rgba(18, 43, 67, 0.95) 0%, rgba(13, 34, 53, 0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(32, 217, 245, 0.35);
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .sismo-card-interactive {
-  background: rgba(8, 28, 51, 0.85);
+  background: rgba(13, 34, 53, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(34, 211, 238, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(4, 14, 27, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -120,44 +130,47 @@
   transform: scale(0.98);
 }
 
-/* Primary Button with Cyan/Blue gradient */
+/* Primary Button with Action Cyan (#20D9F5) */
 .sismo-btn-primary {
-  background: linear-gradient(135deg, #0D5FFF 0%, #00B8FF 100%);
-  color: #FFFFFF;
-  border-radius: 100px;
+  background: #20D9F5;
+  color: #061321;
+  border-radius: 14px;
   font-weight: 800;
-  box-shadow: 0 4px 20px rgba(0, 184, 255, 0.35);
+  min-height: 46px;
+  box-shadow: 0 4px 16px rgba(32, 217, 245, 0.3);
   transition: all 0.2s ease;
 }
 
 .sismo-btn-primary:hover {
-  box-shadow: 0 6px 25px rgba(0, 184, 255, 0.5);
   filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(32, 217, 245, 0.45);
 }
 
 .sismo-btn-primary:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
-/* Gold / Rewards Button */
+/* Gold / Rewards Button (#F6C453) */
 .sismo-btn-gold {
-  background: linear-gradient(135deg, #F5B83D 0%, #FACC15 100%);
-  color: #061426;
-  border-radius: 100px;
+  background: #F6C453;
+  color: #061321;
+  border-radius: 14px;
   font-weight: 800;
-  box-shadow: 0 4px 20px rgba(245, 184, 61, 0.35);
+  min-height: 46px;
+  box-shadow: 0 4px 16px rgba(246, 196, 83, 0.3);
   transition: all 0.2s ease;
 }
 
 .sismo-btn-gold:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
-/* Purple Adult Button */
+/* Purple Adult / Category Button (#8B5CF6) */
 .sismo-btn-purple {
-  background: linear-gradient(135deg, #7C3AED 0%, #0D5FFF 100%);
+  background: #8B5CF6;
   color: #FFFFFF;
-  border-radius: 100px;
+  border-radius: 14px;
+  min-height: 46px;
   font-weight: 800;
   box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);
   transition: all 0.2s ease;
