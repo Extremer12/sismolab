@@ -75,11 +75,11 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
           <p className="pl-5 text-slate-300">
             {language === 'es' ? (
               <>
-                <strong>SISMO LAB</strong> es una plataforma interactiva de divulgación pedagógica, gamificación e investigación sobre autoprotección sísmica desarrollada por la empresa <strong>Zion Code</strong> para la <strong>Escuela Policía Federal Argentina</strong>.
+                <strong>SISMO LAB</strong> es una plataforma interactiva de divulgación pedagógica, gamificación e investigación sobre autoprotección sísmica desarrollada por la empresa <strong>Zion Code</strong> para la comunidad ciudadana y escolar de San Juan y la región de Cuyo.
               </>
             ) : (
               <>
-                <strong>SISMO LAB</strong> is an interactive educational platform designed by <strong>Zion Code</strong> for <strong>Escuela Policía Federal Argentina</strong> to foster civic seismic safety awareness.
+                <strong>SISMO LAB</strong> is an interactive educational platform designed by <strong>Zion Code</strong> to foster civic seismic safety awareness across San Juan and Cuyo.
               </>
             )}
           </p>

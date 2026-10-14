@@ -58,8 +58,8 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
         </p>
         <p>
           {language === 'es'
-            ? 'SISMO LAB es una iniciativa de software educativo desarrollada de forma independiente por Zion Code para la comunidad escolar de la Escuela Policía Federal Argentina (San Juan). Esta aplicación NO representa, no es una aplicación oficial, ni actúa en representación de la Policía Federal Argentina, del Gobierno de San Juan, del INPRES ni de ningún organismo estatal o gubernamental. La información sismológica y geológica proviene de registros públicos del INPRES (www.inpres.gob.ar).'
-            : 'SISMO LAB is an independent educational software initiative engineered by Zion Code for the school community. This app does not represent, is not an official app of, and does not act on behalf of the Argentine Federal Police, the Government of San Juan, INPRES, or any government entity. Seismic scientific data references public records from INPRES (www.inpres.gob.ar).'}
+            ? 'SISMO LAB es una iniciativa de software educativo desarrollada de forma independiente por Zion Code para la comunidad de San Juan y la región de Cuyo. Esta aplicación NO representa, no es una aplicación oficial, ni actúa en representación de la Policía Federal Argentina, del Gobierno de San Juan, del INPRES ni de ningún organismo estatal o gubernamental. La información sismológica y geológica proviene de registros públicos del INPRES (www.inpres.gob.ar), EMSC y USGS.'
+            : 'SISMO LAB is an independent educational software initiative engineered by Zion Code for the civic and school community of San Juan and Cuyo. This app does not represent, is not an official app of, and does not act on behalf of the Argentine Federal Police, the Government of San Juan, INPRES, or any government entity. Seismic scientific data references public records from INPRES, EMSC, and USGS.'}
         </p>
       </div>
 

@@ -190,7 +190,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
 
             <div className="space-y-2">
               <span className="text-[10px] font-black text-brand-cyan uppercase tracking-[0.25em] block">
-                ZION CODE · ESCUELA POLICÍA FEDERAL ARGENTINA
+                ZION CODE · SAN JUAN, ARGENTINA
               </span>
               <h2 className="font-black text-3xl sm:text-4xl text-white tracking-tight uppercase leading-none">
                 {isEs ? '¡Bienvenido a SISMO LAB!' : 'Welcome to SISMO LAB!'}

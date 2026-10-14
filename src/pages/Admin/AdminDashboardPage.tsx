@@ -446,9 +446,9 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           {/* Institutional Credentials & Status Line */}
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
             <div className="bg-navy-950/80 p-2.5 rounded-xl border border-white/10">
-              <span className="text-[9.5px] font-bold text-slate-400 uppercase block">Institución Escolar:</span>
-              <span className="font-black text-brand-yellow text-xs block">Escuela Policía Federal Argentina</span>
-              <span className="text-[10px] text-slate-300">Directora: Vanessa Lewyle</span>
+              <span className="text-[9.5px] font-bold text-slate-400 uppercase block">Ámbito de Aplicación:</span>
+              <span className="font-black text-brand-yellow text-xs block">Comunidad Educativa · San Juan</span>
+              <span className="text-[10px] text-slate-300">Programa de Prevención Cívica</span>
             </div>
 
             <div className="bg-navy-950/80 p-2.5 rounded-xl border border-white/10">
@@ -960,9 +960,9 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           {/* Institutional Metadata Grid */}
           <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-black text-[9pt]">
             <div className="border border-black p-2 bg-gray-50">
-              <span className="font-black text-black block uppercase">Institución Educativa Evaluada:</span>
-              <div className="font-bold text-black">Escuela Policía Federal Argentina</div>
-              <div className="text-black">Directora a Cargo: Vanessa Lewyle</div>
+              <span className="font-black text-black block uppercase">Ámbito de Implementación:</span>
+              <div className="font-bold text-black">Comunidad Educativa y Ciudadana</div>
+              <div className="text-black">Provincia de San Juan · Región Sísmica 4</div>
             </div>
             <div className="border border-black p-2 bg-gray-50">
               <span className="font-black text-black block uppercase">Desarrollo Tecnológico & Auditoría:</span>
@@ -1145,23 +1145,17 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
 
         {/* SECTION 5: INSTITUTIONAL SIGNATURES & ENDORSEMENT */}
         <div className="mt-8 pt-4 border-t-2 border-black avoid-break">
-          <div className="grid grid-cols-3 gap-6 text-center text-[8.5pt]">
+          <div className="grid grid-cols-2 gap-8 text-center text-[8.5pt] max-w-lg mx-auto">
             <div className="pt-8 border-t border-black">
-              <div className="font-black text-black">Vanessa Lewyle</div>
-              <div className="text-black">Directora de Escuela</div>
-              <div className="text-[7.5pt] text-black">Esc. Policía Federal Argentina</div>
+              <div className="font-black text-black">Cristian Bordón</div>
+              <div className="text-black">Autor & Lead Software Engineer</div>
+              <div className="text-[7.5pt] text-black">Zion Code · SISMO LAB</div>
             </div>
 
             <div className="pt-8 border-t border-black">
-              <div className="font-black text-black">Cristian Bordon</div>
-              <div className="text-black">Ingeniero de Software</div>
-              <div className="text-[7.5pt] text-black">Zion Code · SismoEdu</div>
-            </div>
-
-            <div className="pt-8 border-t border-black">
-              <div className="font-black text-black">Autoridad / Supervisor</div>
-              <div className="text-black">Ministerio de Educación / Dirección Escolar</div>
-              <div className="text-[7.5pt] text-black">Sello de Validación Institucional 2026</div>
+              <div className="font-black text-black">Dirección de Auditoría / Proyecto</div>
+              <div className="text-black">Innovación Tecnológica Educativa</div>
+              <div className="text-[7.5pt] text-black">San Juan, Argentina · 2026</div>
             </div>
           </div>
 
