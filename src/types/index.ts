@@ -26,7 +26,8 @@ export type ScreenId =
   | 'admin'
   | 'privacy'
   | 'terms'
-  | 'credits';
+  | 'credits'
+  | 'seismic';
 
 export interface UserProfile {
   id: string;

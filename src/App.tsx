@@ -39,6 +39,7 @@ const AdminDashboardPage = lazy(() => import('./pages/Admin/AdminDashboardPage')
 const PrivacyPolicyPage = lazy(() => import('./pages/Legal/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
 const TermsPage = lazy(() => import('./pages/Legal/TermsPage').then(m => ({ default: m.TermsPage })));
 const CreditsPage = lazy(() => import('./pages/Legal/CreditsPage').then(m => ({ default: m.CreditsPage })));
+const SeismicMonitorPage = lazy(() => import('./pages/Seismic/SeismicMonitorPage').then(m => ({ default: m.SeismicMonitorPage })));
 
 function AppContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>(() => {
@@ -390,6 +391,12 @@ function AppContent() {
 
           {activeScreen === 'credits' && (
             <CreditsPage
+              onNavigate={setActiveScreen}
+            />
+          )}
+
+          {activeScreen === 'seismic' && (
+            <SeismicMonitorPage
               onNavigate={setActiveScreen}
             />
           )}

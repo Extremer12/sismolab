@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Calendar, FileText } from 'lucide-react';
+import { ArrowRight, ChevronRight, Calendar, FileText, Activity } from 'lucide-react';
 import { UserProfile, ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -80,7 +80,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. RECORRIDOS EDUCATIVOS POR EDAD                                        */}
+        {/* 2. MONITOR SÍSMICO (datos reales)                                         */}
+        {/* ========================================================================= */}
+        <button
+          onClick={() => { sound.playClick(); onNavigate('seismic'); }}
+          className="w-full sismo-card-featured p-4 flex items-center gap-3.5 text-left active:scale-[0.99] transition-transform group"
+        >
+          <div className="relative w-12 h-12 rounded-2xl bg-navy-950 border border-brand-cyan/30 flex items-center justify-center text-brand-cyan shrink-0">
+            <Activity className="w-6 h-6" />
+            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-navy-900 animate-pulse" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-black text-base text-white leading-tight">
+              {language === 'es' ? 'Sismos recientes' : 'Recent earthquakes'}
+            </h2>
+            <p className="text-xs text-slate-300 mt-0.5">
+              {language === 'es' ? 'Mapa de epicentros en San Juan, Argentina y Chile' : 'Epicenter map for San Juan, Argentina and Chile'}
+            </p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-brand-cyan shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        </button>
+
+        {/* ========================================================================= */}
+        {/* 3. RECORRIDOS EDUCATIVOS POR EDAD                                        */}
         {/* ========================================================================= */}
         <div className="space-y-3 pt-1">
           <div className="flex items-center justify-between px-1">
