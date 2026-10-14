@@ -282,48 +282,94 @@ export function getCachedWorldQuakes(): QuakeFeed | null {
 }
 
 /**
- * Obtiene los sismos mundiales (M4.5+ de los últimos 7 días) desde el feed global de USGS.
+ * Obtiene los sismos mundiales (M4.5+ de los últimos 7 días).
+ * Intento 1: USGS Feed global
+ * Intento 2: EMSC Global
+ * Fallback: Caché local si no hay conexión
  */
 export async function fetchWorldQuakes(): Promise<QuakeFeed> {
-  const url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson';
+  // 1. Intento principal: USGS Global M4.5+
   try {
+    const url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson';
     const data = await fetchJson(url);
     const features: any[] = Array.isArray(data?.features) ? data.features : [];
-    const quakes: Quake[] = features
-      .filter(f => f?.properties && typeof f.properties.mag === 'number' && f.geometry?.coordinates)
-      .map(f => {
-        const p = f.properties;
-        const [lon, lat, depth] = f.geometry.coordinates;
-        const place = String(p.place || '');
-        return {
-          id: `usgs-world-${f.id}`,
-          time: Number(p.time),
-          mag: p.mag,
-          magType: String(p.magType || 'M').toUpperCase(),
-          depthKm: Math.abs(Number(depth) || 0),
-          lat: Number(lat),
-          lon: Number(lon),
-          place,
-          country: detectCountry(place),
-          source: 'USGS' as const,
-          authority: String(p.net || 'USGS').toUpperCase(),
-          url: p.url,
-        };
-      })
-      .sort((a, b) => b.time - a.time);
+    if (features.length > 0) {
+      const quakes: Quake[] = features
+        .filter(f => f?.properties && typeof f.properties.mag === 'number' && f.geometry?.coordinates)
+        .map(f => {
+          const p = f.properties;
+          const [lon, lat, depth] = f.geometry.coordinates;
+          const place = String(p.place || '');
+          return {
+            id: `usgs-world-${f.id}`,
+            time: Number(p.time),
+            mag: p.mag,
+            magType: String(p.magType || 'M').toUpperCase(),
+            depthKm: Math.abs(Number(depth) || 0),
+            lat: Number(lat),
+            lon: Number(lon),
+            place,
+            country: detectCountry(place),
+            source: 'USGS' as const,
+            authority: String(p.net || 'USGS').toUpperCase(),
+            url: p.url,
+          };
+        })
+        .sort((a, b) => b.time - a.time);
 
-    const feed: QuakeFeed = { quakes, source: 'USGS', fetchedAt: Date.now(), fromCache: false };
-    try {
-      localStorage.setItem(WORLD_CACHE_KEY, JSON.stringify(feed));
-    } catch {
-      // ignore
+      const feed: QuakeFeed = { quakes, source: 'USGS', fetchedAt: Date.now(), fromCache: false };
+      try {
+        localStorage.setItem(WORLD_CACHE_KEY, JSON.stringify(feed));
+      } catch {}
+      return feed;
     }
-    return feed;
   } catch (err) {
-    const cached = getCachedWorldQuakes();
-    if (cached) return cached;
-    throw err;
+    console.warn('[seismicService] USGS mundial no disponible, probando EMSC:', err);
   }
+
+  // 2. Intento de respaldo: EMSC Global M4.5+
+  try {
+    const url = `https://www.seismicportal.eu/fdsnws/event/1/query?format=json&orderby=time&limit=300&minmag=4.5&starttime=${startTimeIso()}`;
+    const data = await fetchJson(url);
+    const features: any[] = Array.isArray(data?.features) ? data.features : [];
+    if (features.length > 0) {
+      const quakes: Quake[] = features
+        .filter(f => f?.properties && typeof f.properties.mag === 'number')
+        .map(f => {
+          const p = f.properties;
+          const regionName = String(p.flynn_region || '');
+          return {
+            id: `emsc-world-${p.unid || f.id}`,
+            time: Date.parse(p.time),
+            mag: p.mag,
+            magType: String(p.magtype || 'M').toUpperCase(),
+            depthKm: Math.abs(Number(p.depth) || 0),
+            lat: Number(p.lat),
+            lon: Number(p.lon),
+            place: toTitleCase(regionName),
+            country: detectCountry(regionName),
+            source: 'EMSC' as const,
+            authority: p.auth || 'EMSC',
+            url: p.unid ? `https://www.seismicportal.eu/eventdetails.html?unid=${p.unid}` : undefined,
+          };
+        })
+        .filter(q => Number.isFinite(q.time) && Number.isFinite(q.lat) && Number.isFinite(q.lon))
+        .sort((a, b) => b.time - a.time);
+
+      const feed: QuakeFeed = { quakes, source: 'EMSC', fetchedAt: Date.now(), fromCache: false };
+      try {
+        localStorage.setItem(WORLD_CACHE_KEY, JSON.stringify(feed));
+      } catch {}
+      return feed;
+    }
+  } catch (err) {
+    console.warn('[seismicService] EMSC mundial falló:', err);
+  }
+
+  // 3. Fallback: datos guardados en caché si estamos sin internet
+  const cached = getCachedWorldQuakes();
+  if (cached) return cached;
+  throw new Error('No se pudo conectar con el servicio sismológico mundial.');
 }
 
 export function filterByRegion(quakes: Quake[], region: QuakeRegion): Quake[] {
