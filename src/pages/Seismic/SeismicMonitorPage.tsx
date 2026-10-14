@@ -12,8 +12,9 @@ import {
   Lightbulb,
   Layers,
   Mountain,
-  Eye,
   Globe2,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { sound } from '../../lib/sound';
@@ -47,7 +48,7 @@ const REFRESH_MS = 2 * 60 * 1000;
 const FitRegion: React.FC<{ region: QuakeRegion }> = ({ region }) => {
   const map = useMap();
   useEffect(() => {
-    map.fitBounds(REGION_BOUNDS[region], { padding: [12, 12] });
+    map.fitBounds(REGION_BOUNDS[region], { padding: [16, 16] });
   }, [map, region]);
   return null;
 };
@@ -58,6 +59,18 @@ const FocusQuake: React.FC<{ quake: Quake | null }> = ({ quake }) => {
   useEffect(() => {
     if (quake) map.panTo([quake.lat, quake.lon], { animate: true });
   }, [map, quake]);
+  return null;
+};
+
+// Reajusta el tamaño del canvas al alternar pantalla completa
+const MapResizeHandler: React.FC<{ isFullscreen: boolean }> = ({ isFullscreen }) => {
+  const map = useMap();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [map, isFullscreen]);
   return null;
 };
 
@@ -74,11 +87,36 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
   const [mapStyle, setMapStyle] = useState<MapStyle>('dark');
   const [showPlates, setShowPlates] = useState<boolean>(true);
   const [platesData, setPlatesData] = useState<any | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [showLayersMenu, setShowLayersMenu] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Quake | null>(null);
   const [now, setNow] = useState(Date.now());
+
+  // Escape key to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
+
+  // Lock scroll in fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreen]);
 
   // Carga de placas tectónicas (GeoJSON local)
   useEffect(() => {
@@ -198,6 +236,306 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
     );
   };
 
+  // Detalle del sismo seleccionado
+  const renderQuakeDetail = (isFloating: boolean = false) => {
+    if (!selected || !insight) return null;
+    return (
+      <div
+        className={`${
+          isFloating
+            ? 'fixed bottom-4 left-4 right-4 max-w-md mx-auto z-[1000] shadow-[0_10px_40px_rgba(0,0,0,0.8)] animate-in fade-in slide-in-from-bottom-4 duration-200'
+            : 'sismo-card-featured relative'
+        } p-4 space-y-3 bg-navy-950/95 backdrop-blur-2xl border border-brand-cyan/40 rounded-2xl`}
+      >
+        <button
+          onClick={() => setSelected(null)}
+          className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+          aria-label={es ? 'Cerrar' : 'Close'}
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <div className="flex items-center gap-3 pr-8">
+          <div
+            className="w-14 h-14 rounded-2xl flex flex-col items-center justify-center text-navy-950 shrink-0 shadow-lg"
+            style={{ background: magnitudeColor(selected.mag) }}
+          >
+            <span className="font-black text-xl leading-none tabular-nums">{selected.mag.toFixed(1)}</span>
+            <span className="text-[9px] font-black">{selected.magType}</span>
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-black text-sm text-white leading-snug">{selected.place}</h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {localTime(selected.time)} · {relativeTime(selected.time)}
+            </p>
+            <p className="text-xs text-slate-400">
+              {es ? 'Profundidad' : 'Depth'}: <span className="text-slate-200 font-bold">{Math.round(selected.depthKm)} km</span>
+              {authorityLabel(selected.authority) && <> · {es ? 'Reporte' : 'Report'}: {authorityLabel(selected.authority)}</>}
+            </p>
+          </div>
+        </div>
+
+        <div className="p-3 rounded-xl bg-navy-900/90 border border-brand-purple/30 space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-purple-300">
+            <Lightbulb className="w-3.5 h-3.5" />
+            <span>{es ? '¿Qué significa?' : 'What does it mean?'}</span>
+          </div>
+          <p className="text-xs text-slate-200 leading-relaxed">{insight.depth}</p>
+          <p className="text-xs text-slate-300 leading-relaxed">{insight.feel}</p>
+        </div>
+
+        {selected.url && (
+          <a
+            href={selected.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-cyan hover:text-white"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            {es ? `Ver ficha oficial en ${selected.source}` : `View on ${selected.source}`}
+          </a>
+        )}
+      </div>
+    );
+  };
+
+  // Contenido del Mapa y sus Controles Flotantes
+  const renderMapBlock = () => (
+    <div
+      className={`relative isolate overflow-hidden bg-navy-950 transition-all duration-300 ${
+        isFullscreen
+          ? 'fixed inset-0 z-50 w-screen h-screen'
+          : 'rounded-2xl border border-white/10 h-80 sm:h-96'
+      }`}
+    >
+      <MapContainer
+        bounds={REGION_BOUNDS[region]}
+        className="w-full h-full"
+        style={{ background: '#061321' }}
+        zoomControl={false}
+        attributionControl={false}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          key={mapStyle + '-base'}
+          url={currentTileConfig.base}
+          attribution={currentTileConfig.attribution}
+          maxZoom={currentTileConfig.maxZoom}
+        />
+        {currentTileConfig.reference && (
+          <TileLayer
+            key={mapStyle + '-ref'}
+            url={currentTileConfig.reference}
+            maxZoom={currentTileConfig.maxZoom}
+          />
+        )}
+
+        {/* Capa de Placas Tectónicas */}
+        {showPlates && platesData && (
+          <GeoJSON
+            key={'plates-' + mapStyle}
+            data={platesData}
+            style={{
+              color: mapStyle === 'terrain' ? '#EA580C' : '#22D3EE',
+              weight: 2,
+              opacity: 0.85,
+              dashArray: '5, 5',
+            }}
+            onEachFeature={onEachPlateFeature}
+          />
+        )}
+
+        <FitRegion region={region} />
+        <FocusQuake quake={selected} />
+        <MapResizeHandler isFullscreen={isFullscreen} />
+
+        {[...quakes].reverse().map(q => {
+          const isSel = selected?.id === q.id;
+          const color = magnitudeColor(q.mag);
+          return (
+            <CircleMarker
+              key={q.id}
+              center={[q.lat, q.lon]}
+              radius={magnitudeRadius(q.mag)}
+              pathOptions={{
+                color: isSel ? '#FFFFFF' : color,
+                weight: isSel ? 3 : 1.5,
+                fillColor: color,
+                fillOpacity: isSel ? 0.9 : 0.45,
+              }}
+              eventHandlers={{ click: () => { sound.playClick(); setSelected(q); } }}
+            />
+          );
+        })}
+      </MapContainer>
+
+      {/* TOP FLOATING OVERLAY: Pantalla Completa & Selector de Región */}
+      <div className="absolute top-3 left-3 right-3 z-[500] flex items-center justify-between gap-2 pointer-events-none">
+        {/* Izquierda: Botón volver si está en fullscreen o Badge de estado */}
+        <div className="pointer-events-auto flex items-center gap-1.5">
+          {isFullscreen ? (
+            <button
+              onClick={() => { sound.playClick(); setIsFullscreen(false); }}
+              className="h-9 px-3 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-white hover:border-brand-cyan/50 text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 transition-all"
+              aria-label={es ? 'Salir de pantalla completa' : 'Exit fullscreen'}
+            >
+              <Minimize2 className="w-4 h-4 text-brand-cyan" />
+              <span className="hidden sm:inline">{es ? 'Cerrar' : 'Close'}</span>
+            </button>
+          ) : (
+            <div className="px-2.5 py-1.5 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5 shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-white tabular-nums font-black">{quakes.length}</span>
+              <span className="text-slate-400">{es ? 'sismos' : 'quakes'}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Centro: Selector de Regiones Minimalista (Flotante) */}
+        {isFullscreen && (
+          <div className="pointer-events-auto flex items-center gap-1 p-1 rounded-2xl bg-navy-950/85 backdrop-blur-md border border-white/15 shadow-xl">
+            {(Object.keys(regionLabels) as QuakeRegion[]).map(r => {
+              const active = region === r;
+              return (
+                <button
+                  key={r}
+                  onClick={() => { sound.playClick(); setRegion(r); setSelected(null); }}
+                  className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all truncate ${
+                    active
+                      ? 'bg-brand-cyan text-navy-950 shadow-glow-cyan'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  {regionLabels[r]}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Derecha: Botón Pantalla Completa & Refresco */}
+        <div className="pointer-events-auto flex items-center gap-1.5">
+          <button
+            onClick={() => {
+              sound.playClick();
+              if (region === 'world') loadWorld();
+              else loadRegional();
+            }}
+            disabled={isLoading}
+            className="w-9 h-9 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-brand-cyan hover:text-white flex items-center justify-center shadow-lg active:scale-95 transition-all disabled:opacity-60"
+            title={es ? 'Actualizar sismos' : 'Refresh'}
+            aria-label={es ? 'Actualizar' : 'Refresh'}
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+
+          <button
+            onClick={() => {
+              sound.playClick();
+              setIsFullscreen(prev => !prev);
+            }}
+            className="w-9 h-9 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-brand-cyan hover:text-white flex items-center justify-center shadow-lg active:scale-95 transition-all"
+            title={isFullscreen ? (es ? 'Reducir mapa' : 'Exit fullscreen') : (es ? 'Ver mapa a pantalla grande' : 'Fullscreen map')}
+            aria-label={isFullscreen ? 'Reducir mapa' : 'Pantalla completa'}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* FLOATING ACTION PILLS: Capas & Placas (Esquina Superior/Media Derecha) */}
+      <div className="absolute top-14 right-3 z-[500] flex flex-col items-end gap-1.5 pointer-events-auto">
+        {/* Desplegable o Botones de Capas */}
+        <div className="flex items-center gap-1">
+          {showLayersMenu && (
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-navy-950/90 backdrop-blur-md border border-white/15 shadow-xl animate-in fade-in zoom-in-95 duration-150">
+              <button
+                onClick={() => { sound.playClick(); setMapStyle('dark'); setShowLayersMenu(false); }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
+                  mapStyle === 'dark' ? 'bg-brand-cyan text-navy-950' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <span>🌑</span>
+                <span>{es ? 'Oscuro' : 'Dark'}</span>
+              </button>
+              <button
+                onClick={() => { sound.playClick(); setMapStyle('satellite'); }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
+                  mapStyle === 'satellite' ? 'bg-brand-cyan text-navy-950' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <span>🛰️</span>
+                <span>{es ? 'Satélite' : 'Satellite'}</span>
+              </button>
+              <button
+                onClick={() => { sound.playClick(); setMapStyle('terrain'); }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
+                  mapStyle === 'terrain' ? 'bg-brand-cyan text-navy-950' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <Mountain className="w-3 h-3" />
+                <span>{es ? 'Relieve' : 'Terrain'}</span>
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={() => { sound.playClick(); setShowLayersMenu(prev => !prev); }}
+            className={`w-9 h-9 rounded-xl backdrop-blur-md border flex items-center justify-center shadow-lg transition-all active:scale-95 ${
+              showLayersMenu
+                ? 'bg-brand-cyan text-navy-950 border-brand-cyan'
+                : 'bg-navy-950/85 border-white/15 text-slate-300 hover:text-white'
+            }`}
+            title={es ? 'Cambiar estilo de mapa' : 'Change map style'}
+            aria-label={es ? 'Estilos de mapa' : 'Map styles'}
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Toggle de Placas Tectónicas */}
+        <button
+          onClick={() => { sound.playClick(); setShowPlates(prev => !prev); }}
+          className={`h-9 px-2.5 rounded-xl backdrop-blur-md border text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg transition-all active:scale-95 ${
+            showPlates
+              ? 'bg-navy-950/90 border-brand-purple/60 text-purple-300 shadow-glow-purple'
+              : 'bg-navy-950/85 border-white/15 text-slate-400 hover:text-white'
+          }`}
+          title={es ? 'Fallas y límites de placas tectónicas' : 'Tectonic plates'}
+        >
+          <Globe2 className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">{es ? 'Placas' : 'Plates'}</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${showPlates ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'}`} />
+        </button>
+      </div>
+
+      {/* Legend & Attribution Flotante */}
+      <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-[10px] font-bold text-slate-300 shadow-xl pointer-events-auto">
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#F6C453]" />&lt;3.5</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#F97316]" />3.5–5</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />5+</span>
+        {showPlates && (
+          <span className="flex items-center gap-1 pl-1.5 border-l border-white/20 text-brand-cyan">
+            <span className="w-2.5 h-0.5 border-t-2 border-dashed border-brand-cyan" />
+            <span className="text-[9px] uppercase tracking-wider">{es ? 'Placas' : 'Plates'}</span>
+          </span>
+        )}
+      </div>
+
+      {isLoading && !activeFeed && (
+        <div className="absolute inset-0 z-[500] flex items-center justify-center bg-navy-950/75 backdrop-blur-sm text-xs font-bold text-slate-300">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-navy-900 border border-white/10 shadow-2xl">
+            <RefreshCw className="w-4 h-4 animate-spin text-brand-cyan" />
+            <span>{es ? 'Cargando sismos…' : 'Loading earthquakes…'}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Detalle flotante en pantalla completa */}
+      {isFullscreen && renderQuakeDetail(true)}
+    </div>
+  );
+
   return (
     <div className="p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto select-none font-sans">
       {/* Header */}
@@ -241,7 +579,7 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
         </p>
       </div>
 
-      {/* Region filter */}
+      {/* Region filter (Pill horizontal limpio) */}
       <div className="grid grid-cols-4 gap-1.5">
         {(Object.keys(regionLabels) as QuakeRegion[]).map(r => {
           const active = region === r;
@@ -276,196 +614,11 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
         </div>
       )}
 
-      {/* Map Control Toolbar: Map Styles & Tectonic Plates Toggle */}
-      <div className="flex items-center justify-between gap-2 p-1.5 rounded-2xl bg-navy-900/90 border border-white/10 text-xs">
-        {/* Style Selector */}
-        <div className="flex items-center gap-1 bg-navy-950/70 p-1 rounded-xl border border-white/5">
-          <button
-            onClick={() => { sound.playClick(); setMapStyle('dark'); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-              mapStyle === 'dark'
-                ? 'bg-brand-cyan text-navy-950 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>🌑</span>
-            <span>{es ? 'Oscuro' : 'Dark'}</span>
-          </button>
-          <button
-            onClick={() => { sound.playClick(); setMapStyle('satellite'); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-              mapStyle === 'satellite'
-                ? 'bg-brand-cyan text-navy-950 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>🛰️</span>
-            <span>{es ? 'Satélite' : 'Satellite'}</span>
-          </button>
-          <button
-            onClick={() => { sound.playClick(); setMapStyle('terrain'); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-              mapStyle === 'terrain'
-                ? 'bg-brand-cyan text-navy-950 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Mountain className="w-3 h-3" />
-            <span>{es ? 'Relieve' : 'Terrain'}</span>
-          </button>
-        </div>
+      {/* Map Block with Fullscreen Support and Floating Controls */}
+      {renderMapBlock()}
 
-        {/* Tectonic Plates Toggle */}
-        <button
-          onClick={() => { sound.playClick(); setShowPlates(prev => !prev); }}
-          className={`px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
-            showPlates
-              ? 'bg-brand-purple/20 border-brand-purple text-purple-300 shadow-glow-purple'
-              : 'bg-navy-950/70 border-white/10 text-slate-400 hover:text-white'
-          }`}
-          title={es ? 'Activar o desactivar fallas y límites de placas tectónicas' : 'Toggle tectonic plate boundaries'}
-        >
-          <Globe2 className="w-3.5 h-3.5" />
-          <span>{es ? 'Placas' : 'Plates'}</span>
-          <span className={`w-1.5 h-1.5 rounded-full ${showPlates ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'}`} />
-        </button>
-      </div>
-
-      {/* Map */}
-      <div className="relative z-0 isolate rounded-2xl overflow-hidden border border-white/10 h-80 bg-navy-950">
-        <MapContainer
-          bounds={REGION_BOUNDS[region]}
-          className="w-full h-full"
-          style={{ background: '#061321' }}
-          zoomControl={false}
-          attributionControl
-          scrollWheelZoom={false}
-        >
-          <TileLayer
-            key={mapStyle + '-base'}
-            url={currentTileConfig.base}
-            attribution={currentTileConfig.attribution}
-            maxZoom={currentTileConfig.maxZoom}
-          />
-          {currentTileConfig.reference && (
-            <TileLayer
-              key={mapStyle + '-ref'}
-              url={currentTileConfig.reference}
-              maxZoom={currentTileConfig.maxZoom}
-            />
-          )}
-
-          {/* Capa de Placas Tectónicas */}
-          {showPlates && platesData && (
-            <GeoJSON
-              key={'plates-' + mapStyle}
-              data={platesData}
-              style={{
-                color: mapStyle === 'terrain' ? '#EA580C' : '#22D3EE',
-                weight: 2,
-                opacity: 0.85,
-                dashArray: '5, 5',
-              }}
-              onEachFeature={onEachPlateFeature}
-            />
-          )}
-
-          <FitRegion region={region} />
-          <FocusQuake quake={selected} />
-
-          {[...quakes].reverse().map(q => {
-            const isSel = selected?.id === q.id;
-            const color = magnitudeColor(q.mag);
-            return (
-              <CircleMarker
-                key={q.id}
-                center={[q.lat, q.lon]}
-                radius={magnitudeRadius(q.mag)}
-                pathOptions={{
-                  color: isSel ? '#FFFFFF' : color,
-                  weight: isSel ? 3 : 1.5,
-                  fillColor: color,
-                  fillOpacity: isSel ? 0.85 : 0.45,
-                }}
-                eventHandlers={{ click: () => { sound.playClick(); setSelected(q); } }}
-              />
-            );
-          })}
-        </MapContainer>
-
-        {/* Legend */}
-        <div className="absolute bottom-2 left-2 z-[500] flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-navy-950/85 backdrop-blur-md border border-white/10 text-[10px] font-bold text-slate-300">
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#F6C453]" />&lt;3.5</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#F97316]" />3.5–5</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />5+</span>
-          {showPlates && (
-            <span className="flex items-center gap-1 pl-1 border-l border-white/20 text-brand-cyan">
-              <span className="w-3 h-0.5 border-t-2 border-dashed border-brand-cyan" />
-              <span>{es ? 'Placas' : 'Plates'}</span>
-            </span>
-          )}
-        </div>
-
-        {isLoading && !activeFeed && (
-          <div className="absolute inset-0 z-[500] flex items-center justify-center bg-navy-950/70 text-xs font-bold text-slate-300">
-            {es ? 'Cargando sismos…' : 'Loading earthquakes…'}
-          </div>
-        )}
-      </div>
-
-      {/* Selected quake detail + educational pill */}
-      {selected && insight && (
-        <div className="sismo-card-featured p-4 space-y-3 relative">
-          <button
-            onClick={() => setSelected(null)}
-            className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white"
-            aria-label={es ? 'Cerrar' : 'Close'}
-          >
-            <X className="w-4 h-4" />
-          </button>
-
-          <div className="flex items-center gap-3 pr-8">
-            <div
-              className="w-14 h-14 rounded-2xl flex flex-col items-center justify-center text-navy-950 shrink-0"
-              style={{ background: magnitudeColor(selected.mag) }}
-            >
-              <span className="font-black text-xl leading-none tabular-nums">{selected.mag.toFixed(1)}</span>
-              <span className="text-[9px] font-black">{selected.magType}</span>
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-black text-sm text-white leading-snug">{selected.place}</h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {localTime(selected.time)} · {relativeTime(selected.time)}
-              </p>
-              <p className="text-xs text-slate-400">
-                {es ? 'Profundidad' : 'Depth'}: <span className="text-slate-200 font-bold">{Math.round(selected.depthKm)} km</span>
-                {authorityLabel(selected.authority) && <> · {es ? 'Reporte' : 'Report'}: {authorityLabel(selected.authority)}</>}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-navy-950/80 border border-brand-purple/30 space-y-1.5">
-            <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-purple-300">
-              <Lightbulb className="w-3.5 h-3.5" />
-              <span>{es ? '¿Qué significa?' : 'What does it mean?'}</span>
-            </div>
-            <p className="text-xs text-slate-200 leading-relaxed">{insight.depth}</p>
-            <p className="text-xs text-slate-300 leading-relaxed">{insight.feel}</p>
-          </div>
-
-          {selected.url && (
-            <a
-              href={selected.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-cyan hover:text-white"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              {es ? `Ver ficha en ${selected.source}` : `View on ${selected.source}`}
-            </a>
-          )}
-        </div>
-      )}
+      {/* Selected quake detail in standard embedded view */}
+      {!isFullscreen && renderQuakeDetail(false)}
 
       {/* Summary */}
       {activeFeed && (
