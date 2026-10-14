@@ -119,12 +119,12 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*/i,
+            urlPattern: /^https:\/\/server\.arcgisonline\.com\/ArcGIS\/rest\/services\/Canvas\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'map-tiles-cache',
+              cacheName: 'esri-map-tiles-cache',
               expiration: {
-                maxEntries: 300,
+                maxEntries: 500,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               },
               cacheableResponse: {
