@@ -1,1 +1,5 @@
+# Clave de subida (Upload Key - Keystore local):
 0F:75:4C:7E:45:25:6B:BF:6B:E9:90:CB:6A:8F:90:78:D3:35:EF:59:80:57:10:1D:09:A2:03:D2:24:D2:8F:E3
+
+# Clave oficial de firma de Google Play (Play App Signing - Producción):
+88:B2:55:F6:04:B6:AD:88:B1:A2:2E:2A:8D:C8:B9:A8:58:E3:C1:E4:0E:03:DA:DB:06:5C:B7:4D:B5:D2:9E:3E
