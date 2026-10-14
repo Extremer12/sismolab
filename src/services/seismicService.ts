@@ -10,8 +10,72 @@
 // demora. Esto NO es un sistema de alerta temprana.
 // =========================================================================
 
-export type QuakeRegion = 'sanjuan' | 'argentina' | 'chile';
+export type QuakeRegion = 'sanjuan' | 'argentina' | 'chile' | 'world';
 export type QuakeSource = 'EMSC' | 'USGS';
+
+export type MapStyle = 'dark' | 'satellite' | 'terrain';
+
+export interface TileLayerConfig {
+  base: string;
+  reference?: string;
+  attribution: string;
+  maxZoom: number;
+}
+
+export const MAP_STYLES: Record<MapStyle, TileLayerConfig> = {
+  dark: {
+    base: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    reference: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri &copy; OpenStreetMap',
+    maxZoom: 16,
+  },
+  satellite: {
+    base: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    reference: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+    maxZoom: 18,
+  },
+  terrain: {
+    base: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, HERE, Garmin, USGS',
+    maxZoom: 16,
+  },
+};
+
+export const PLATE_NAMES: Record<string, string> = {
+  AF: 'Placa Africana',
+  AN: 'Placa Antártica',
+  AP: 'Placa Altiplano',
+  AR: 'Placa Arábiga',
+  AU: 'Placa Australiana',
+  CA: 'Placa del Caribe',
+  CO: 'Placa de Cocos',
+  CP: 'Placa Capricornio',
+  CR: 'Placa Somalí',
+  EA: 'Placa Isla de Pascua',
+  EU: 'Placa Euroasiática',
+  GP: 'Placa Galápagos',
+  IN: 'Placa de la India',
+  JF: 'Placa de Juan de Fuca',
+  JZ: 'Placa Juan Fernández',
+  MS: 'Placa de Manus',
+  NA: 'Placa Norteamericana',
+  ND: 'Placa de los Andes del Norte',
+  NZ: 'Placa de Nazca',
+  OK: 'Placa de Okhotsk',
+  PA: 'Placa del Pacífico',
+  PH: 'Placa Filipina',
+  PM: 'Placa de Panamá',
+  PS: 'Placa del Mar de Filipinas',
+  RI: 'Placa de Rivera',
+  SA: 'Placa Sudamericana',
+  SC: 'Placa de Scotia',
+  SL: 'Placa de Sandwich del Sur',
+  SO: 'Placa Somalí',
+  SU: 'Placa de Sonda',
+  TO: 'Placa de Tonga',
+  YA: 'Placa de Yangtsé',
+};
 
 export interface Quake {
   id: string;
@@ -40,6 +104,7 @@ const AREA = { minLat: -56, maxLat: -17, minLon: -80, maxLon: -52 };
 const DAYS_BACK = 7;
 const TIMEOUT_MS = 10000;
 const CACHE_KEY = 'sismolab_quakes_cache_v1';
+const WORLD_CACHE_KEY = 'sismolab_world_quakes_cache_v1';
 
 // Límites aproximados de la provincia de San Juan (con un pequeño margen)
 const SAN_JUAN_BOX = { minLat: -32.7, maxLat: -28.2, minLon: -70.7, maxLon: -66.5 };
@@ -48,6 +113,7 @@ export const REGION_BOUNDS: Record<QuakeRegion, [[number, number], [number, numb
   sanjuan: [[-32.7, -70.7], [-28.2, -66.5]],
   argentina: [[-55, -73.6], [-21.8, -53.6]],
   chile: [[-56, -76], [-17.5, -66.4]],
+  world: [[-58, -165], [68, 165]],
 };
 
 const AUTHORITY_LABELS: Record<string, string> = {
@@ -204,7 +270,64 @@ export function getCachedQuakes(): QuakeFeed | null {
   return readCache();
 }
 
+export function getCachedWorldQuakes(): QuakeFeed | null {
+  try {
+    const raw = localStorage.getItem(WORLD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as QuakeFeed;
+    return Array.isArray(parsed?.quakes) ? { ...parsed, fromCache: true } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Obtiene los sismos mundiales (M4.5+ de los últimos 7 días) desde el feed global de USGS.
+ */
+export async function fetchWorldQuakes(): Promise<QuakeFeed> {
+  const url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson';
+  try {
+    const data = await fetchJson(url);
+    const features: any[] = Array.isArray(data?.features) ? data.features : [];
+    const quakes: Quake[] = features
+      .filter(f => f?.properties && typeof f.properties.mag === 'number' && f.geometry?.coordinates)
+      .map(f => {
+        const p = f.properties;
+        const [lon, lat, depth] = f.geometry.coordinates;
+        const place = String(p.place || '');
+        return {
+          id: `usgs-world-${f.id}`,
+          time: Number(p.time),
+          mag: p.mag,
+          magType: String(p.magType || 'M').toUpperCase(),
+          depthKm: Math.abs(Number(depth) || 0),
+          lat: Number(lat),
+          lon: Number(lon),
+          place,
+          country: detectCountry(place),
+          source: 'USGS' as const,
+          authority: String(p.net || 'USGS').toUpperCase(),
+          url: p.url,
+        };
+      })
+      .sort((a, b) => b.time - a.time);
+
+    const feed: QuakeFeed = { quakes, source: 'USGS', fetchedAt: Date.now(), fromCache: false };
+    try {
+      localStorage.setItem(WORLD_CACHE_KEY, JSON.stringify(feed));
+    } catch {
+      // ignore
+    }
+    return feed;
+  } catch (err) {
+    const cached = getCachedWorldQuakes();
+    if (cached) return cached;
+    throw err;
+  }
+}
+
 export function filterByRegion(quakes: Quake[], region: QuakeRegion): Quake[] {
+  if (region === 'world') return quakes;
   if (region === 'argentina') return quakes.filter(q => q.country === 'AR');
   if (region === 'chile') return quakes.filter(q => q.country === 'CL');
   return quakes.filter(

@@ -1,19 +1,37 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, useMap, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, RefreshCw, Activity, Info, X, ExternalLink, WifiOff, Lightbulb } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Activity,
+  Info,
+  X,
+  ExternalLink,
+  WifiOff,
+  Lightbulb,
+  Layers,
+  Mountain,
+  Eye,
+  Globe2,
+} from 'lucide-react';
 import { ScreenId } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
 import {
+  MAP_STYLES,
+  MapStyle,
+  PLATE_NAMES,
   Quake,
   QuakeFeed,
   QuakeRegion,
   REGION_BOUNDS,
   authorityLabel,
   fetchRecentQuakes,
+  fetchWorldQuakes,
   filterByRegion,
   getCachedQuakes,
+  getCachedWorldQuakes,
   getQuakeInsight,
   magnitudeColor,
   magnitudeRadius,
@@ -47,38 +65,92 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
   const { language } = useLanguage();
   const es = language === 'es';
 
-  const [feed, setFeed] = useState<QuakeFeed | null>(() => getCachedQuakes());
+  // Feeds
+  const [regionalFeed, setRegionalFeed] = useState<QuakeFeed | null>(() => getCachedQuakes());
+  const [worldFeed, setWorldFeed] = useState<QuakeFeed | null>(() => getCachedWorldQuakes());
   const [region, setRegion] = useState<QuakeRegion>('sanjuan');
+
+  // Map settings
+  const [mapStyle, setMapStyle] = useState<MapStyle>('dark');
+  const [showPlates, setShowPlates] = useState<boolean>(true);
+  const [platesData, setPlatesData] = useState<any | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Quake | null>(null);
   const [now, setNow] = useState(Date.now());
 
-  const load = useCallback(async () => {
+  // Carga de placas tectónicas (GeoJSON local)
+  useEffect(() => {
+    if (showPlates && !platesData) {
+      fetch('/data/tectonicplates.json')
+        .then(r => r.json())
+        .then(d => setPlatesData(d))
+        .catch(e => console.warn('No se pudo cargar placas tectónicas:', e));
+    }
+  }, [showPlates, platesData]);
+
+  // Carga feed regional (San Juan / Argentina / Chile)
+  const loadRegional = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await fetchRecentQuakes();
-      setFeed(data);
+      setRegionalFeed(data);
       setError(null);
     } catch {
-      setError(es ? 'No pudimos conectar con los servicios sismológicos.' : 'Could not reach seismic services.');
+      setError(es ? 'No pudimos conectar con los servicios sismológicos regionales.' : 'Could not reach regional seismic services.');
     } finally {
       setIsLoading(false);
       setNow(Date.now());
     }
   }, [es]);
 
+  // Carga feed mundial (USGS M4.5+)
+  const loadWorld = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchWorldQuakes();
+      setWorldFeed(data);
+      setError(null);
+    } catch {
+      setError(es ? 'No pudimos conectar con el feed sismológico mundial.' : 'Could not reach global seismic feed.');
+    } finally {
+      setIsLoading(false);
+      setNow(Date.now());
+    }
+  }, [es]);
+
+  // Auto-refresco inicial y periódico
   useEffect(() => {
-    load();
-    const id = setInterval(load, REFRESH_MS);
+    loadRegional();
+    const id = setInterval(() => {
+      if (region === 'world') {
+        loadWorld();
+      } else {
+        loadRegional();
+      }
+    }, REFRESH_MS);
     const tick = setInterval(() => setNow(Date.now()), 30000);
     return () => {
       clearInterval(id);
       clearInterval(tick);
     };
-  }, [load]);
+  }, [loadRegional, loadWorld, region]);
 
-  const quakes = useMemo(() => (feed ? filterByRegion(feed.quakes, region) : []), [feed, region]);
+  // Si cambia a 'world' y no hay datos, cargar
+  useEffect(() => {
+    if (region === 'world' && !worldFeed) {
+      loadWorld();
+    }
+  }, [region, worldFeed, loadWorld]);
+
+  const activeFeed = region === 'world' ? worldFeed : regionalFeed;
+
+  const quakes = useMemo(() => {
+    if (!activeFeed) return [];
+    return filterByRegion(activeFeed.quakes, region);
+  }, [activeFeed, region]);
+
   const strongest = useMemo(
     () => quakes.reduce<Quake | null>((max, q) => (!max || q.mag > max.mag ? q : max), null),
     [quakes]
@@ -106,9 +178,25 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
     sanjuan: 'San Juan',
     argentina: 'Argentina',
     chile: 'Chile',
+    world: es ? 'Mundo 🌍' : 'World 🌍',
   };
 
   const insight = selected ? getQuakeInsight(selected, es ? 'es' : 'en') : null;
+  const currentTileConfig = MAP_STYLES[mapStyle];
+
+  const onEachPlateFeature = (feature: any, layer: any) => {
+    const p = feature?.properties || {};
+    const nameA = PLATE_NAMES[p.plateA] || p.plateA || 'Placa';
+    const nameB = PLATE_NAMES[p.plateB] || p.plateB || 'Placa';
+    layer.bindPopup(
+      `<div style="font-family: system-ui, sans-serif; font-size: 11px; color: #061321; font-weight: 700; padding: 2px;">
+        <div style="font-size: 9px; color: #0284c7; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px; margin-bottom: 2px;">
+          ${es ? 'Límite de Placas Tectónicas' : 'Tectonic Plate Boundary'}
+        </div>
+        <div>${nameA} ↔ ${nameB}</div>
+      </div>`
+    );
+  };
 
   return (
     <div className="p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto select-none font-sans">
@@ -123,13 +211,17 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
         </button>
 
         <div className="px-3.5 py-1.5 rounded-full bg-navy-900/90 border border-brand-cyan/30 text-brand-cyan font-black text-xs uppercase tracking-wider flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${error && !feed ? 'bg-slate-500' : 'bg-emerald-400 animate-pulse'}`} />
+          <span className={`w-2 h-2 rounded-full ${error && !activeFeed ? 'bg-slate-500' : 'bg-emerald-400 animate-pulse'}`} />
           <Activity className="w-3.5 h-3.5" />
           <span>{es ? 'Monitor sísmico' : 'Seismic monitor'}</span>
         </div>
 
         <button
-          onClick={() => { sound.playClick(); load(); }}
+          onClick={() => {
+            sound.playClick();
+            if (region === 'world') loadWorld();
+            else loadRegional();
+          }}
           disabled={isLoading}
           className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-brand-cyan hover:text-white disabled:opacity-60"
           aria-label={es ? 'Actualizar' : 'Refresh'}
@@ -144,22 +236,22 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
           {es ? 'Sismos' : 'Recent'} <span className="text-brand-cyan">{es ? 'recientes' : 'earthquakes'}</span>
         </h1>
         <p className="text-xs text-slate-400 font-medium">
-          {es ? 'Últimos 7 días' : 'Last 7 days'}
-          {feed && ` · ${es ? 'Actualizado' : 'Updated'} ${relativeTime(feed.fetchedAt)}`}
+          {region === 'world' ? (es ? 'Últimos 7 días · Global M4.5+' : 'Last 7 days · Global M4.5+') : (es ? 'Últimos 7 días' : 'Last 7 days')}
+          {activeFeed && ` · ${es ? 'Actualizado' : 'Updated'} ${relativeTime(activeFeed.fetchedAt)}`}
         </p>
       </div>
 
       {/* Region filter */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         {(Object.keys(regionLabels) as QuakeRegion[]).map(r => {
           const active = region === r;
           return (
             <button
               key={r}
               onClick={() => { sound.playClick(); setRegion(r); setSelected(null); }}
-              className={`min-h-[42px] rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+              className={`min-h-[42px] px-1 rounded-xl text-[11px] font-black uppercase tracking-tight transition-all truncate ${
                 active
-                  ? 'bg-brand-cyan text-navy-950'
+                  ? 'bg-brand-cyan text-navy-950 shadow-glow-cyan'
                   : 'bg-navy-900/90 text-slate-300 border border-white/10 hover:border-brand-cyan/40'
               }`}
               aria-pressed={active}
@@ -171,23 +263,78 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
       </div>
 
       {/* Offline / error notice */}
-      {(error || feed?.fromCache) && (
+      {(error || activeFeed?.fromCache) && (
         <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-xs text-amber-200">
           <WifiOff className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
-            {feed
+            {activeFeed
               ? (es
-                  ? `Sin conexión: mostrando los datos guardados (${relativeTime(feed.fetchedAt)}).`
-                  : `Offline: showing saved data (${relativeTime(feed.fetchedAt)}).`)
+                  ? `Sin conexión: mostrando los datos guardados (${relativeTime(activeFeed.fetchedAt)}).`
+                  : `Offline: showing saved data (${relativeTime(activeFeed.fetchedAt)}).`)
               : error}
           </span>
         </div>
       )}
 
+      {/* Map Control Toolbar: Map Styles & Tectonic Plates Toggle */}
+      <div className="flex items-center justify-between gap-2 p-1.5 rounded-2xl bg-navy-900/90 border border-white/10 text-xs">
+        {/* Style Selector */}
+        <div className="flex items-center gap-1 bg-navy-950/70 p-1 rounded-xl border border-white/5">
+          <button
+            onClick={() => { sound.playClick(); setMapStyle('dark'); }}
+            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+              mapStyle === 'dark'
+                ? 'bg-brand-cyan text-navy-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>🌑</span>
+            <span>{es ? 'Oscuro' : 'Dark'}</span>
+          </button>
+          <button
+            onClick={() => { sound.playClick(); setMapStyle('satellite'); }}
+            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+              mapStyle === 'satellite'
+                ? 'bg-brand-cyan text-navy-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>🛰️</span>
+            <span>{es ? 'Satélite' : 'Satellite'}</span>
+          </button>
+          <button
+            onClick={() => { sound.playClick(); setMapStyle('terrain'); }}
+            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+              mapStyle === 'terrain'
+                ? 'bg-brand-cyan text-navy-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Mountain className="w-3 h-3" />
+            <span>{es ? 'Relieve' : 'Terrain'}</span>
+          </button>
+        </div>
+
+        {/* Tectonic Plates Toggle */}
+        <button
+          onClick={() => { sound.playClick(); setShowPlates(prev => !prev); }}
+          className={`px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
+            showPlates
+              ? 'bg-brand-purple/20 border-brand-purple text-purple-300 shadow-glow-purple'
+              : 'bg-navy-950/70 border-white/10 text-slate-400 hover:text-white'
+          }`}
+          title={es ? 'Activar o desactivar fallas y límites de placas tectónicas' : 'Toggle tectonic plate boundaries'}
+        >
+          <Globe2 className="w-3.5 h-3.5" />
+          <span>{es ? 'Placas' : 'Plates'}</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${showPlates ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'}`} />
+        </button>
+      </div>
+
       {/* Map */}
-      <div className="relative z-0 isolate rounded-2xl overflow-hidden border border-white/10 h-72 bg-navy-950">
+      <div className="relative z-0 isolate rounded-2xl overflow-hidden border border-white/10 h-80 bg-navy-950">
         <MapContainer
-          bounds={REGION_BOUNDS.sanjuan}
+          bounds={REGION_BOUNDS[region]}
           className="w-full h-full"
           style={{ background: '#061321' }}
           zoomControl={false}
@@ -195,14 +342,34 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
           scrollWheelZoom={false}
         >
           <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-            attribution='&copy; <a href="https://www.esri.com/" target="_blank" rel="noreferrer">Esri</a> &copy; OpenStreetMap'
-            maxZoom={16}
+            key={mapStyle + '-base'}
+            url={currentTileConfig.base}
+            attribution={currentTileConfig.attribution}
+            maxZoom={currentTileConfig.maxZoom}
           />
-          <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
-            maxZoom={16}
-          />
+          {currentTileConfig.reference && (
+            <TileLayer
+              key={mapStyle + '-ref'}
+              url={currentTileConfig.reference}
+              maxZoom={currentTileConfig.maxZoom}
+            />
+          )}
+
+          {/* Capa de Placas Tectónicas */}
+          {showPlates && platesData && (
+            <GeoJSON
+              key={'plates-' + mapStyle}
+              data={platesData}
+              style={{
+                color: mapStyle === 'terrain' ? '#EA580C' : '#22D3EE',
+                weight: 2,
+                opacity: 0.85,
+                dashArray: '5, 5',
+              }}
+              onEachFeature={onEachPlateFeature}
+            />
+          )}
+
           <FitRegion region={region} />
           <FocusQuake quake={selected} />
 
@@ -227,13 +394,19 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
         </MapContainer>
 
         {/* Legend */}
-        <div className="absolute bottom-2 left-2 z-[500] flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-navy-950/85 border border-white/10 text-[10px] font-bold text-slate-300">
+        <div className="absolute bottom-2 left-2 z-[500] flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-navy-950/85 backdrop-blur-md border border-white/10 text-[10px] font-bold text-slate-300">
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#F6C453]" />&lt;3.5</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#F97316]" />3.5–5</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />5+</span>
+          {showPlates && (
+            <span className="flex items-center gap-1 pl-1 border-l border-white/20 text-brand-cyan">
+              <span className="w-3 h-0.5 border-t-2 border-dashed border-brand-cyan" />
+              <span>{es ? 'Placas' : 'Plates'}</span>
+            </span>
+          )}
         </div>
 
-        {isLoading && !feed && (
+        {isLoading && !activeFeed && (
           <div className="absolute inset-0 z-[500] flex items-center justify-center bg-navy-950/70 text-xs font-bold text-slate-300">
             {es ? 'Cargando sismos…' : 'Loading earthquakes…'}
           </div>
@@ -295,7 +468,7 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
       )}
 
       {/* Summary */}
-      {feed && (
+      {activeFeed && (
         <div className="grid grid-cols-2 gap-2.5">
           <div className="sismo-card p-3 text-center">
             <span className="text-xl font-black text-brand-cyan tabular-nums block">{quakes.length}</span>
@@ -320,7 +493,7 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
           {es ? 'Últimos registros' : 'Latest events'}
         </h2>
 
-        {feed && quakes.length === 0 && (
+        {activeFeed && quakes.length === 0 && (
           <div className="sismo-card p-4 text-center text-sm text-slate-400">
             {es ? 'No hay sismos registrados en esta zona en los últimos 7 días.' : 'No earthquakes recorded in this area in the last 7 days.'}
           </div>
