@@ -369,145 +369,139 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
         })}
       </MapContainer>
 
-      {/* TOP FLOATING OVERLAY: Pantalla Completa & Selector de Región */}
-      <div className="absolute top-3 left-3 right-3 z-[500] flex items-center justify-between gap-2 pointer-events-none">
-        {/* Izquierda: Botón volver si está en fullscreen o Badge de estado */}
-        <div className="pointer-events-auto flex items-center gap-1.5">
-          {isFullscreen ? (
-            <button
-              onClick={() => { sound.playClick(); setIsFullscreen(false); }}
-              className="h-9 px-3 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-white hover:border-brand-cyan/50 text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 transition-all"
-              aria-label={es ? 'Salir de pantalla completa' : 'Exit fullscreen'}
-            >
-              <Minimize2 className="w-4 h-4 text-brand-cyan" />
-              <span className="hidden sm:inline">{es ? 'Cerrar' : 'Close'}</span>
-            </button>
-          ) : (
-            <div className="px-2.5 py-1.5 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5 shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-white tabular-nums font-black">{quakes.length}</span>
-              <span className="text-slate-400">{es ? 'sismos' : 'quakes'}</span>
-            </div>
-          )}
+      {/* ========================================================================= */}
+      {/* 1. MODO NORMAL (EMBEBIDO): ÚNICAMENTE BOTÓN LIMPIO DE PANTALLA GRANDE     */}
+      {/* ========================================================================= */}
+      {!isFullscreen && (
+        <div className="absolute top-3 right-3 z-[500] pointer-events-auto">
+          <button
+            onClick={() => { sound.playClick(); setIsFullscreen(true); }}
+            className="h-9 px-3 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 hover:border-brand-cyan/60 text-brand-cyan hover:text-white flex items-center gap-1.5 shadow-xl active:scale-95 transition-all text-xs font-bold"
+            title={es ? 'Ver mapa a pantalla grande' : 'Fullscreen map'}
+            aria-label={es ? 'Pantalla grande' : 'Fullscreen'}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span className="text-[10.5px] font-black uppercase tracking-wider">{es ? 'Pantalla grande' : 'Fullscreen'}</span>
+          </button>
         </div>
+      )}
 
-        {/* Centro: Selector de Regiones Minimalista (Flotante) */}
-        {isFullscreen && (
-          <div className="pointer-events-auto flex items-center gap-1 p-1 rounded-2xl bg-navy-950/85 backdrop-blur-md border border-white/15 shadow-xl">
-            {(Object.keys(regionLabels) as QuakeRegion[]).map(r => {
-              const active = region === r;
-              return (
+      {/* ========================================================================= */}
+      {/* 2. MODO PANTALLA GRANDE: CONTROLES SIMÉTRICOS, ORDENADOS Y ESTÉTICOS      */}
+      {/* ========================================================================= */}
+      {isFullscreen && (
+        <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2.5 pointer-events-none">
+          {/* Fila Principal Superior: Salir (Izq) | Herramientas (Der) */}
+          <div className="flex items-center justify-between gap-2">
+            {/* Lado Izquierdo: Botón Salir + Estado En Vivo */}
+            <div className="pointer-events-auto flex items-center gap-2">
+              <button
+                onClick={() => { sound.playClick(); setIsFullscreen(false); }}
+                className="h-10 px-3.5 rounded-2xl bg-navy-950/90 backdrop-blur-xl border border-white/15 text-white hover:border-brand-cyan/60 text-xs font-bold flex items-center gap-2 shadow-2xl active:scale-95 transition-all"
+                aria-label={es ? 'Salir de pantalla grande' : 'Exit fullscreen'}
+              >
+                <Minimize2 className="w-4 h-4 text-brand-cyan" />
+                <span className="font-black text-xs uppercase tracking-wider">{es ? 'Salir' : 'Exit'}</span>
+              </button>
+
+              <div className="hidden sm:flex items-center gap-2 h-10 px-3 rounded-2xl bg-navy-950/90 backdrop-blur-xl border border-white/15 text-xs shadow-2xl">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-black text-white tabular-nums">{quakes.length}</span>
+                <span className="text-slate-400 text-[11px] uppercase tracking-wider">{es ? 'sismos' : 'quakes'}</span>
+              </div>
+            </div>
+
+            {/* Lado Derecho: Capas de mapa + Placas + Refresco */}
+            <div className="pointer-events-auto flex items-center gap-1.5">
+              {/* Selector de Capa de Mapa */}
+              <div className="flex items-center gap-1 p-1 rounded-2xl bg-navy-950/90 backdrop-blur-xl border border-white/15 shadow-2xl">
                 <button
-                  key={r}
-                  onClick={() => { sound.playClick(); setRegion(r); setSelected(null); }}
-                  className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all truncate ${
-                    active
-                      ? 'bg-brand-cyan text-navy-950 shadow-glow-cyan'
-                      : 'text-slate-300 hover:text-white'
+                  onClick={() => { sound.playClick(); setMapStyle('dark'); }}
+                  className={`h-8 px-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
+                    mapStyle === 'dark' ? 'bg-brand-cyan text-navy-950 shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
+                  title={es ? 'Mapa oscuro' : 'Dark map'}
                 >
-                  {regionLabels[r]}
+                  <span>🌑</span>
+                  <span className="hidden md:inline">{es ? 'Oscuro' : 'Dark'}</span>
                 </button>
-              );
-            })}
-          </div>
-        )}
+                <button
+                  onClick={() => { sound.playClick(); setMapStyle('satellite'); }}
+                  className={`h-8 px-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
+                    mapStyle === 'satellite' ? 'bg-brand-cyan text-navy-950 shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title={es ? 'Mapa satelital' : 'Satellite map'}
+                >
+                  <span>🛰️</span>
+                  <span className="hidden md:inline">{es ? 'Satélite' : 'Satellite'}</span>
+                </button>
+                <button
+                  onClick={() => { sound.playClick(); setMapStyle('terrain'); }}
+                  className={`h-8 px-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
+                    mapStyle === 'terrain' ? 'bg-brand-cyan text-navy-950 shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title={es ? 'Mapa de relieve' : 'Terrain map'}
+                >
+                  <Mountain className="w-3 h-3" />
+                  <span className="hidden md:inline">{es ? 'Relieve' : 'Terrain'}</span>
+                </button>
+              </div>
 
-        {/* Derecha: Botón Pantalla Completa & Refresco */}
-        <div className="pointer-events-auto flex items-center gap-1.5">
-          <button
-            onClick={() => {
-              sound.playClick();
-              if (region === 'world') loadWorld();
-              else loadRegional();
-            }}
-            disabled={isLoading}
-            className="w-9 h-9 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-brand-cyan hover:text-white flex items-center justify-center shadow-lg active:scale-95 transition-all disabled:opacity-60"
-            title={es ? 'Actualizar sismos' : 'Refresh'}
-            aria-label={es ? 'Actualizar' : 'Refresh'}
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-
-          <button
-            onClick={() => {
-              sound.playClick();
-              setIsFullscreen(prev => !prev);
-            }}
-            className="w-9 h-9 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-brand-cyan hover:text-white flex items-center justify-center shadow-lg active:scale-95 transition-all"
-            title={isFullscreen ? (es ? 'Reducir mapa' : 'Exit fullscreen') : (es ? 'Ver mapa a pantalla grande' : 'Fullscreen map')}
-            aria-label={isFullscreen ? 'Reducir mapa' : 'Pantalla completa'}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
-
-      {/* FLOATING ACTION PILLS: Capas & Placas (Esquina Superior/Media Derecha) */}
-      <div className="absolute top-14 right-3 z-[500] flex flex-col items-end gap-1.5 pointer-events-auto">
-        {/* Desplegable o Botones de Capas */}
-        <div className="flex items-center gap-1">
-          {showLayersMenu && (
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-navy-950/90 backdrop-blur-md border border-white/15 shadow-xl animate-in fade-in zoom-in-95 duration-150">
+              {/* Botón Placas */}
               <button
-                onClick={() => { sound.playClick(); setMapStyle('dark'); setShowLayersMenu(false); }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
-                  mapStyle === 'dark' ? 'bg-brand-cyan text-navy-950' : 'text-slate-300 hover:text-white'
+                onClick={() => { sound.playClick(); setShowPlates(prev => !prev); }}
+                className={`h-10 px-3 rounded-2xl backdrop-blur-xl border text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-2xl transition-all active:scale-95 ${
+                  showPlates
+                    ? 'bg-navy-950/90 border-brand-purple/60 text-purple-300 shadow-glow-purple'
+                    : 'bg-navy-950/90 border-white/15 text-slate-400 hover:text-white'
                 }`}
+                title={es ? 'Límites de placas tectónicas' : 'Tectonic plates'}
               >
-                <span>🌑</span>
-                <span>{es ? 'Oscuro' : 'Dark'}</span>
+                <Globe2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{es ? 'Placas' : 'Plates'}</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${showPlates ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'}`} />
               </button>
+
+              {/* Botón Refresco */}
               <button
-                onClick={() => { sound.playClick(); setMapStyle('satellite'); }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
-                  mapStyle === 'satellite' ? 'bg-brand-cyan text-navy-950' : 'text-slate-300 hover:text-white'
-                }`}
+                onClick={() => {
+                  sound.playClick();
+                  if (region === 'world') loadWorld();
+                  else loadRegional();
+                }}
+                disabled={isLoading}
+                className="w-10 h-10 rounded-2xl bg-navy-950/90 backdrop-blur-xl border border-white/15 text-brand-cyan hover:text-white flex items-center justify-center shadow-2xl active:scale-95 transition-all disabled:opacity-60"
+                title={es ? 'Actualizar' : 'Refresh'}
+                aria-label={es ? 'Actualizar' : 'Refresh'}
               >
-                <span>🛰️</span>
-                <span>{es ? 'Satélite' : 'Satellite'}</span>
-              </button>
-              <button
-                onClick={() => { sound.playClick(); setMapStyle('terrain'); }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
-                  mapStyle === 'terrain' ? 'bg-brand-cyan text-navy-950' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                <Mountain className="w-3 h-3" />
-                <span>{es ? 'Relieve' : 'Terrain'}</span>
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
             </div>
-          )}
+          </div>
 
-          <button
-            onClick={() => { sound.playClick(); setShowLayersMenu(prev => !prev); }}
-            className={`w-9 h-9 rounded-xl backdrop-blur-md border flex items-center justify-center shadow-lg transition-all active:scale-95 ${
-              showLayersMenu
-                ? 'bg-brand-cyan text-navy-950 border-brand-cyan'
-                : 'bg-navy-950/85 border-white/15 text-slate-300 hover:text-white'
-            }`}
-            title={es ? 'Cambiar estilo de mapa' : 'Change map style'}
-            aria-label={es ? 'Estilos de mapa' : 'Map styles'}
-          >
-            <Layers className="w-4 h-4" />
-          </button>
+          {/* Fila Secundaria: Selector de Región Centrado */}
+          <div className="flex justify-center pointer-events-auto">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-navy-950/90 backdrop-blur-xl border border-white/15 shadow-2xl max-w-full overflow-x-auto">
+              {(Object.keys(regionLabels) as QuakeRegion[]).map(r => {
+                const active = region === r;
+                return (
+                  <button
+                    key={r}
+                    onClick={() => { sound.playClick(); setRegion(r); setSelected(null); }}
+                    className={`h-8 px-3 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                      active
+                        ? 'bg-brand-cyan text-navy-950 shadow-glow-cyan'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    {regionLabels[r]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
-
-        {/* Toggle de Placas Tectónicas */}
-        <button
-          onClick={() => { sound.playClick(); setShowPlates(prev => !prev); }}
-          className={`h-9 px-2.5 rounded-xl backdrop-blur-md border text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg transition-all active:scale-95 ${
-            showPlates
-              ? 'bg-navy-950/90 border-brand-purple/60 text-purple-300 shadow-glow-purple'
-              : 'bg-navy-950/85 border-white/15 text-slate-400 hover:text-white'
-          }`}
-          title={es ? 'Fallas y límites de placas tectónicas' : 'Tectonic plates'}
-        >
-          <Globe2 className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">{es ? 'Placas' : 'Plates'}</span>
-          <span className={`w-1.5 h-1.5 rounded-full ${showPlates ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'}`} />
-        </button>
-      </div>
+      )}
 
       {/* Legend & Attribution Flotante */}
       <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-navy-950/85 backdrop-blur-md border border-white/15 text-[10px] font-bold text-slate-300 shadow-xl pointer-events-auto">
@@ -531,7 +525,7 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
         </div>
       )}
 
-      {/* Detalle flotante en pantalla completa */}
+      {/* Detalle flotante en pantalla grande */}
       {isFullscreen && renderQuakeDetail(true)}
     </div>
   );
@@ -614,7 +608,64 @@ export const SeismicMonitorPage: React.FC<SeismicMonitorPageProps> = ({ onNaviga
         </div>
       )}
 
-      {/* Map Block with Fullscreen Support and Floating Controls */}
+      {/* Map Control Toolbar in Embedded View */}
+      {!isFullscreen && (
+        <div className="flex items-center justify-between gap-2 p-1.5 rounded-2xl bg-navy-900/90 border border-white/10 text-xs">
+          {/* Style Selector */}
+          <div className="flex items-center gap-1 bg-navy-950/70 p-1 rounded-xl border border-white/5">
+            <button
+              onClick={() => { sound.playClick(); setMapStyle('dark'); }}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                mapStyle === 'dark'
+                  ? 'bg-brand-cyan text-navy-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>🌑</span>
+              <span>{es ? 'Oscuro' : 'Dark'}</span>
+            </button>
+            <button
+              onClick={() => { sound.playClick(); setMapStyle('satellite'); }}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                mapStyle === 'satellite'
+                  ? 'bg-brand-cyan text-navy-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>🛰️</span>
+              <span>{es ? 'Satélite' : 'Satellite'}</span>
+            </button>
+            <button
+              onClick={() => { sound.playClick(); setMapStyle('terrain'); }}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                mapStyle === 'terrain'
+                  ? 'bg-brand-cyan text-navy-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Mountain className="w-3 h-3" />
+              <span>{es ? 'Relieve' : 'Terrain'}</span>
+            </button>
+          </div>
+
+          {/* Tectonic Plates Toggle */}
+          <button
+            onClick={() => { sound.playClick(); setShowPlates(prev => !prev); }}
+            className={`px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
+              showPlates
+                ? 'bg-brand-purple/20 border-brand-purple text-purple-300 shadow-glow-purple'
+                : 'bg-navy-950/70 border-white/10 text-slate-400 hover:text-white'
+            }`}
+            title={es ? 'Activar o desactivar fallas y límites de placas tectónicas' : 'Toggle tectonic plate boundaries'}
+          >
+            <Globe2 className="w-3.5 h-3.5" />
+            <span>{es ? 'Placas' : 'Plates'}</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${showPlates ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'}`} />
+          </button>
+        </div>
+      )}
+
+      {/* Map Block with Fullscreen Support and Clean Visuals */}
       {renderMapBlock()}
 
       {/* Selected quake detail in standard embedded view */}
