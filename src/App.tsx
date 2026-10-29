@@ -41,6 +41,8 @@ const TermsPage = lazy(() => import('./pages/Legal/TermsPage').then(m => ({ defa
 const CreditsPage = lazy(() => import('./pages/Legal/CreditsPage').then(m => ({ default: m.CreditsPage })));
 const SeismicMonitorPage = lazy(() => import('./pages/Seismic/SeismicMonitorPage').then(m => ({ default: m.SeismicMonitorPage })));
 const PreparednessPage = lazy(() => import('./pages/Emergency/PreparednessPage').then(m => ({ default: m.PreparednessPage })));
+const BackpackPage = lazy(() => import('./pages/Backpack/BackpackPage').then(m => ({ default: m.BackpackPage })));
+const FamilyPlanPage = lazy(() => import('./pages/Family/FamilyPlanPage').then(m => ({ default: m.FamilyPlanPage })));
 
 function AppContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>(() => {
@@ -404,6 +406,18 @@ function AppContent() {
 
           {activeScreen === 'preparedness' && (
             <PreparednessPage
+              onNavigate={setActiveScreen}
+            />
+          )}
+
+          {activeScreen === 'backpack' && (
+            <BackpackPage
+              onNavigate={setActiveScreen}
+            />
+          )}
+
+          {activeScreen === 'family' && (
+            <FamilyPlanPage
               onNavigate={setActiveScreen}
             />
           )}

@@ -28,7 +28,9 @@ export type ScreenId =
   | 'terms'
   | 'credits'
   | 'seismic'
-  | 'preparedness';
+  | 'preparedness'
+  | 'backpack'
+  | 'family';
 
 export interface UserProfile {
   id: string;
@@ -204,4 +206,82 @@ export interface AdminMetrics {
   adultsPercentage: number;
   popularGames: { name: string; count: number }[];
   difficultQuestions: { question: string; errorRate: number }[];
+}
+
+// -------------------------------------------------------------------------
+// MODELO: GRUPO FAMILIAR & PLAN DE AUTOPROTECCIÓN
+// -------------------------------------------------------------------------
+
+export type EmergencyRole = 
+  | 'cortar_suministros'   // Cortar llave de gas y disyuntor de luz
+  | 'llevar_mochila'       // Tomar y trasladar la mochila 72h
+  | 'asistir_vulnerables'  // Asistir a menores, adultos mayores o mascotas
+  | 'coordinador'          // Guía de la ruta y conteo en punto seguro
+  | 'comunicacion';        // Reporte a contacto fuera de la provincia
+
+export type MemberStatus = 'safe' | 'need_help' | 'unknown';
+
+export interface FamilyMember {
+  id: string;
+  name: string;
+  relation: string; // ej: "Titular", "Hijo/a", "Pareja", "Abuelo/a", "Mascota"
+  is_dependent: boolean;
+  role: EmergencyRole;
+  status: MemberStatus;
+  status_updated_at?: string;
+  phone?: string;
+}
+
+export interface FamilyPlan {
+  id: string;
+  family_name: string;
+  invite_code: string;
+  meeting_point_primary: string; // ej: "Plaza 25 de Mayo (Mitre y Mendoza)"
+  meeting_point_secondary: string; // ej: "Parque de Mayo, zona despejada"
+  out_of_province_contact: {
+    name: string;
+    phone: string;
+    city: string;
+  };
+  members: FamilyMember[];
+  updated_at: string;
+}
+
+// -------------------------------------------------------------------------
+// MODELO: MOCHILA DE EMERGENCIA 72 HORAS (INVENTARIO REAL)
+// -------------------------------------------------------------------------
+
+export type BackpackCategory = 
+  | 'agua'
+  | 'alimentos'
+  | 'botiquin'
+  | 'iluminacion'
+  | 'comunicacion'
+  | 'documentos'
+  | 'abrigo'
+  | 'higiene'
+  | 'herramientas'
+  | 'especiales';
+
+export interface BackpackItem {
+  id: string;
+  category: BackpackCategory;
+  name: string;
+  description: string;
+  quantity: number;
+  required_quantity: number;
+  unit: string; // 'L', 'u.', 'paq.', 'pilas'
+  is_packed: boolean;
+  expiry_date?: string; // YYYY-MM-DD
+  is_perishable: boolean;
+}
+
+export interface PreparednessIndex {
+  totalScore: number; // 0 - 100
+  backpackScore: number; // 0 - 40
+  familyRolesScore: number; // 0 - 25
+  meetingPointsScore: number; // 0 - 20
+  expiryHealthScore: number; // 0 - 15
+  missingItemsCount: number;
+  expiringItemsCount: number;
 }

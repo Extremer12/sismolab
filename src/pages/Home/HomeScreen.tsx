@@ -1,8 +1,9 @@
-import React from 'react';
-import { ArrowRight, ChevronRight, Calendar, FileText, Activity, ShieldAlert } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, ChevronRight, Calendar, FileText, Activity, ShieldAlert, ShoppingBag, Users, CheckCircle2 } from 'lucide-react';
 import { UserProfile, ScreenId, UserMode } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { loadFamilyPlan, loadBackpackInventory, calculatePreparednessIndex } from '../../services/familyBackpackService';
 
 interface HomeScreenProps {
   user: UserProfile;
@@ -16,6 +17,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigate
 }) => {
   const { t, language } = useLanguage();
+
+  const [familyPlan] = useState(() => loadFamilyPlan(user.display_name || user.nickname));
+  const [backpackItems] = useState(() => loadBackpackInventory(familyPlan.members.length));
+  const preparedness = calculatePreparednessIndex(familyPlan, backpackItems);
 
   const handleLaunchKids = () => {
     sound.playClick();
@@ -80,7 +85,79 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. MONITOR SÍSMICO (datos reales)                                         */}
+        {/* 2. ÍNDICE DE PREPARACIÓN FAMILIAR & ACCESOS RÁPIDOS                      */}
+        {/* ========================================================================= */}
+        <section className="p-4 rounded-2xl bg-gradient-to-br from-navy-900 via-navy-900 to-navy-850 border border-brand-cyan/25 shadow-card-navy space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-mono font-black uppercase tracking-widest text-brand-cyan block">
+                {language === 'es' ? 'NIVEL DE PROTECCIÓN HOGAR' : 'HOME PROTECTION INDEX'}
+              </span>
+              <h2 className="font-black text-sm text-white uppercase tracking-tight">
+                {language === 'es' ? 'Preparación Familiar' : 'Family Readiness'}
+              </h2>
+            </div>
+            <div className="text-right">
+              <span className="font-mono text-xl font-black text-brand-cyan tabular-nums block">
+                {preparedness.totalScore}%
+              </span>
+            </div>
+          </div>
+
+          {/* Barra de progreso */}
+          <div className="w-full h-2 rounded-full bg-navy-950 border border-white/10 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-brand-cyan to-emerald-400 transition-all duration-500"
+              style={{ width: `${preparedness.totalScore}%` }}
+            />
+          </div>
+
+          {/* Grid de 2 accesos tácticos: Mochila + Familia */}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {/* Tarjeta Mochila */}
+            <button
+              onClick={() => { sound.playClick(); onNavigate('backpack'); }}
+              className="p-3 rounded-xl bg-navy-950/80 border border-white/10 hover:border-brand-gold/40 text-left transition-all active:scale-95 group"
+            >
+              <div className="flex items-center justify-between text-brand-gold mb-1.5">
+                <ShoppingBag className="w-4 h-4" />
+                <span className="text-[10px] font-mono font-bold">
+                  {backpackItems.filter(i => i.is_packed).length}/{backpackItems.length}
+                </span>
+              </div>
+              <h3 className="font-black text-xs text-white group-hover:text-brand-gold transition-colors truncate">
+                {language === 'es' ? 'Mochila 72h' : 'Emergency Kit'}
+              </h3>
+              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                {preparedness.missingItemsCount > 0 
+                  ? (language === 'es' ? `Faltan ${preparedness.missingItemsCount} insumos` : `${preparedness.missingItemsCount} items missing`)
+                  : (language === 'es' ? 'Completada 100%' : '100% Ready')}
+              </p>
+            </button>
+
+            {/* Tarjeta Familia */}
+            <button
+              onClick={() => { sound.playClick(); onNavigate('family'); }}
+              className="p-3 rounded-xl bg-navy-950/80 border border-white/10 hover:border-brand-purple/40 text-left transition-all active:scale-95 group"
+            >
+              <div className="flex items-center justify-between text-purple-300 mb-1.5">
+                <Users className="w-4 h-4" />
+                <span className="text-[10px] font-mono font-bold">
+                  {familyPlan.members.length} {language === 'es' ? 'miembros' : 'members'}
+                </span>
+              </div>
+              <h3 className="font-black text-xs text-white group-hover:text-purple-300 transition-colors truncate">
+                {language === 'es' ? 'Plan Familiar' : 'Family Plan'}
+              </h3>
+              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                {familyPlan.invite_code} · {language === 'es' ? 'Roles listos' : 'Roles set'}
+              </p>
+            </button>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 3. MONITOR SÍSMICO (datos reales)                                         */}
         {/* ========================================================================= */}
         <button
           onClick={() => { sound.playClick(); onNavigate('seismic'); }}

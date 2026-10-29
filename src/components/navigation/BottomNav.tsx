@@ -33,7 +33,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const playScreen = userMode === 'kids' ? 'kids' : 'adults';
 
   const navItems = [
-    { id: 'home' as ScreenId, label: t.nav.home, icon: Home, matches: ['home', 'preparedness'] },
+    { id: 'home' as ScreenId, label: t.nav.home, icon: Home, matches: ['home', 'preparedness', 'backpack', 'family'] },
     { id: 'history' as ScreenId, label: t.nav.history, icon: Compass, matches: ['history'] },
     { id: playScreen as ScreenId, label: t.nav.play, icon: Gamepad2, matches: ['kids', 'adults'] },
     { id: 'ranking' as ScreenId, label: t.nav.ranking, icon: Trophy, matches: ['ranking'] },
