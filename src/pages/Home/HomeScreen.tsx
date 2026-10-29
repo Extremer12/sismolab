@@ -102,30 +102,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </button>
 
         {/* ========================================================================= */}
-        {/* 3. GUÍAS Y EMERGENCIAS (San Juan · Súper Niño)                             */}
+        {/* 3. MANUAL DE CONTINGENCIAS Y EMERGENCIAS                                  */}
         {/* ========================================================================= */}
         <button
           onClick={() => { sound.playClick(); onNavigate('preparedness'); }}
-          className="w-full rounded-2xl p-4 bg-gradient-to-r from-navy-900 via-navy-900 to-amber-950/40 border border-brand-gold/40 hover:border-brand-gold flex items-center gap-3.5 text-left active:scale-[0.99] transition-all group shadow-md"
+          className="w-full rounded-2xl p-4 bg-navy-900/80 border border-white/10 hover:border-white/25 flex items-center gap-3.5 text-left active:scale-[0.99] transition-all group"
         >
-          <div className="relative w-12 h-12 rounded-2xl bg-navy-950 border border-brand-gold/40 flex items-center justify-center text-brand-gold shrink-0 shadow-[0_0_15px_rgba(246,196,83,0.25)]">
-            <ShieldAlert className="w-6 h-6" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-brand-yellow border-2 border-navy-900 animate-ping" style={{ animationDuration: '3s' }} />
+          <div className="w-11 h-11 rounded-xl bg-navy-950 border border-white/15 flex items-center justify-center text-slate-300 shrink-0 group-hover:border-brand-cyan/40 group-hover:text-white transition-colors">
+            <ShieldAlert className="w-5 h-5 stroke-[1.8]" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-brand-yellow px-1.5 py-0.5 rounded bg-brand-yellow/15 border border-brand-yellow/30">
-                {language === 'es' ? 'NUEVO · AUTOPROTECCIÓN' : 'NEW · PREPAREDNESS'}
-              </span>
-            </div>
-            <h2 className="font-black text-base text-white leading-tight mt-1">
-              {language === 'es' ? 'Guías y Emergencias' : 'Guides & Emergencies'}
+            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 block">
+              {language === 'es' ? 'AUTOPROTECCIÓN CIUDADANA' : 'CITIZEN PREPAREDNESS'}
+            </span>
+            <h2 className="font-black text-base text-white tracking-tight leading-tight mt-0.5">
+              {language === 'es' ? 'Líneas y Manual de Emergencia' : 'Hotlines & Emergency Manual'}
             </h2>
-            <p className="text-xs text-slate-300 mt-0.5">
-              {language === 'es' ? 'Números útiles, alertas Súper Niño y protocolos' : 'Hotlines, El Niño guides and protocols'}
+            <p className="text-xs text-slate-300 mt-0.5 truncate">
+              {language === 'es' ? 'Llamada directa 911 / 107 / 103 · Protocolos El Niño' : 'Direct lines 911 / 107 / 103 · El Niño protocols'}
             </p>
           </div>
-          <ChevronRight className="w-5 h-5 text-brand-gold shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-white shrink-0 group-hover:translate-x-0.5 transition-transform" />
         </button>
 
         {/* ========================================================================= */}

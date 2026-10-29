@@ -1,22 +1,14 @@
 import React, { useState } from 'react';
 import {
   ArrowLeft,
-  PhoneCall,
-  ShieldAlert,
-  CloudLightning,
-  Waves,
-  Wind,
-  Bug,
-  ZapOff,
-  Activity,
-  Smartphone,
-  Info,
-  ChevronDown,
-  ExternalLink,
-  Flame,
-  CheckCircle2,
+  Phone,
   Copy,
-  Check
+  Check,
+  ExternalLink,
+  ShieldAlert,
+  SlidersHorizontal,
+  ChevronRight,
+  Info
 } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -35,12 +27,22 @@ interface PreparednessPageProps {
   onNavigate: (screen: ScreenId) => void;
 }
 
+type PreparednessSection = 'emergency' | 'protocols' | 'elnino' | 'alerts';
+
 export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
   const es = language === 'es';
 
+  // State: Tab de navegación principal (organizado en vistas dedicadas, sin scroll interminable)
+  const [currentSection, setCurrentSection] = useState<PreparednessSection>('emergency');
+  
+  // State: Amenaza activa dentro de protocolos
   const [selectedHazardId, setSelectedHazardId] = useState<HazardId>('tormenta');
-  const [activeStepTab, setActiveStepTab] = useState<'before' | 'during' | 'after'>('during');
+  
+  // State: Fase de acción (Antes / Durante / Después)
+  const [activePhase, setActivePhase] = useState<'before' | 'during' | 'after'>('during');
+
+  // State: Feedback visual al copiar número
   const [copiedNumber, setCopiedNumber] = useState<string | null>(null);
 
   const selectedHazard = HAZARD_GUIDES.find((h) => h.id === selectedHazardId) || HAZARD_GUIDES[0];
@@ -54,397 +56,435 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
     setTimeout(() => setCopiedNumber(null), 2000);
   };
 
-  const getHazardIcon = (id: HazardId) => {
-    switch (id) {
-      case 'tormenta':
-        return <CloudLightning className="w-5 h-5 text-sky-400" />;
-      case 'aluvion':
-        return <Waves className="w-5 h-5 text-amber-400" />;
-      case 'sismo':
-        return <Activity className="w-5 h-5 text-brand-cyan" />;
-      case 'zonda':
-        return <Wind className="w-5 h-5 text-orange-400" />;
-      case 'dengue':
-        return <Bug className="w-5 h-5 text-lime-400" />;
-      case 'corte-luz':
-        return <ZapOff className="w-5 h-5 text-violet-400" />;
-    }
-  };
-
-  const getNumberColorClass = (tone: 'red' | 'orange' | 'cyan' | 'emerald') => {
-    switch (tone) {
-      case 'red':
-        return {
-          badge: 'bg-red-500/20 text-red-300 border-red-500/40',
-          btn: 'bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.4)]',
-          border: 'border-red-500/30 hover:border-red-500/60',
-        };
-      case 'orange':
-        return {
-          badge: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
-          btn: 'bg-orange-600 hover:bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]',
-          border: 'border-orange-500/30 hover:border-orange-500/60',
-        };
-      case 'cyan':
-        return {
-          badge: 'bg-brand-cyan/20 text-cyan-300 border-brand-cyan/40',
-          btn: 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(32,217,245,0.4)]',
-          border: 'border-brand-cyan/30 hover:border-brand-cyan/60',
-        };
-      case 'emerald':
-        return {
-          badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-          btn: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]',
-          border: 'border-emerald-500/30 hover:border-emerald-500/60',
-        };
-    }
-  };
+  const sections = [
+    { id: 'emergency' as PreparednessSection, code: '01', label: es ? 'Líneas SOS' : 'Hotlines' },
+    { id: 'protocols' as PreparednessSection, code: '02', label: es ? 'Protocolos' : 'Protocols' },
+    { id: 'elnino' as PreparednessSection, code: '03', label: es ? 'El Niño SJ' : 'El Niño SJ' },
+    { id: 'alerts' as PreparednessSection, code: '04', label: es ? 'Alerta Móvil' : 'Mobile Alert' },
+  ];
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 p-4 sm:p-6 pb-28 max-w-xl mx-auto font-sans selection:bg-brand-cyan selection:text-navy-950">
+    <div className="min-h-screen bg-[#070e17] text-slate-100 flex flex-col font-sans selection:bg-white selection:text-black">
       
-      {/* 1. Header con botón volver */}
-      <header className="flex items-center justify-between pb-4 border-b border-white/10">
-        <button
-          onClick={() => {
-            sound.playClick();
-            onNavigate('home');
-          }}
-          className="w-10 h-10 rounded-full bg-navy-900 border border-white/10 hover:border-brand-cyan/50 flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-95"
-          aria-label={es ? 'Volver al inicio' : 'Back to home'}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+      {/* ========================================================================= */}
+      {/* 1. TOP HEADER INSTITUCIONAL Y NAVEGACIÓN SUPERIOR                         */}
+      {/* ========================================================================= */}
+      <header className="sticky top-0 z-30 bg-[#070e17]/95 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <button
+            onClick={() => {
+              sound.playClick();
+              onNavigate('home');
+            }}
+            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+            aria-label={es ? 'Volver al inicio' : 'Back to home'}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{es ? 'Inicio' : 'Home'}</span>
+          </button>
 
-        <div className="text-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-cyan block">
-            {es ? 'AUTOPROTECCIÓN CIUDADANA' : 'CITIZEN SELF-PROTECTION'}
-          </span>
-          <h1 className="font-black text-lg sm:text-xl text-white tracking-tight uppercase">
-            {es ? 'Guías y Emergencias' : 'Guides & Emergencies'}
-          </h1>
-        </div>
-
-        <div className="w-10" />
-      </header>
-
-      {/* 2. Sección Números de Emergencia San Juan (Acceso Rápido) */}
-      <section className="pt-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <PhoneCall className="w-4 h-4 text-brand-cyan" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-300">
-              {es ? 'Números de Emergencia · San Juan' : 'Emergency Numbers · San Juan'}
-            </h2>
-          </div>
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-            {es ? 'Llamada directa 24 h' : 'Direct 24/7 call'}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {EMERGENCY_NUMBERS.map((item) => {
-            const styles = getNumberColorClass(item.tone);
-            const isCopied = copiedNumber === item.number;
-
-            return (
-              <div
-                key={item.number}
-                className={`p-3.5 rounded-2xl bg-navy-900/80 border ${styles.border} flex flex-col justify-between gap-3 transition-all`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-black text-2xl tracking-tight text-white">
-                      {item.number}
-                    </span>
-                    <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${styles.badge}`}>
-                      {item.name[language]}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 mt-1 leading-snug">
-                    {item.description[language]}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <a
-                    href={`tel:${item.number}`}
-                    onClick={() => sound.playClick()}
-                    className={`flex-1 py-2 px-3 rounded-xl ${styles.btn} flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider transition-transform active:scale-95`}
-                  >
-                    <PhoneCall className="w-3.5 h-3.5" />
-                    <span>{es ? 'Llamar' : 'Call'}</span>
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(item.number)}
-                    className="p-2 rounded-xl bg-navy-950 border border-white/10 hover:border-brand-cyan/40 text-slate-400 hover:text-white transition-all active:scale-95"
-                    title={es ? 'Copiar número' : 'Copy number'}
-                  >
-                    {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 3. Especial: Temporada Súper Niño en San Juan */}
-      <section className="pt-6 space-y-3">
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-navy-900 via-navy-900 to-sky-950/40 border border-sky-400/30 relative overflow-hidden space-y-3">
-          <div className="absolute -top-12 -right-12 w-36 h-36 bg-sky-400/10 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-sky-400/20 border border-sky-400/40 text-sky-300 font-black text-[10px] uppercase tracking-wider">
-              <CloudLightning className="w-3.5 h-3.5" />
-              <span>{es ? 'TEMPORADA CLIMÁTICA' : 'CLIMATE SEASON'}</span>
-            </div>
-            <span className="text-[11px] font-bold text-sky-200">
-              {es ? 'El Niño en San Juan' : 'El Niño in San Juan'}
+          <div className="text-right">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block font-mono">
+              MANUAL DE AUTOPROTECCIÓN
+            </span>
+            <span className="text-xs font-bold text-slate-200 block">
+              San Juan · Cuyo
             </span>
           </div>
-
-          <div>
-            <h3 className="font-black text-lg text-white tracking-tight leading-snug">
-              {es ? '¿Cómo impacta El Niño en nuestra provincia?' : 'How does El Niño impact our province?'}
-            </h3>
-            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-              {es
-                ? 'A diferencia de otras regiones del país donde desbordan grandes ríos, en San Juan el impacto principal se da en tormentas cortas pero muy intensas, bajadas de creciente en badenes y mayor proliferación de mosquitos.'
-                : 'Unlike other regions with major river overflows, San Juan mainly experiences short but intense storms, flash floods in dry fords, and higher mosquito activity.'}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {EL_NINO_IMPACTS.map((impact, i) => (
-              <div
-                key={i}
-                className="p-3 rounded-xl bg-navy-950/70 border border-white/5 space-y-1"
-              >
-                <div className="flex items-center gap-2 text-white font-bold text-xs">
-                  <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
-                  <span>{impact.title[language]}</span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-snug">
-                  {impact.text[language]}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Guías por Amenaza (Antes / Durante / Después) */}
-      <section className="pt-6 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-brand-gold" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-300">
-              {es ? 'Protocolos de Autoprotección' : 'Self-Protection Protocols'}
-            </h2>
-          </div>
-          <span className="text-[10px] font-bold text-slate-500">
-            {es ? 'Paso a paso oficial' : 'Official step by step'}
-          </span>
         </div>
 
-        {/* Selector de amenaza */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {HAZARD_GUIDES.map((hazard) => {
-            const isSelected = hazard.id === selectedHazardId;
-            return (
-              <button
-                key={hazard.id}
-                type="button"
-                onClick={() => {
-                  sound.playClick();
-                  setSelectedHazardId(hazard.id);
-                }}
-                className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
-                  isSelected
-                    ? 'bg-brand-cyan text-navy-950 font-black shadow-glow-cyan'
-                    : 'bg-navy-900 border border-white/10 text-slate-300 hover:text-white hover:border-white/20'
-                }`}
-              >
-                {getHazardIcon(hazard.id)}
-                <span>{hazard.title[language]}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Ficha interactiva de la amenaza seleccionada */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-navy-900/90 border border-white/10 space-y-4">
-          
-          {/* Encabezado de la amenaza */}
-          <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/10">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
-                  {selectedHazard.season[language]}
-                </span>
-              </div>
-              <h3 className="font-black text-xl text-white tracking-tight mt-1">
-                {selectedHazard.title[language]}
-              </h3>
-              <p className="text-xs text-slate-400 font-medium">
-                {selectedHazard.subtitle[language]}
-              </p>
-            </div>
-            <div className="w-10 h-10 rounded-2xl bg-navy-950 border border-white/10 flex items-center justify-center shrink-0">
-              {getHazardIcon(selectedHazard.id)}
-            </div>
-          </div>
-
-          {/* Regla de oro destacada */}
-          <div className={`p-3.5 rounded-xl border ${selectedHazard.accent.border} ${selectedHazard.accent.bg} space-y-1`}>
-            <span className={`text-[10px] font-black uppercase tracking-wider block ${selectedHazard.accent.text}`}>
-              ⚡ {es ? 'REGLA DE ORO' : 'GOLDEN RULE'}
-            </span>
-            <p className="text-xs sm:text-sm font-bold text-white leading-snug">
-              {selectedHazard.keyRule[language]}
-            </p>
-          </div>
-
-          {/* Pestañas: Antes / Durante / Después */}
-          <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-navy-950 border border-white/5 text-center">
-            {(['before', 'during', 'after'] as const).map((tab) => {
-              const active = activeStepTab === tab;
-              const labels = {
-                before: { es: '1. Antes', en: '1. Before' },
-                during: { es: '2. Durante', en: '2. During' },
-                after: { es: '3. Después', en: '3. After' },
-              };
+        {/* Selector de vistas principales: arquitectura limpia tipo catálogo técnico */}
+        <div className="max-w-2xl mx-auto px-4 pb-2 pt-1">
+          <nav className="grid grid-cols-4 gap-1 border border-white/10 p-1 rounded-xl bg-[#0b1624]">
+            {sections.map((sec) => {
+              const isActive = currentSection === sec.id;
               return (
                 <button
-                  key={tab}
-                  type="button"
+                  key={sec.id}
                   onClick={() => {
                     sound.playClick();
-                    setActiveStepTab(tab);
+                    setCurrentSection(sec.id);
                   }}
-                  className={`py-1.5 rounded-lg text-xs font-black transition-all ${
-                    active
-                      ? 'bg-brand-cyan text-navy-950 shadow-sm'
-                      : 'text-slate-400 hover:text-white'
+                  className={`py-2 px-1 text-center rounded-lg transition-all flex flex-col items-center justify-center ${
+                    isActive
+                      ? 'bg-white text-[#070e17] font-black shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 font-semibold'
                   }`}
                 >
-                  {labels[tab][language]}
+                  <span className={`text-[9px] font-mono tracking-widest ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>
+                    {sec.code}
+                  </span>
+                  <span className="text-[11px] uppercase tracking-tight mt-0.5 truncate w-full">
+                    {sec.label}
+                  </span>
                 </button>
               );
             })}
-          </div>
+          </nav>
+        </div>
+      </header>
 
-          {/* Lista de pautas */}
-          <div className="space-y-2 pt-1 min-h-[140px]">
-            {selectedHazard[activeStepTab].map((step, idx) => (
-              <div
-                key={idx}
-                className="flex items-start gap-2.5 p-2.5 rounded-xl bg-navy-950/60 border border-white/5"
-              >
-                <CheckCircle2 className="w-4 h-4 text-brand-cyan shrink-0 mt-0.5" />
-                <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                  {step[language]}
+      {/* ========================================================================= */}
+      {/* 2. CONTENIDO PRINCIPAL POR VISTAS (NO SCROLL INTERMINABLE)                 */}
+      {/* ========================================================================= */}
+      <main className="flex-1 max-w-2xl w-full mx-auto p-4 sm:p-6 pb-24">
+        
+        {/* ----------------------------------------------------------------------- */}
+        {/* VISTA 01: LÍNEAS DE ASISTENCIA Y DESPACHO INMEDIATO                     */}
+        {/* ----------------------------------------------------------------------- */}
+        {currentSection === 'emergency' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            
+            {/* Título editorial con espacio y balance */}
+            <div className="space-y-1 border-b border-white/10 pb-4">
+              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 block">
+                SECCIÓN 01 / LÍNEAS TELEFÓNICAS DIRECTAS
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+                {es ? 'Central de Emergencias' : 'Emergency Hotlines'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-lg">
+                {es
+                  ? 'Líneas provinciales de llamada directa y gratuita las 24 horas. En situaciones de conmoción o sismo, mantenga la calma e indique ubicación exacta de inmediato.'
+                  : 'Provincial 24/7 direct toll-free numbers. In crisis or earthquake situations, stay calm and state your exact location immediately.'}
+              </p>
+            </div>
+
+            {/* Listado de Números Tácticos (Tipografía Masiva y Alta Legibilidad) */}
+            <div className="space-y-3">
+              {EMERGENCY_NUMBERS.map((item) => {
+                const isCopied = copiedNumber === item.number;
+                return (
+                  <div
+                    key={item.number}
+                    className="p-4 sm:p-5 rounded-xl border border-white/10 bg-[#0b1624] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:border-white/20"
+                  >
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-baseline gap-3">
+                        <span className="font-mono text-3xl sm:text-4xl font-black tracking-tight text-white tabular-nums">
+                          {item.number}
+                        </span>
+                        <span className="text-xs font-black uppercase tracking-wider text-slate-200 px-2 py-0.5 rounded bg-white/10 border border-white/15">
+                          {item.name[language]}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 font-medium leading-relaxed max-w-md pt-1">
+                        {item.description[language]}
+                      </p>
+                    </div>
+
+                    {/* Acciones claras */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href={`tel:${item.number}`}
+                        onClick={() => sound.playClick()}
+                        className="flex-1 sm:flex-initial py-2.5 px-5 rounded-lg bg-white hover:bg-slate-200 text-[#070e17] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-transform active:scale-95"
+                      >
+                        <Phone className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>{es ? 'Llamar' : 'Call'}</span>
+                      </a>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(item.number)}
+                        className="py-2.5 px-3 rounded-lg border border-white/15 bg-transparent hover:bg-white/5 text-slate-300 hover:text-white transition-all text-xs font-mono"
+                        title={es ? 'Copiar número' : 'Copy number'}
+                      >
+                        {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Protocolo de comunicación en crisis */}
+            <div className="p-4 rounded-xl border-l-2 border-slate-400 bg-white/5 space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
+                {es ? 'DIRECTIVA DE COMUNICACIÓN' : 'COMMUNICATIONS DIRECTIVE'}
+              </span>
+              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                {es
+                  ? 'Ante catástrofes o sismos mayores, las redes de voz colapsan por congestión. Priorice el envío de mensajes de texto SMS o mensajería de datos para no saturar las líneas de despacho oficial.'
+                  : 'Following severe disasters or earthquakes, cellular voice lines become congested. Prioritize SMS or data text messages over calls to keep lines open for dispatch.'}
+              </p>
+            </div>
+
+          </div>
+        )}
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* VISTA 02: MANUAL DE PROTOCOLOS POR AMENAZA                              */}
+        {/* ----------------------------------------------------------------------- */}
+        {currentSection === 'protocols' && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            
+            {/* Cabecera */}
+            <div className="space-y-1 border-b border-white/10 pb-3">
+              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 block">
+                SECCIÓN 02 / MANUAL DE AUTOPROTECCIÓN
+              </span>
+              <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+                {es ? 'Protocolos de Acción' : 'Action Protocols'}
+              </h1>
+            </div>
+
+            {/* Selector de Amenaza (Lista Horizontal sobria) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-white/10">
+              {HAZARD_GUIDES.map((hazard) => {
+                const isSelected = hazard.id === selectedHazardId;
+                return (
+                  <button
+                    key={hazard.id}
+                    onClick={() => {
+                      sound.playClick();
+                      setSelectedHazardId(hazard.id);
+                    }}
+                    className={`py-2 px-3 text-xs uppercase font-bold whitespace-nowrap transition-colors border-b-2 -mb-[1px] ${
+                      isSelected
+                        ? 'border-white text-white font-black'
+                        : 'border-transparent text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {hazard.title[language]}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Ficha Editorial de la Amenaza */}
+            <div className="space-y-4 pt-1">
+              
+              <div className="flex items-baseline justify-between border-b border-white/5 pb-2">
+                <div>
+                  <h2 className="text-xl font-black uppercase text-white tracking-tight">
+                    {selectedHazard.title[language]}
+                  </h2>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5">
+                    {selectedHazard.subtitle[language]}
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 border border-white/10 px-2 py-0.5 rounded">
+                  {selectedHazard.season[language]}
+                </span>
+              </div>
+
+              {/* Directiva Crítica / Regla de Oro */}
+              <div className="p-4 rounded-xl bg-white/5 border border-white/15 space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 block">
+                  {es ? 'DIRECTIVA CRÍTICA' : 'CRITICAL DIRECTIVE'}
+                </span>
+                <p className="text-sm font-bold text-white leading-snug">
+                  {selectedHazard.keyRule[language]}
                 </p>
               </div>
-            ))}
-          </div>
 
-          {/* Fuente del protocolo */}
-          <div className="pt-2 text-[10px] text-slate-500 font-semibold border-t border-white/5 flex items-center justify-between">
-            <span>{es ? 'Fuente de referencia:' : 'Reference source:'}</span>
-            <span className="text-slate-400">{selectedHazard.sources}</span>
-          </div>
+              {/* Pestañas Cronológicas: Antes / Durante / Después */}
+              <div className="space-y-3 pt-2">
+                <div className="grid grid-cols-3 border border-white/10 rounded-lg p-1 bg-[#0b1624]">
+                  {(['before', 'during', 'after'] as const).map((phase) => {
+                    const isActive = activePhase === phase;
+                    const labels = {
+                      before: { es: '01 · ANTES', en: '01 · BEFORE' },
+                      during: { es: '02 · DURANTE', en: '02 · DURING' },
+                      after: { es: '03 · DESPUÉS', en: '03 · AFTER' },
+                    };
+                    return (
+                      <button
+                        key={phase}
+                        onClick={() => {
+                          sound.playClick();
+                          setActivePhase(phase);
+                        }}
+                        className={`py-2 text-[11px] font-mono uppercase transition-all rounded ${
+                          isActive
+                            ? 'bg-white text-[#070e17] font-black'
+                            : 'text-slate-400 hover:text-white font-semibold'
+                        }`}
+                      >
+                        {labels[phase][language]}
+                      </button>
+                    );
+                  })}
+                </div>
 
-        </div>
-      </section>
+                {/* Pasos de la fase activa */}
+                <div className="space-y-2.5 pt-1 min-h-[160px]">
+                  {selectedHazard[activePhase].map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-lg border border-white/10 bg-[#0b1624] flex items-start gap-3"
+                    >
+                      <span className="font-mono text-xs font-black text-slate-400 shrink-0 mt-0.5">
+                        {String(idx + 1).padStart(2, '0')}.
+                      </span>
+                      <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                        {step[language]}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-      {/* 5. Alertas de Terremotos de Android (Google) */}
-      <section className="pt-6 space-y-3">
-        <div className="p-4 sm:p-5 rounded-2xl bg-navy-900/90 border border-brand-cyan/30 space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-brand-cyan/10 border border-brand-cyan/30 flex items-center justify-center text-brand-cyan shrink-0">
-              <Smartphone className="w-5 h-5" />
+              {/* Validación Institucional */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                <span>{es ? 'ORGANISMO EMISOR:' : 'ISSUING BODY:'}</span>
+                <span className="text-slate-300 font-semibold">{selectedHazard.sources}</span>
+              </div>
+
             </div>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-brand-cyan block">
-                {es ? 'FUNCIÓN OFICIAL DE ANDROID' : 'OFFICIAL ANDROID FEATURE'}
+
+          </div>
+        )}
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* VISTA 03: INFORME TERRITORIAL EL NIÑO (SAN JUAN)                        */}
+        {/* ----------------------------------------------------------------------- */}
+        {currentSection === 'elnino' && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            
+            <div className="space-y-1 border-b border-white/10 pb-4">
+              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 block">
+                SECCIÓN 03 / ANÁLISIS CLIMÁTICO TERRITORIAL
               </span>
-              <h3 className="font-black text-sm sm:text-base text-white">
-                {es ? 'Activá las Alertas de Sismos en tu celular' : 'Enable Earthquake Alerts on your phone'}
-              </h3>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+                {es ? 'El Niño en San Juan' : 'El Niño in San Juan'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+                {es
+                  ? 'A diferencia de la cuenca del Río de la Plata, donde el fenómeno genera crecidas continuas de grandes cauces, en la región de Cuyo los riesgos principales son aluvionales y convectivos.'
+                  : 'Unlike the Rio de la Plata basin with massive river overflows, in Cuyo the primary risks are flash floods in dry washes and severe localized convection.'}
+              </p>
             </div>
+
+            {/* Fichas de Análisis Temático */}
+            <div className="space-y-3">
+              {EL_NINO_IMPACTS.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 sm:p-5 rounded-xl border border-white/10 bg-[#0b1624] space-y-2"
+                >
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                    <span className="font-mono text-xs font-black text-slate-400">
+                      MODALIDAD {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider">
+                      SAN JUAN
+                    </span>
+                  </div>
+                  <h3 className="text-base font-black text-white uppercase tracking-tight">
+                    {item.title[language]}
+                  </h3>
+                  <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                    {item.text[language]}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Recomendación de Infraestructura y Badenes */}
+            <div className="p-4 rounded-xl border border-white/15 bg-white/5 space-y-1.5">
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 block">
+                {es ? 'ADVERTENCIA VIAL VINCULANTE' : 'BINDING ROAD WARNING'}
+              </span>
+              <p className="text-xs text-slate-200 leading-relaxed font-semibold">
+                {es
+                  ? 'Los badenes precordilleranos y cruces de cañadas secas se inundan en cuestión de segundos debido a precipitaciones altas en la sierra. No cruce nunca un badén tapado por corriente.'
+                  : 'Foothill fords and dry creek crossings flood within seconds from mountain rainfall. Never drive through or walk across a flooded ford.'}
+              </p>
+            </div>
+
+          </div>
+        )}
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* VISTA 04: ALERTA TEMPRANA ANDROID (GOOGLE)                              */}
+        {/* ----------------------------------------------------------------------- */}
+        {currentSection === 'alerts' && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            
+            <div className="space-y-1 border-b border-white/10 pb-4">
+              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 block">
+                SECCIÓN 04 / DETECCIÓN NATIVA DE HARDWARE
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+                {es ? 'Alertas de Sismos Android' : 'Android Earthquake Alerts'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+                {es
+                  ? 'El sistema gratuito de Google opera en Argentina como una red colaborativa de acelerómetros para advertir segundos antes del arribo de la onda sísmica destructiva.'
+                  : 'Google free early warning system operates in Argentina using phone accelerometers to warn seconds before damaging seismic waves arrive.'}
+              </p>
+            </div>
+
+            {/* Secuencia técnica numerada */}
+            <div className="space-y-2.5">
+              {ANDROID_ALERTS_STEPS.map((step, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl border border-white/10 bg-[#0b1624] flex items-start gap-4"
+                >
+                  <div className="w-7 h-7 rounded-lg border border-white/20 bg-white/5 flex items-center justify-center font-mono text-xs font-black text-white shrink-0">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 pt-0.5">
+                    <p className="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed">
+                      {step[language]}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Requisitos técnicos del dispositivo */}
+            <div className="p-4 rounded-xl border border-white/10 bg-[#0b1624] space-y-2">
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 block">
+                {es ? 'CONDICIONES OPERATIVAS REQUERIDAS' : 'REQUIRED OPERATIONAL CONDITIONS'}
+              </span>
+              <ul className="text-xs text-slate-300 space-y-1.5 font-medium list-disc list-inside">
+                <li>{es ? 'Android 10 o versión superior.' : 'Android 10 or higher.'}</li>
+                <li>{es ? 'Servicios de ubicación (GPS) activados.' : 'Location services (GPS) turned on.'}</li>
+                <li>{es ? 'Conexión a datos móviles o Wi-Fi activa.' : 'Active mobile data or Wi-Fi.'}</li>
+                <li>{es ? 'Servicios de Google Play actualizados.' : 'Updated Google Play Services.'}</li>
+              </ul>
+            </div>
+
+          </div>
+        )}
+
+        {/* ======================================================================= */}
+        {/* 3. MARCO INSTITUCIONAL & FUENTES ABIERTAS (POLÍTICA GOOGLE PLAY)        */}
+        {/* ======================================================================= */}
+        <section className="mt-12 pt-6 border-t border-white/10 space-y-3">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-400">
+            <Info className="w-3.5 h-3.5" />
+            <span>{es ? 'TRANSPARENCIA & FUENTES OFICIALES' : 'TRANSPARENCY & OFFICIAL SOURCES'}</span>
           </div>
 
-          <p className="text-xs text-slate-300 leading-relaxed">
-            {es
-              ? 'El Sistema de Alertas de Terremotos de Android está disponible en Argentina y utiliza los sensores del teléfono para detectar sismos con segundos de anticipación. Te recomendamos comprobar que esté encendido:'
-              : 'The Android Earthquake Alerts System is available in Argentina and uses phone sensors to warn you seconds before shaking arrives. Check that it is turned on:'}
-          </p>
-
-          <ol className="space-y-2 pt-1">
-            {ANDROID_ALERTS_STEPS.map((step, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2.5 text-xs text-slate-200 bg-navy-950/60 p-2.5 rounded-xl border border-white/5"
-              >
-                <span className="w-5 h-5 rounded-full bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 font-black text-[11px] flex items-center justify-center shrink-0">
-                  {i + 1}
-                </span>
-                <span className="leading-relaxed">{step[language]}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* 6. Fuentes Oficiales y Descargo de Responsabilidad (Exigencia Google Play) */}
-      <section className="pt-6 space-y-3">
-        <div className="p-4 rounded-2xl bg-navy-900/50 border border-white/10 space-y-3 text-left">
-          <div className="flex items-center gap-2 text-slate-400 text-xs font-black uppercase tracking-wider">
-            <Info className="w-4 h-4 text-brand-yellow shrink-0" />
-            <span>{es ? 'Fuentes Oficiales & Transparencia' : 'Official Sources & Transparency'}</span>
-          </div>
-
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          <p className="text-[11px] text-slate-400 leading-relaxed max-w-xl">
             {NON_AFFILIATION_NOTICE[language]}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-white/5">
-            {OFFICIAL_SOURCES.map((source, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+            {OFFICIAL_SOURCES.map((src, i) => (
               <a
                 key={i}
-                href={source.url}
+                href={src.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-xl bg-navy-950/60 border border-white/5 hover:border-brand-cyan/40 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-all group"
+                className="p-3 rounded-lg border border-white/10 bg-[#0b1624] hover:border-white/25 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-colors group"
               >
-                <div className="min-w-0 pr-1">
-                  <span className="font-bold text-[11px] block truncate">{source.name}</span>
-                  <span className="text-[10px] text-slate-500 block">{source.topic[language]}</span>
+                <div className="min-w-0 pr-2">
+                  <span className="font-bold text-xs block truncate text-slate-200">{src.name}</span>
+                  <span className="text-[10px] font-mono text-slate-400 block truncate">{src.topic[language]}</span>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-brand-cyan shrink-0" />
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-white shrink-0" />
               </a>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 7. Botón para volver */}
-      <div className="pt-6">
-        <button
-          onClick={() => {
-            sound.playClick();
-            onNavigate('home');
-          }}
-          className="w-full py-3.5 rounded-full bg-navy-900 border border-white/10 hover:border-brand-cyan text-slate-200 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 hover:text-white active:scale-98"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>{es ? 'Volver al inicio' : 'Back to home'}</span>
-        </button>
-      </div>
+      </main>
 
     </div>
   );
