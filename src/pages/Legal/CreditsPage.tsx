@@ -199,7 +199,7 @@ export const CreditsPage: React.FC<CreditsPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* 6. Section 04: Propósito del Proyecto */}
-      <section className="space-y-2 pt-6 pb-4">
+      <section className="space-y-3 pt-6 pb-2">
         <div className="border-l-2 border-brand-cyan pl-4 py-1 space-y-1">
           <span className="text-[10px] font-black uppercase tracking-widest text-brand-cyan block">
             {es ? 'PROPÓSITO & ALCANCE' : 'PURPOSE & SCOPE'}
@@ -209,6 +209,15 @@ export const CreditsPage: React.FC<CreditsPageProps> = ({ onNavigate }) => {
               ? 'SISMO LAB es una iniciativa de software cívico y divulgación científica independiente de Zion Code para la comunidad de San Juan, Argentina y la región de Cuyo, diseñada para fortalecer la cultura de prevención sísmica a través de la tecnología interactiva y el aprendizaje gamificado.'
               : 'SISMO LAB is an independent civic software and scientific outreach initiative by Zion Code for the community of San Juan, Argentina, and Cuyo, designed to strengthen seismic preparedness through interactive technology.'}
           </p>
+        </div>
+
+        <div className="p-3 rounded-xl bg-navy-900/60 border border-white/10 text-[11px] text-slate-400 leading-relaxed">
+          <strong className="text-slate-300 block mb-0.5 uppercase text-[10px] tracking-wider">
+            {es ? 'Descargo de Responsabilidad Institucional:' : 'Institutional Disclaimer:'}
+          </strong>
+          {es
+            ? 'Esta aplicación es un proyecto independiente desarrollado por Zion Code y NO representa ni posee afiliación con el Gobierno de la Provincia de San Juan, Dirección de Protección Civil, INPRES, Servicio Meteorológico Nacional ni con ningún organismo oficial.'
+            : 'This app is an independent project by Zion Code and does NOT represent or hold affiliation with the Government of San Juan, Civil Protection, INPRES, the National Weather Service or any official government body.'}
         </div>
       </section>
 

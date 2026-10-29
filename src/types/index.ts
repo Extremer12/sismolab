@@ -27,7 +27,8 @@ export type ScreenId =
   | 'privacy'
   | 'terms'
   | 'credits'
-  | 'seismic';
+  | 'seismic'
+  | 'preparedness';
 
 export interface UserProfile {
   id: string;
