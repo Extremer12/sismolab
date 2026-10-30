@@ -37,8 +37,11 @@ import { useTheme } from '../../theme/ThemeContext';
 import {
   loadFamilyPlan,
   saveFamilyPlan,
+  fetchFamilyPlanFromSupabase,
   ROLE_LABELS,
 } from '../../services/familyBackpackService';
+import { MeetingPointPickerModal } from '../../components/family/MeetingPointPickerModal';
+import { formatEvacuationRoute } from '../../services/geocodingService';
 
 interface FamilyPlanPageProps {
   onNavigate: (screen: ScreenId) => void;
@@ -66,6 +69,10 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showEditPointsModal, setShowEditPointsModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinCodeInput, setJoinCodeInput] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
   const [activeMapTab, setActiveMapTab] = useState<'primary' | 'secondary' | 'home'>('primary');
 
   // Form states for new member
@@ -75,14 +82,7 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
   const [newMemberAvatar, setNewMemberAvatar] = useState('/images/avatar/avatar_1.webp');
   const [newMemberPhone, setNewMemberPhone] = useState('');
 
-  // Form states for editing meeting points
-  const [primaryName, setPrimaryName] = useState(plan.meeting_point_primary);
-  const [secondaryName, setSecondaryName] = useState(plan.meeting_point_secondary);
-  const [contactName, setContactName] = useState(plan.out_of_province_contact.name);
-  const [contactPhone, setContactPhone] = useState(plan.out_of_province_contact.phone);
-  const [contactCity, setContactCity] = useState(plan.out_of_province_contact.city || 'Mendoza / Córdoba');
-
-  // Default coordinates fallback (San Juan Center)
+  // Coordinates from current plan (always dynamically derived from plan state)
   const homeCoords: [number, number] = plan.home_coords || [-31.5350, -68.5320];
   const primaryCoords: [number, number] = plan.meeting_point_primary_coords || [-31.5375, -68.5364];
   const secondaryCoords: [number, number] = plan.meeting_point_secondary_coords || [-31.5303, -68.5418];
@@ -97,6 +97,16 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
     if (activeMapTab === 'secondary') return secondaryCoords;
     return homeCoords;
   }, [activeMapTab, primaryCoords, secondaryCoords, homeCoords]);
+
+  // Evacuation route calculations from home base
+  const primaryRoute = useMemo(
+    () => formatEvacuationRoute(homeCoords, primaryCoords),
+    [homeCoords, primaryCoords]
+  );
+  const secondaryRoute = useMemo(
+    () => formatEvacuationRoute(homeCoords, secondaryCoords),
+    [homeCoords, secondaryCoords]
+  );
 
   // Leaflet custom DivIcons
   const primaryPin = useMemo(() => {
@@ -258,20 +268,29 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
     setShowAddMemberModal(false);
   };
 
-  const handleSaveMeetingPoints = (e: React.FormEvent) => {
+  const handleJoinFamily = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!joinCodeInput.trim()) return;
+    setIsJoining(true);
+    setJoinError(null);
     sound.playClick();
-    setPlan((prev) => ({
-      ...prev,
-      meeting_point_primary: primaryName.trim() || prev.meeting_point_primary,
-      meeting_point_secondary: secondaryName.trim() || prev.meeting_point_secondary,
-      out_of_province_contact: {
-        name: contactName.trim() || prev.out_of_province_contact.name,
-        phone: contactPhone.trim() || prev.out_of_province_contact.phone,
-        city: contactCity.trim() || prev.out_of_province_contact.city,
-      },
-    }));
-    setShowEditPointsModal(false);
+    try {
+      const fetched = await fetchFamilyPlanFromSupabase(joinCodeInput);
+      if (fetched) {
+        sound.playCorrect();
+        setPlan(fetched);
+        setShowJoinModal(false);
+        setJoinCodeInput('');
+      } else {
+        sound.playWrong();
+        setJoinError(es ? 'No encontramos un grupo con ese código en San Juan.' : 'Group not found with that code.');
+      }
+    } catch {
+      sound.playWrong();
+      setJoinError(es ? 'Error al conectar con la base de datos.' : 'Database connection error.');
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   const safeCount = plan.members.filter((m) => m.status === 'safe').length;
@@ -361,7 +380,7 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
             </div>
 
             {/* Código de enlace familiar */}
-            <div className="flex items-center gap-2 self-start sm:self-auto bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
+            <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-auto bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
               <span className="font-mono text-xs font-black text-brand-cyan px-2 tracking-wider">
                 {plan.invite_code}
               </span>
@@ -379,6 +398,17 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
               >
                 <Share2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{es ? 'Invitar' : 'Invite'}</span>
+              </button>
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setShowJoinModal(true);
+                }}
+                className="p-1.5 px-2.5 rounded-xl bg-navy-950/70 hover:bg-navy-900 text-brand-cyan border border-brand-cyan/30 font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                title={es ? 'Unirse a otro grupo con código' : 'Join family group'}
+              >
+                <Radio className="w-3.5 h-3.5" />
+                <span>{es ? 'Unirse' : 'Join'}</span>
               </button>
             </div>
           </div>
@@ -491,10 +521,10 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
                   sound.playClick();
                   setShowEditPointsModal(true);
                 }}
-                className="text-xs font-bold text-brand-cyan hover:underline flex items-center gap-1"
+                className="py-1.5 px-3 rounded-xl font-black text-xs uppercase bg-brand-cyan text-navy-950 hover:bg-cyan-300 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
               >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>{es ? 'Editar referencias' : 'Edit locations'}</span>
+                <MapPin className="w-3.5 h-3.5" />
+                <span>{es ? 'Cargar dirección o buscar en mapa' : 'Search / Set on Map'}</span>
               </button>
             </div>
           </div>
@@ -658,44 +688,74 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
             }`}
           >
             {activeMapTab === 'primary' && (
-              <div className="space-y-1.5 animate-in fade-in duration-200">
-                <div className="flex items-center justify-between">
+              <div className="space-y-2 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-600 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
                     PUNTO 01 · REUNIÓN INMEDIATA
                   </span>
-                  <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>
-                    2 a 3 cuadras
-                  </span>
+                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded-lg border border-emerald-500/30">
+                    <Navigation className="w-3 h-3 text-emerald-400" />
+                    <span>{primaryRoute.distanceFormatted} · {primaryRoute.timeFormatted}</span>
+                  </div>
                 </div>
-                <h3 className={`font-bold text-sm tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <h3 className={`font-bold text-sm sm:text-base tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {plan.meeting_point_primary}
                 </h3>
                 <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                  {es
+                  {plan.meeting_point_primary_notes || (es
                     ? 'Zona abierta y despejada. Libre de cableado aéreo, árboles añejos o vidrieras altas. Todo integrante que esté en casa o en inmediaciones debe dirigirse aquí en los primeros 15 minutos.'
-                    : 'Open clearing free of powerlines and masonry. Rendezvous within the first 15 minutes.'}
+                    : 'Open clearing free of powerlines and masonry. Rendezvous within the first 15 minutes.')}
                 </p>
+                <div className="pt-1 flex items-center justify-between flex-wrap gap-2">
+                  <span className={`text-[11px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    ~{primaryRoute.blocksEstimate} {es ? 'cuadras estimadas desde el hogar' : 'blocks from home base'}
+                  </span>
+                  <a
+                    href={primaryRoute.googleMapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-cyan hover:underline"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{es ? 'Ruta a pie en Google Maps' : 'Open walking route'}</span>
+                  </a>
+                </div>
               </div>
             )}
 
             {activeMapTab === 'secondary' && (
-              <div className="space-y-1.5 animate-in fade-in duration-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-sky-500 bg-sky-500/15 px-2 py-0.5 rounded border border-sky-500/30">
+              <div className="space-y-2 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-sky-400 bg-sky-500/15 px-2 py-0.5 rounded border border-sky-500/30">
                     PUNTO 02 · ALTERNATIVO EXTERIOR
                   </span>
-                  <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>
-                    Zona Regional
-                  </span>
+                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-sky-300 bg-sky-950/40 px-2.5 py-0.5 rounded-lg border border-sky-500/30">
+                    <Navigation className="w-3 h-3 text-sky-300" />
+                    <span>{secondaryRoute.distanceFormatted} · {secondaryRoute.timeFormatted}</span>
+                  </div>
                 </div>
-                <h3 className={`font-bold text-sm tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <h3 className={`font-bold text-sm sm:text-base tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {plan.meeting_point_secondary}
                 </h3>
                 <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                  {es
+                  {plan.meeting_point_secondary_notes || (es
                     ? 'Punto de repliegue si el barrio sufre anegamiento, caída masiva de tendido eléctrico o corte de accesos principales. Espacio verde amplio o polideportivo municipal.'
-                    : 'Secondary assembly area if the neighborhood is inaccessible.'}
+                    : 'Secondary assembly area if the neighborhood is inaccessible.')}
                 </p>
+                <div className="pt-1 flex items-center justify-between flex-wrap gap-2">
+                  <span className={`text-[11px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    ~{secondaryRoute.blocksEstimate} {es ? 'cuadras estimadas desde el hogar' : 'blocks from home base'}
+                  </span>
+                  <a
+                    href={secondaryRoute.googleMapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:underline"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{es ? 'Ruta a pie en Google Maps' : 'Open walking route'}</span>
+                  </a>
+                </div>
               </div>
             )}
 
@@ -704,8 +764,9 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-cyan-400 bg-brand-cyan/15 px-2 py-0.5 rounded border border-brand-cyan/30">
                   HOGAR FAMILIAR · PUNTO CERO
                 </span>
-                <h3 className={`font-bold text-sm tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Vivienda Familiar (San Juan)
+                <h3 className={`font-bold text-sm sm:text-base tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {plan.home_name || (es ? 'Vivienda Familiar' : 'Home Base')}
+                  {plan.home_address ? ` (${plan.home_address})` : ''}
                 </h3>
                 <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                   {es
@@ -1118,126 +1179,98 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
       )}
 
       {/* ========================================================================= */}
-      {/* 8. MODAL PARA EDITAR REFERENCIAS DE PUNTOS DE ENCUENTRO                   */}
+      {/* 8. MODAL INTELIGENTE DE PUNTOS DE ENCUENTRO Y DIRECCIÓN                   */}
       {/* ========================================================================= */}
-      {showEditPointsModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <MeetingPointPickerModal
+        isOpen={showEditPointsModal}
+        onClose={() => setShowEditPointsModal(false)}
+        plan={plan}
+        onSavePlan={(updated) => {
+          setPlan(updated);
+          saveFamilyPlan(updated);
+        }}
+      />
+
+      {/* ========================================================================= */}
+      {/* 9. MODAL PARA UNIRSE A UNA FAMILIA EXISTENTE                              */}
+      {/* ========================================================================= */}
+      {showJoinModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div
-            className={`rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 border max-h-[90vh] overflow-y-auto ${
+            className={`rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 border ${
               isDark ? 'bg-navy-900 border-white/15 text-white' : 'bg-white border-slate-100 text-slate-900'
             }`}
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-black text-base tracking-tight">
-                {es ? 'Editar Puntos de Encuentro' : 'Edit Meeting Points'}
-              </h3>
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-brand-cyan" />
+                <h3 className="font-black text-base tracking-tight">
+                  {es ? 'Unirse a una Familia' : 'Join a Family'}
+                </h3>
+              </div>
               <button
-                onClick={() => setShowEditPointsModal(false)}
+                onClick={() => {
+                  sound.playClick();
+                  setShowJoinModal(false);
+                }}
                 className={`p-1 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveMeetingPoints} className="space-y-3.5">
-              <div>
-                <label className={`text-xs font-bold uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                  Punto 01 · Principal (A 2 o 3 cuadras)
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: Plaza 25 de Mayo (Mitre y Mendoza)"
-                  value={primaryName}
-                  onChange={(e) => setPrimaryName(e.target.value)}
-                  className={`w-full rounded-xl p-2.5 text-xs focus:outline-none border ${
-                    isDark
-                      ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
-                      : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600 focus:bg-white'
-                  }`}
-                />
-              </div>
+            <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              {es
+                ? 'Ingresá el código de 6 caracteres que te compartió el coordinador de tu familia para sincronizar puntos de encuentro y roles.'
+                : 'Enter the 6-character code provided by your family coordinator to sync meeting points and roles.'}
+            </p>
 
-              <div>
-                <label className={`text-xs font-bold uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                  Punto 02 · Alternativo Exterior
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: Parque de Mayo (Monumento al Deporte)"
-                  value={secondaryName}
-                  onChange={(e) => setSecondaryName(e.target.value)}
-                  className={`w-full rounded-xl p-2.5 text-xs focus:outline-none border ${
-                    isDark
-                      ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
-                      : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600 focus:bg-white'
-                  }`}
-                />
-              </div>
+            <form onSubmit={handleJoinFamily} className="space-y-3">
+              <input
+                type="text"
+                required
+                maxLength={10}
+                placeholder="Ej: SJ-7842"
+                value={joinCodeInput}
+                onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+                className={`w-full rounded-xl p-3 text-center text-sm font-mono font-black tracking-widest uppercase focus:outline-none border ${
+                  isDark
+                    ? 'bg-navy-950 border-white/20 text-brand-cyan focus:border-brand-cyan'
+                    : 'bg-slate-50 border-slate-200 text-cyan-800 focus:border-cyan-600'
+                }`}
+              />
 
-              <div className={`pt-2 border-t space-y-2 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
-                <span className={`text-xs font-bold uppercase tracking-wider block ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                  Contacto de Referencia (Fuera de San Juan)
-                </span>
+              {joinError && (
+                <p className="text-xs text-rose-400 font-semibold text-center flex items-center justify-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{joinError}</span>
+                </p>
+              )}
 
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    placeholder="Nombre familiar"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    className={`rounded-xl p-2.5 text-xs focus:outline-none border ${
-                      isDark
-                        ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
-                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600'
-                    }`}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Provincia / Ciudad"
-                    value={contactCity}
-                    onChange={(e) => setContactCity(e.target.value)}
-                    className={`rounded-xl p-2.5 text-xs focus:outline-none border ${
-                      isDark
-                        ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
-                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600'
-                    }`}
-                  />
-                </div>
-
-                <input
-                  type="tel"
-                  placeholder="Teléfono con código de área (ej: 261 4...)"
-                  value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
-                  className={`w-full rounded-xl p-2.5 text-xs font-mono focus:outline-none border ${
-                    isDark
-                      ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
-                      : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600'
-                  }`}
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3">
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowEditPointsModal(false)}
-                  className={`py-2.5 px-4 rounded-xl text-xs font-bold ${
+                  onClick={() => setShowJoinModal(false)}
+                  className={`py-2 px-3.5 rounded-xl text-xs font-bold ${
                     isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Cancelar
+                  {es ? 'Cancelar' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className={`py-2.5 px-5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all ${
+                  disabled={isJoining || !joinCodeInput.trim()}
+                  className={`py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center gap-2 ${
                     isDark
-                      ? 'bg-brand-cyan text-navy-950 hover:bg-cyan-300'
-                      : 'bg-slate-900 text-white hover:bg-slate-800'
+                      ? 'bg-brand-cyan text-navy-950 hover:bg-cyan-300 disabled:opacity-50'
+                      : 'bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50'
                   }`}
                 >
-                  Guardar Cambios
+                  {isJoining ? (
+                    <span>{es ? 'Buscando...' : 'Searching...'}</span>
+                  ) : (
+                    <span>{es ? 'Vincular' : 'Connect'}</span>
+                  )}
                 </button>
               </div>
             </form>

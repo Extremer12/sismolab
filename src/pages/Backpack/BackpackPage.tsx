@@ -24,6 +24,7 @@ import {
   loadBackpackInventory,
   saveBackpackInventory,
   loadFamilyPlan,
+  fetchBackpackFromSupabase,
   generateWhatsAppShoppingList,
   BACKPACK_CATEGORIES_META,
   getItemFallbackImage,
@@ -42,6 +43,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
   const [items, setItems] = useState<BackpackItem[]>(() =>
     loadBackpackInventory(familyPlan.members.length)
   );
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing'>('synced');
   const [selectedCategory, setSelectedCategory] = useState<BackpackCategory | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'missing' | 'packed' | 'perishable'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -52,9 +54,31 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
   const [newItemQuantity, setNewItemQuantity] = useState('1');
   const [newItemCategory, setNewItemCategory] = useState<BackpackCategory>('especiales');
 
+  // Load cloud inventory from Supabase on mount
   useEffect(() => {
-    saveBackpackInventory(items);
-  }, [items]);
+    let isMounted = true;
+    async function loadCloud() {
+      try {
+        const cloud = await fetchBackpackFromSupabase(familyPlan.id);
+        if (isMounted && cloud && cloud.length > 0) {
+          setItems(cloud);
+        }
+      } catch (err) {
+        console.warn('Could not load backpack from Supabase', err);
+      }
+    }
+    loadCloud();
+    return () => {
+      isMounted = false;
+    };
+  }, [familyPlan.id]);
+
+  useEffect(() => {
+    setSyncStatus('syncing');
+    saveBackpackInventory(items, familyPlan.id);
+    const timer = setTimeout(() => setSyncStatus('synced'), 800);
+    return () => clearTimeout(timer);
+  }, [items, familyPlan.id]);
 
   const totalCount = items.length;
   const packedCount = items.filter((i) => i.is_packed).length;
@@ -65,7 +89,44 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
   const toggleItemPacked = (id: string) => {
     sound.playClick();
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, is_packed: !item.is_packed } : item))
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        const nextPacked = !item.is_packed;
+        return {
+          ...item,
+          is_packed: nextPacked,
+          quantity: nextPacked ? item.required_quantity : 0,
+        };
+      })
+    );
+  };
+
+  // Adjust packed quantity with +/- stepper
+  const handleQuantityChange = (id: string, delta: number) => {
+    sound.playClick();
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        const currentQty = item.quantity ?? (item.is_packed ? item.required_quantity : 0);
+        const nextQty = Math.max(0, currentQty + delta);
+        return {
+          ...item,
+          quantity: nextQty,
+          is_packed: nextQty >= item.required_quantity,
+        };
+      })
+    );
+  };
+
+  // Assign a family member as responsible for an item
+  const handleAssignMember = (itemId: string, memberId?: string) => {
+    sound.playClick();
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? { ...item, assigned_member_id: memberId || undefined }
+          : item
+      )
     );
   };
 
@@ -238,9 +299,13 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
 
             {/* Titular y ratio de completitud */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-mono uppercase tracking-widest text-brand-cyan font-bold bg-brand-cyan/10 px-2 py-0.5 rounded border border-brand-cyan/25">
                   AUTONOMÍA 72 HORAS
+                </span>
+                <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${syncStatus === 'syncing' ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+                  <span>{syncStatus === 'syncing' ? (es ? 'Guardando en Supabase...' : 'Syncing...') : (es ? 'Supabase Sincronizado' : 'Supabase Synced')}</span>
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1 leading-tight">
@@ -469,6 +534,8 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
           <div className={`divide-y ${isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
             {filteredItems.map((item) => {
               const isExpanded = expandedItemId === item.id;
+              const currentQuantity = item.quantity ?? (item.is_packed ? item.required_quantity : 0);
+              const assignedMember = familyPlan.members.find((m) => m.id === item.assigned_member_id);
 
               return (
                 <div
@@ -479,7 +546,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                       : item.is_packed ? 'bg-white hover:bg-slate-50/60' : 'bg-slate-50/30 hover:bg-slate-50'
                   }`}
                 >
-                  <div className="flex items-center gap-3.5">
+                  <div className="flex items-center gap-3">
                     
                     {/* Botón de Checkbox táctil */}
                     <button
@@ -520,11 +587,11 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                     </div>
 
                     {/* Detalles del insumo */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex items-start justify-between gap-2">
                         <h4
                           onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
-                          className={`text-sm font-bold tracking-tight cursor-pointer ${
+                          className={`text-sm font-bold tracking-tight cursor-pointer leading-snug ${
                             item.is_packed
                               ? isDark ? 'text-slate-400 line-through' : 'text-slate-700 line-through opacity-80'
                               : isDark ? 'text-white' : 'text-slate-900'
@@ -532,24 +599,36 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                         >
                           {item.name}
                         </h4>
-
-                        {/* Cantidad requerida destacada */}
-                        <span
-                          className={`text-xs font-mono font-bold px-2 py-0.5 rounded-md shrink-0 border ${
-                            isDark
-                              ? 'bg-brand-gold/15 text-brand-yellow border-brand-gold/30'
-                              : 'bg-slate-100 text-slate-800 border-slate-200'
-                          }`}
-                        >
-                          {item.required_quantity} {item.unit}
-                        </span>
                       </div>
 
-                      {/* Explicación breve y control de vencimiento */}
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                      {/* Explicación breve, responsable y control de vencimiento */}
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className={`text-xs line-clamp-1 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
                           {item.description}
                         </span>
+
+                        {/* Asignación de integrante responsable */}
+                        {assignedMember ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30">
+                            <img
+                              src={assignedMember.avatar || '/images/avatar/avatar_1.webp'}
+                              alt={assignedMember.name}
+                              className="w-3.5 h-3.5 rounded-full object-cover"
+                            />
+                            <span>{assignedMember.name}</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedItemId(item.id)}
+                            className={`text-[10px] underline decoration-dotted flex items-center gap-1 ${
+                              isDark ? 'text-slate-400 hover:text-brand-cyan' : 'text-slate-500 hover:text-cyan-700'
+                            }`}
+                          >
+                            <Users className="w-3 h-3 text-slate-400" />
+                            <span>{es ? 'Asignar encargado' : 'Assign member'}</span>
+                          </button>
+                        )}
 
                         {item.is_perishable && (
                           <div className="shrink-0 flex items-center gap-2">
@@ -557,32 +636,96 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                           </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Botón expandir información adicional */}
-                    <button
-                      type="button"
-                      onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
-                      className={`p-1 shrink-0 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
+                      {/* Fila inferior: Stepper táctil y botón de detalles */}
+                      <div className="flex items-center justify-between pt-1">
+                        <div
+                          className={`flex items-center gap-1.5 rounded-xl px-2 py-1 border shadow-xs ${
+                            isDark
+                              ? 'bg-navy-950/90 border-white/10'
+                              : 'bg-slate-100 border-slate-200'
+                          }`}
+                        >
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {es ? 'Preparado:' : 'Packed:'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleQuantityChange(item.id, -1)}
+                            className="w-5 h-5 rounded-md flex items-center justify-center font-black text-xs hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
+                            title={es ? 'Restar 1' : 'Subtract 1'}
+                          >
+                            -
+                          </button>
+                          <span className="font-mono font-black text-xs px-1 text-center">
+                            <span className={item.is_packed ? 'text-emerald-400 font-bold' : isDark ? 'text-white' : 'text-slate-900'}>
+                              {currentQuantity}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-normal"> / {item.required_quantity} {item.unit}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleQuantityChange(item.id, +1)}
+                            className="w-5 h-5 rounded-md flex items-center justify-center font-black text-xs bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 transition-colors"
+                            title={es ? 'Sumar 1' : 'Add 1'}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {/* Botón expandir información adicional */}
+                        <button
+                          type="button"
+                          onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
+                          className={`p-1.5 rounded-lg flex items-center gap-1 text-[11px] font-semibold transition-colors ${
+                            isDark ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span>{isExpanded ? (es ? 'Menos' : 'Less') : (es ? 'Detalles' : 'Details')}</span>
+                          <ChevronDown
+                            className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                              isExpanded ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Detalle contextual expandible */}
                   {isExpanded && (
                     <div
-                      className={`mt-3 pt-3 border-t pl-14 pr-2 space-y-2 text-xs animate-in fade-in duration-150 ${
+                      className={`mt-3 pt-3 border-t pl-14 pr-2 space-y-2.5 text-xs animate-in fade-in duration-150 ${
                         isDark ? 'border-white/10 text-slate-300' : 'border-slate-100 text-slate-600'
                       }`}
                     >
                       <p className="leading-relaxed font-medium">
                         {item.description}
                       </p>
+
+                      {/* Selector de integrante responsable */}
+                      <div className="flex items-center gap-2 pt-1 flex-wrap">
+                        <label className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                          <Users className="w-3.5 h-3.5 text-brand-cyan" />
+                          <span>{es ? 'Responsable de llevarlo:' : 'Responsible member:'}</span>
+                        </label>
+                        <select
+                          value={item.assigned_member_id || ''}
+                          onChange={(e) => handleAssignMember(item.id, e.target.value)}
+                          className={`rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none border ${
+                            isDark
+                              ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
+                              : 'bg-slate-100 border-slate-200 text-slate-800 focus:border-cyan-600'
+                          }`}
+                        >
+                          <option value="">{es ? 'Sin asignar (Compartido)' : 'Unassigned (Shared)'}</option>
+                          {familyPlan.members.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} ({m.relation})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
                       {/* Ajuste de fecha de vencimiento si es perecedero */}
                       {item.is_perishable && (

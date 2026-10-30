@@ -13,6 +13,7 @@ import {
   MemberStatus,
   PreparednessIndex
 } from '../types';
+import { supabase } from './supabase';
 
 const FAMILY_STORAGE_KEY = 'sismolab_family_plan_v1';
 const BACKPACK_STORAGE_KEY = 'sismolab_backpack_inventory_v1';
@@ -279,8 +280,88 @@ export function saveFamilyPlan(plan: FamilyPlan): void {
   try {
     const updated = { ...plan, updated_at: new Date().toISOString() };
     localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(updated));
+    // Sincronización asíncrona a Supabase en segundo plano
+    syncFamilyPlanToSupabase(updated).catch(() => {});
   } catch (err) {
     console.error('[familyService] Error guardando plan familiar:', err);
+  }
+}
+
+// Sincronizar plan familiar a Supabase
+export async function syncFamilyPlanToSupabase(plan: FamilyPlan): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('family_plans')
+      .upsert({
+        id: plan.id,
+        invite_code: plan.invite_code,
+        family_name: plan.family_name,
+        created_by: plan.created_by || null,
+        home_name: plan.home_name || 'Vivienda Familiar',
+        home_address: plan.home_address || '',
+        home_coords: plan.home_coords || [-31.5350, -68.5320],
+        meeting_point_primary: plan.meeting_point_primary,
+        meeting_point_primary_coords: plan.meeting_point_primary_coords || [-31.5375, -68.5364],
+        meeting_point_primary_notes: plan.meeting_point_primary_notes || '',
+        meeting_point_secondary: plan.meeting_point_secondary,
+        meeting_point_secondary_coords: plan.meeting_point_secondary_coords || [-31.5303, -68.5418],
+        meeting_point_secondary_notes: plan.meeting_point_secondary_notes || '',
+        out_of_province_contact: plan.out_of_province_contact,
+        members: plan.members,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+
+    if (error) {
+      console.warn('[familyBackpackService] Supabase sync warning:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('[familyBackpackService] Offline or Supabase unavailable:', err);
+    return false;
+  }
+}
+
+// Descargar o unirse a un plan familiar por código de invitación o ID
+export async function fetchFamilyPlanFromSupabase(inviteCodeOrId: string): Promise<FamilyPlan | null> {
+  try {
+    const code = inviteCodeOrId.trim().toUpperCase();
+    const { data, error } = await supabase
+      .from('family_plans')
+      .select('*')
+      .or(`invite_code.eq.${code},id.eq.${inviteCodeOrId}`)
+      .single();
+
+    if (error || !data) return null;
+
+    const plan: FamilyPlan = {
+      id: data.id,
+      family_name: data.family_name || 'Mi Familia',
+      invite_code: data.invite_code,
+      created_by: data.created_by,
+      home_name: data.home_name || 'Vivienda Familiar',
+      home_address: data.home_address || '',
+      home_coords: Array.isArray(data.home_coords) ? (data.home_coords as [number, number]) : [-31.5350, -68.5320],
+      meeting_point_primary: data.meeting_point_primary,
+      meeting_point_primary_coords: Array.isArray(data.meeting_point_primary_coords) ? (data.meeting_point_primary_coords as [number, number]) : [-31.5375, -68.5364],
+      meeting_point_primary_notes: data.meeting_point_primary_notes || '',
+      meeting_point_secondary: data.meeting_point_secondary,
+      meeting_point_secondary_coords: Array.isArray(data.meeting_point_secondary_coords) ? (data.meeting_point_secondary_coords as [number, number]) : [-31.5303, -68.5418],
+      meeting_point_secondary_notes: data.meeting_point_secondary_notes || '',
+      out_of_province_contact: data.out_of_province_contact || { name: '', phone: '', city: '' },
+      members: Array.isArray(data.members) ? data.members : [],
+      updated_at: data.updated_at || new Date().toISOString()
+    };
+
+    // Guardar en caché local
+    try {
+      localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(plan));
+    } catch {}
+
+    return plan;
+  } catch (err) {
+    console.warn('[familyBackpackService] Error fetching plan:', err);
+    return null;
   }
 }
 
@@ -334,11 +415,55 @@ export function loadBackpackInventory(membersCount = 2): BackpackItem[] {
   return initialItems;
 }
 
-export function saveBackpackInventory(items: BackpackItem[]): void {
+export function saveBackpackInventory(items: BackpackItem[], familyId?: string): void {
   try {
     localStorage.setItem(BACKPACK_STORAGE_KEY, JSON.stringify(items));
+    if (familyId) {
+      syncBackpackToSupabase(familyId, items).catch(() => {});
+    }
   } catch (err) {
     console.error('[familyService] Error guardando inventario:', err);
+  }
+}
+
+// Sincronizar mochila a Supabase
+export async function syncBackpackToSupabase(familyId: string, items: BackpackItem[]): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('family_backpacks')
+      .upsert({
+        id: `bp-${familyId}`,
+        family_id: familyId,
+        items: items,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+
+    if (error) {
+      console.warn('[familyBackpackService] Backpack sync warning:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('[familyBackpackService] Offline or Supabase unavailable:', err);
+    return false;
+  }
+}
+
+// Descargar inventario de mochila desde Supabase
+export async function fetchBackpackFromSupabase(familyId: string): Promise<BackpackItem[] | null> {
+  try {
+    const { data, error } = await supabase
+      .from('family_backpacks')
+      .select('items')
+      .eq('family_id', familyId)
+      .single();
+
+    if (error || !data || !Array.isArray(data.items)) return null;
+    saveBackpackInventory(data.items, familyId);
+    return data.items;
+  } catch (err) {
+    console.warn('[familyBackpackService] Error fetching backpack:', err);
+    return null;
   }
 }
 

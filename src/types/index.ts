@@ -237,11 +237,16 @@ export interface FamilyPlan {
   id: string;
   family_name: string;
   invite_code: string;
-  meeting_point_primary: string; // ej: "Plaza 25 de Mayo (Mitre y Mendoza)"
-  meeting_point_secondary: string; // ej: "Parque de Mayo, zona despejada"
-  meeting_point_primary_coords?: [number, number]; // [lat, lng]
-  meeting_point_secondary_coords?: [number, number]; // [lat, lng]
+  created_by?: string;
+  home_name?: string;
+  home_address?: string;
   home_coords?: [number, number]; // [lat, lng]
+  meeting_point_primary: string; // ej: "Plaza 25 de Mayo (Mitre y Mendoza)"
+  meeting_point_primary_coords?: [number, number]; // [lat, lng]
+  meeting_point_primary_notes?: string;
+  meeting_point_secondary: string; // ej: "Parque de Mayo, zona despejada"
+  meeting_point_secondary_coords?: [number, number]; // [lat, lng]
+  meeting_point_secondary_notes?: string;
   out_of_province_contact: {
     name: string;
     phone: string;
@@ -279,6 +284,7 @@ export interface BackpackItem {
   expiry_date?: string; // YYYY-MM-DD
   is_perishable: boolean;
   image?: string;
+  assigned_member_id?: string;
 }
 
 export interface PreparednessIndex {
