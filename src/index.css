@@ -130,6 +130,71 @@
   transform: scale(0.98);
 }
 
+/* Light mode overrides for .sismo-card system */
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+html.light .sismo-card,
+html.light .sismo-card-interactive {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  color: #0F172A !important;
+}
+
+html.light .sismo-card:hover,
+html.light .sismo-card-interactive:hover {
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .sismo-card-featured {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(2, 132, 199, 0.35) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06) !important;
+  color: #0F172A !important;
+}
+
+html.light .sismo-card-featured:hover {
+  border-color: rgba(2, 132, 199, 0.6) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .sismo-card h1.text-white,
+html.light .sismo-card h2.text-white,
+html.light .sismo-card h3.text-white,
+html.light .sismo-card h4.text-white,
+html.light .sismo-card span.text-white,
+html.light .sismo-card-featured h1.text-white,
+html.light .sismo-card-featured h2.text-white,
+html.light .sismo-card-featured h3.text-white,
+html.light .sismo-card-featured span.text-white {
+  color: #0F172A !important;
+}
+
+html.light .sismo-card p.text-slate-300,
+html.light .sismo-card p.text-slate-200,
+html.light .sismo-card-featured p.text-slate-300,
+html.light .sismo-card-featured p.text-slate-200 {
+  color: #475569 !important;
+}
+
+html.light .sismo-card .bg-navy-950,
+html.light .sismo-card .bg-navy-900 {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light .sismo-card .bg-navy-950\/80,
+html.light .sismo-card .bg-navy-950\/70,
+html.light .sismo-card .bg-navy-900\/90,
+html.light .sismo-card .bg-navy-900\/80 {
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
+
 /* Primary Button with Action Cyan (#20D9F5) */
 .sismo-btn-primary {
   background: #20D9F5;

@@ -5,6 +5,7 @@ import { fetchLeaderboard, calculateUserRank } from '../../services/scoresServic
 import { supabase } from '../../services/supabase';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../theme/ThemeContext';
 import { UiverseLoader } from '../../components/ui/UiverseLoader';
 
 interface RankingPageProps {
@@ -14,6 +15,7 @@ interface RankingPageProps {
 
 export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) => {
   const { t, language } = useLanguage();
+  const { isDark } = useTheme();
   const [filterMode, setFilterMode] = useState<'all' | UserMode>('all');
   const [leaderboard, setLeaderboard] = useState<RankEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -104,11 +106,17 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 overflow-x-hidden"
+      className={`relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'text-slate-100' : 'text-slate-900'
+      }`}
       style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
     >
-      {/* Background Dark Overlay */}
-      <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      {/* Background Overlay */}
+      <div
+        className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-300 ${
+          isDark ? 'bg-navy-950/85' : 'bg-slate-50/92 backdrop-blur-[2px]'
+        }`}
+      />
 
       {/* Main Content Layout */}
       <div className="relative z-10 p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto">
@@ -119,14 +127,24 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
         <div className="flex items-center justify-between pt-1">
           <button
             onClick={() => { sound.playClick(); onNavigate('home'); }}
-            className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-slate-300 hover:text-white"
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${
+              isDark
+                ? 'sismo-card text-slate-300 hover:text-white'
+                : 'bg-white border border-slate-200 text-slate-700 hover:text-slate-950 shadow-sm'
+            }`}
             aria-label={t.common.back}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
 
           {/* Pill: RANKING EN VIVO */}
-          <div className="px-3.5 py-1.5 rounded-full bg-navy-900/90 border border-brand-gold/40 text-brand-yellow font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-sm">
+          <div
+            className={`px-3.5 py-1.5 rounded-full border text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-sm ${
+              isDark
+                ? 'bg-navy-900/90 border-brand-gold/40 text-brand-yellow'
+                : 'bg-amber-50 border-amber-200 text-amber-800'
+            }`}
+          >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <Trophy className="w-3.5 h-3.5 text-brand-gold" />
             <span>{t.ranking.livePill}</span>
@@ -135,7 +153,11 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
           {/* Refresh Button */}
           <button
             onClick={() => { sound.playClick(); loadData(); }}
-            className={`w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-brand-cyan hover:text-white active:scale-95 transition-all ${isLoading ? 'animate-spin' : ''}`}
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center active:scale-95 transition-all ${
+              isDark
+                ? 'sismo-card text-brand-cyan hover:text-white'
+                : 'bg-white border border-slate-200 text-cyan-600 hover:text-cyan-800 shadow-sm'
+            } ${isLoading ? 'animate-spin' : ''}`}
             aria-label="Actualizar ranking"
             title={language === 'es' ? 'Actualizar clasificación' : 'Refresh leaderboard'}
           >
@@ -147,14 +169,26 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
         {/* 2. MAIN TITLE & PURPOSE EXPLANATION                                      */}
         {/* ========================================================================= */}
         <div className="text-center space-y-1 pt-1">
-          <h1 className="font-black text-2xl sm:text-3xl text-white tracking-tight uppercase leading-none">
-            {t.ranking.title} <span className="text-brand-cyan">{t.ranking.titleSpan}</span>
+          <h1
+            className={`font-black text-2xl sm:text-3xl tracking-tight uppercase leading-none ${
+              isDark ? 'text-white' : 'text-slate-900'
+            }`}
+          >
+            {t.ranking.title} <span className={isDark ? 'text-brand-cyan' : 'text-cyan-600'}>{t.ranking.titleSpan}</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xs mx-auto">
+          <p
+            className={`text-xs sm:text-sm font-medium max-w-xs mx-auto ${
+              isDark ? 'text-slate-300' : 'text-slate-600'
+            }`}
+          >
             {t.ranking.subtitle}
           </p>
           {lastUpdated && (
-            <span className="text-[11px] text-slate-400 font-medium inline-block">
+            <span
+              className={`text-[11px] font-medium inline-block ${
+                isDark ? 'text-slate-400' : 'text-slate-500'
+              }`}
+            >
               {language === 'es' ? `Actualizado a las ${lastUpdated} hs` : `Updated at ${lastUpdated}`}
             </span>
           )}
@@ -178,7 +212,9 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                 className={`min-h-[40px] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 ${
                   isActive
                     ? 'bg-brand-cyan text-navy-950 font-black shadow-glow-cyan'
-                    : 'bg-navy-900/90 text-slate-300 border border-white/10 hover:border-brand-cyan/40 hover:text-white'
+                    : isDark
+                    ? 'bg-navy-900/90 text-slate-300 border border-white/10 hover:border-brand-cyan/40 hover:text-white'
+                    : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:text-slate-950 shadow-sm'
                 }`}
               >
                 {labels[mode]}
@@ -201,7 +237,13 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
               <div className="grid grid-cols-3 gap-2 sm:gap-3 items-end text-center">
                 
                 {/* 2nd Place (Silver - Left) */}
-                <div className="sismo-card p-3 border-slate-400/30 flex flex-col items-center space-y-2">
+                <div
+                  className={`p-3 rounded-2xl flex flex-col items-center space-y-2 border ${
+                    isDark
+                      ? 'sismo-card border-slate-400/30'
+                      : 'bg-white border-slate-200 shadow-sm text-slate-900'
+                  }`}
+                >
                   <span className="px-2.5 py-0.5 rounded-full bg-slate-300 text-navy-950 font-black text-[10px] tracking-wider uppercase">
                     {t.ranking.silverBadge}
                   </span>
@@ -213,7 +255,12 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                   </div>
 
                   <div className="space-y-0.5 w-full min-w-0">
-                    <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5" title={second?.nickname}>
+                    <h3
+                      className={`font-extrabold text-xs sm:text-sm truncate px-0.5 ${
+                        isDark ? 'text-white' : 'text-slate-900'
+                      }`}
+                      title={second?.nickname}
+                    >
                       {second ? (second.nickname || second.id) : (language === 'es' ? 'Disponible' : 'Open')}
                     </h3>
                     <span className="font-black text-xs text-brand-cyan tabular-nums block">
@@ -223,7 +270,13 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                 </div>
 
                 {/* 1st Place (Gold - Center Protagonist & Elevated) */}
-                <div className="sismo-card p-3.5 border-brand-gold/60 bg-gradient-to-b from-amber-950/60 via-navy-900/95 to-navy-950/95 shadow-lg flex flex-col items-center space-y-2 -mt-4 z-10 relative">
+                <div
+                  className={`p-3.5 rounded-2xl shadow-lg flex flex-col items-center space-y-2 -mt-4 z-10 relative border ${
+                    isDark
+                      ? 'sismo-card border-brand-gold/60 bg-gradient-to-b from-amber-950/60 via-navy-900/95 to-navy-950/95'
+                      : 'bg-white border-2 border-amber-400 shadow-md text-slate-900'
+                  }`}
+                >
                   <div className="absolute -top-3 w-6 h-6 rounded-full bg-brand-gold text-navy-950 flex items-center justify-center shadow-md">
                     <Crown className="w-3.5 h-3.5 fill-navy-950" />
                   </div>
@@ -239,17 +292,32 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                   </div>
 
                   <div className="space-y-0.5 w-full min-w-0">
-                    <h3 className="font-black text-sm sm:text-base text-brand-yellow truncate px-0.5" title={first?.nickname}>
+                    <h3
+                      className={`font-black text-sm sm:text-base truncate px-0.5 ${
+                        isDark ? 'text-brand-yellow' : 'text-amber-800'
+                      }`}
+                      title={first?.nickname}
+                    >
                       {first ? (first.nickname || first.id) : (language === 'es' ? 'Disponible' : 'Open')}
                     </h3>
-                    <span className="font-black text-sm text-white tabular-nums block">
+                    <span
+                      className={`font-black text-sm tabular-nums block ${
+                        isDark ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
                       {first ? `★ ${first.score.toLocaleString()} XP` : '-'}
                     </span>
                   </div>
                 </div>
 
                 {/* 3rd Place (Bronze - Right) */}
-                <div className="sismo-card p-3 border-amber-700/30 flex flex-col items-center space-y-2">
+                <div
+                  className={`p-3 rounded-2xl flex flex-col items-center space-y-2 border ${
+                    isDark
+                      ? 'sismo-card border-amber-700/30'
+                      : 'bg-white border-slate-200 shadow-sm text-slate-900'
+                  }`}
+                >
                   <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black text-[10px] tracking-wider uppercase">
                     {t.ranking.bronzeBadge}
                   </span>
@@ -261,7 +329,12 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                   </div>
 
                   <div className="space-y-0.5 w-full min-w-0">
-                    <h3 className="font-extrabold text-xs sm:text-sm text-white truncate px-0.5" title={third?.nickname}>
+                    <h3
+                      className={`font-extrabold text-xs sm:text-sm truncate px-0.5 ${
+                        isDark ? 'text-white' : 'text-slate-900'
+                      }`}
+                      title={third?.nickname}
+                    >
                       {third ? (third.nickname || third.id) : (language === 'es' ? 'Disponible' : 'Open')}
                     </h3>
                     <span className="font-black text-xs text-brand-cyan tabular-nums block">
@@ -276,7 +349,13 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
             {/* ========================================================================= */}
             {/* 5. USER STATUS BANNER (Tu Posición y Progreso)                            */}
             {/* ========================================================================= */}
-            <div className="sismo-card-featured p-4 rounded-2xl flex items-center justify-between gap-3">
+            <div
+              className={`p-4 rounded-2xl flex items-center justify-between gap-3 border transition-colors ${
+                isDark
+                  ? 'sismo-card-featured'
+                  : 'bg-white border-2 border-cyan-500 shadow-md text-slate-900'
+              }`}
+            >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-12 h-12 rounded-full bg-navy-950 border-2 border-brand-cyan overflow-hidden flex items-center justify-center shrink-0">
                   {renderAvatar(user.avatar_url, user.avatar_emoji)}
@@ -284,7 +363,11 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
 
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-black text-sm sm:text-base text-white truncate">
+                    <span
+                      className={`font-black text-sm sm:text-base truncate ${
+                        isDark ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
                       {user.nickname}
                     </span>
                     <span className="px-2 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[10px] uppercase shrink-0">
@@ -292,7 +375,11 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-300 font-medium leading-tight mt-0.5">
+                  <p
+                    className={`text-xs font-medium leading-tight mt-0.5 ${
+                      isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}
+                  >
                     {user.total_score === 0
                       ? (language === 'es' ? '¡Jugá tus primeras misiones para ingresar al ranking!' : 'Play your first missions to join the leaderboard!')
                       : userRank <= 3
@@ -305,10 +392,18 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
               </div>
 
               <div className="text-right shrink-0">
-                <span className="font-black text-base sm:text-lg text-brand-yellow tabular-nums block leading-tight">
+                <span
+                  className={`font-black text-base sm:text-lg tabular-nums block leading-tight ${
+                    isDark ? 'text-brand-yellow' : 'text-amber-600'
+                  }`}
+                >
                   ★ {user.total_score.toLocaleString()}
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider block ${
+                    isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}
+                >
                   XP TOTAL
                 </span>
               </div>
@@ -319,7 +414,11 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
             {/* ========================================================================= */}
             {generalList.length > 0 && (
               <div className="space-y-2 pt-1">
-                <div className="flex items-center justify-between px-1 text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                <div
+                  className={`flex items-center justify-between px-1 text-[11px] font-black uppercase tracking-wider ${
+                    isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}
+                >
                   <span>{t.ranking.headerRank}</span>
                   <span>{t.ranking.headerScore}</span>
                 </div>
@@ -330,36 +429,64 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
                   return (
                     <div
                       key={player.id}
-                      className={`sismo-card min-h-[58px] p-3 rounded-2xl flex items-center justify-between transition-all duration-200 ${
+                      className={`min-h-[58px] p-3 rounded-2xl flex items-center justify-between transition-all duration-200 border ${
                         isMe
-                          ? 'border-2 border-brand-cyan bg-navy-900/95 shadow-glow-cyan/30'
-                          : 'border-white/10 hover:border-brand-cyan/30'
+                          ? isDark
+                            ? 'border-2 border-brand-cyan bg-navy-900/95 shadow-glow-cyan/30'
+                            : 'border-2 border-cyan-500 bg-cyan-50/70 shadow-sm'
+                          : isDark
+                          ? 'sismo-card border-white/10 hover:border-brand-cyan/30'
+                          : 'bg-white border-slate-200 hover:border-slate-300 text-slate-900 shadow-sm'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0 pr-2">
                         {/* Rank Number */}
-                        <span className={`w-7 font-black text-sm text-center tabular-nums ${isMe ? 'text-brand-cyan' : 'text-slate-400'}`}>
+                        <span
+                          className={`w-7 font-black text-sm text-center tabular-nums ${
+                            isMe
+                              ? isDark ? 'text-brand-cyan' : 'text-cyan-700'
+                              : isDark ? 'text-slate-400' : 'text-slate-500'
+                          }`}
+                        >
                           #{player.rank}
                         </span>
 
                         {/* Player Avatar */}
-                        <div className={`relative w-10 h-10 rounded-full overflow-hidden ${isMe ? 'ring-2 ring-brand-cyan' : 'border border-white/10'} shrink-0 bg-navy-950 flex items-center justify-center`}>
+                        <div
+                          className={`relative w-10 h-10 rounded-full overflow-hidden ${
+                            isMe ? 'ring-2 ring-brand-cyan' : 'border border-white/10'
+                          } shrink-0 bg-navy-950 flex items-center justify-center`}
+                        >
                           {renderAvatar(player.avatar_url, player.avatar_emoji)}
                         </div>
 
                         {/* Name and Mode */}
                         <div className="min-w-0">
-                          <h4 className={`font-black text-sm truncate ${isMe ? 'text-brand-cyan' : 'text-white'}`}>
+                          <h4
+                            className={`font-black text-sm truncate ${
+                              isMe
+                                ? isDark ? 'text-brand-cyan' : 'text-cyan-800'
+                                : isDark ? 'text-white' : 'text-slate-900'
+                            }`}
+                          >
                             {isMe ? `${user.nickname} (${t.ranking.youBadge})` : player.nickname}
                           </h4>
-                          <span className="text-[11px] text-slate-400 font-medium block">
+                          <span
+                            className={`text-[11px] font-medium block ${
+                              isDark ? 'text-slate-400' : 'text-slate-500'
+                            }`}
+                          >
                             {player.mode === 'kids' ? t.common.modeKids : t.common.modeAdults}
                           </span>
                         </div>
                       </div>
 
                       {/* Score */}
-                      <div className="flex items-center gap-1 font-black text-sm text-brand-yellow tabular-nums shrink-0">
+                      <div
+                        className={`flex items-center gap-1 font-black text-sm tabular-nums shrink-0 ${
+                          isDark ? 'text-brand-yellow' : 'text-amber-600'
+                        }`}
+                      >
                         <span className="text-xs text-brand-gold">★</span>
                         <span>{player.score.toLocaleString()} XP</span>
                       </div>

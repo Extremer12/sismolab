@@ -12,7 +12,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
   const { t, language } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 p-5 sm:p-8 pb-32 max-w-2xl mx-auto font-sans selection:bg-brand-cyan selection:text-navy-950">
+    <div className="min-h-screen p-5 sm:p-8 pb-32 max-w-2xl mx-auto font-sans selection:bg-brand-cyan selection:text-navy-950">
       
       {/* 1. Header Navigation Bar */}
       <div className="flex items-center justify-between animate-editorial-1">

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ScreenId } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../theme/ThemeContext';
 import { sound } from '../../lib/sound';
 import {
   EMERGENCY_NUMBERS,
@@ -40,6 +41,7 @@ type PreparednessSection = 'emergency' | 'protocols' | 'elnino' | 'alerts';
 
 export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
+  const { isDark } = useTheme();
   const es = language === 'es';
 
   // State: Tab de navegación principal
@@ -83,6 +85,42 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
   };
 
   const getNumberColorClass = (tone: 'red' | 'orange' | 'cyan' | 'emerald') => {
+    if (!isDark) {
+      switch (tone) {
+        case 'red':
+          return {
+            num: 'text-red-600',
+            badge: 'bg-red-50 text-red-700 border-red-200',
+            btn: 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-sm',
+            border: 'border-slate-200 hover:border-red-300 bg-white shadow-sm',
+            indicator: 'bg-red-500',
+          };
+        case 'orange':
+          return {
+            num: 'text-orange-600',
+            badge: 'bg-orange-50 text-orange-700 border-orange-200',
+            btn: 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white shadow-sm',
+            border: 'border-slate-200 hover:border-orange-300 bg-white shadow-sm',
+            indicator: 'bg-orange-500',
+          };
+        case 'cyan':
+          return {
+            num: 'text-cyan-700',
+            badge: 'bg-cyan-50 text-cyan-800 border-cyan-200',
+            btn: 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-sm',
+            border: 'border-slate-200 hover:border-cyan-300 bg-white shadow-sm',
+            indicator: 'bg-cyan-600',
+          };
+        case 'emerald':
+          return {
+            num: 'text-emerald-700',
+            badge: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+            btn: 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-sm',
+            border: 'border-slate-200 hover:border-emerald-300 bg-white shadow-sm',
+            indicator: 'bg-emerald-600',
+          };
+      }
+    }
     switch (tone) {
       case 'red':
         return {
@@ -127,27 +165,35 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
   ];
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950 relative overflow-x-hidden">
+    <div className={`min-h-screen flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950 relative overflow-x-hidden transition-colors duration-200 ${
+      isDark ? 'bg-navy-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
       
       {/* Luces ambientales de fondo con sutil desenfoque */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none -z-0" />
-      <div className="fixed bottom-1/3 right-1/4 w-80 h-80 bg-brand-blue/10 rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className={`fixed top-0 left-1/4 w-96 h-96 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none -z-0 ${isDark ? 'opacity-100' : 'opacity-25'}`} />
+      <div className={`fixed bottom-1/3 right-1/4 w-80 h-80 bg-brand-blue/10 rounded-full blur-3xl pointer-events-none -z-0 ${isDark ? 'opacity-100' : 'opacity-25'}`} />
 
       {/* ========================================================================= */}
       {/* 1. TOP HEADER INSTITUCIONAL CON ESTILO EDITORIAL                          */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-30 bg-navy-950/90 backdrop-blur-xl border-b border-brand-cyan/15">
+      <header className={`sticky top-0 z-30 backdrop-blur-xl border-b transition-colors ${
+        isDark ? 'bg-navy-950/90 border-brand-cyan/15 text-white' : 'bg-white/95 border-slate-200 text-slate-900 shadow-sm'
+      }`}>
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => {
               sound.playClick();
               onNavigate('home');
             }}
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors group"
+            className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors group ${
+              isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-950'
+            }`}
             aria-label={es ? 'Volver al inicio' : 'Back to home'}
           >
-            <div className="w-8 h-8 rounded-xl bg-navy-900 border border-white/10 group-hover:border-brand-cyan/40 flex items-center justify-center transition-colors">
-              <ArrowLeft className="w-4 h-4 text-slate-300 group-hover:text-white" />
+            <div className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-colors ${
+              isDark ? 'bg-navy-900 border-white/10 group-hover:border-brand-cyan/40' : 'bg-slate-100 border-slate-200 group-hover:border-slate-300'
+            }`}>
+              <ArrowLeft className={`w-4 h-4 ${isDark ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-950'}`} />
             </div>
             <span>{es ? 'Inicio' : 'Home'}</span>
           </button>
@@ -155,11 +201,15 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
           <div className="text-right">
             <div className="flex items-center gap-1.5 justify-end">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-cyan font-mono">
+              <span className={`text-[10px] font-black uppercase tracking-[0.2em] font-mono ${
+                isDark ? 'text-brand-cyan' : 'text-cyan-700'
+              }`}>
                 SISTEMA ACTIVO
               </span>
             </div>
-            <span className="text-xs font-black text-white tracking-tight block">
+            <span className={`text-xs font-black tracking-tight block ${
+              isDark ? 'text-white' : 'text-slate-900'
+            }`}>
               San Juan · Protección Civil
             </span>
           </div>
@@ -167,7 +217,9 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
 
         {/* Selector de vistas con color y dinamismo */}
         <div className="max-w-2xl mx-auto px-4 pb-2.5 pt-1">
-          <nav className="grid grid-cols-4 gap-1.5 p-1 rounded-2xl bg-navy-900/90 border border-brand-cyan/20 shadow-card-navy">
+          <nav className={`grid grid-cols-4 gap-1.5 p-1 rounded-2xl border ${
+            isDark ? 'bg-navy-900/90 border-brand-cyan/20 shadow-card-navy' : 'bg-slate-100 border-slate-200 shadow-sm'
+          }`}>
             {sections.map((sec) => {
               const isActive = currentSection === sec.id;
               return (
@@ -179,8 +231,12 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
                   }}
                   className={`py-2 px-1 text-center rounded-xl transition-all duration-200 flex flex-col items-center justify-center relative overflow-hidden ${
                     isActive
-                      ? 'bg-gradient-to-b from-navy-800 to-navy-950 text-white font-black border border-brand-cyan/40 shadow-glow-cyan/20'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 font-semibold'
+                      ? isDark
+                        ? 'bg-gradient-to-b from-navy-800 to-navy-950 text-white font-black border border-brand-cyan/40 shadow-glow-cyan/20'
+                        : 'bg-white text-slate-900 font-black border border-slate-300 shadow-sm'
+                      : isDark
+                      ? 'text-slate-400 hover:text-slate-200 hover:bg-white/5 font-semibold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-semibold'
                   }`}
                 >
                   <span className={`text-[9px] font-mono tracking-widest ${isActive ? sec.color : 'text-slate-500'}`}>
@@ -211,17 +267,17 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             
             {/* Título de impacto visual */}
-            <div className="space-y-1.5 border-b border-white/10 pb-4">
+            <div className={`space-y-1.5 border-b pb-4 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-red-400 font-black">
+                <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-red-500 font-black">
                   SECCIÓN 01 / DESPACHO DE URGENCIAS
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+              <h1 className={`text-2xl sm:text-3xl font-black tracking-tight uppercase ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {es ? 'Central de Emergencias San Juan' : 'San Juan Emergency Dispatch'}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-lg">
+              <p className={`text-xs sm:text-sm font-medium leading-relaxed max-w-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 {es
                   ? 'Líneas oficiales gratuitas de atención las 24 horas. Toque el botón de llamada para comunicarse directamente con la guardia de guardia activa.'
                   : 'Official 24/7 free toll numbers. Tap the call button to connect directly with the active dispatch unit.'}
@@ -248,7 +304,7 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
                           {item.name[language]}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-300 font-medium leading-relaxed max-w-md">
+                      <p className={`text-xs font-medium leading-relaxed max-w-md ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                         {item.description[language]}
                       </p>
                     </div>
@@ -267,10 +323,14 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
                       <button
                         type="button"
                         onClick={() => handleCopy(item.number)}
-                        className="py-2.5 px-3 rounded-xl border border-white/15 bg-navy-950/70 hover:border-brand-cyan/40 text-slate-300 hover:text-white transition-all text-xs font-mono active:scale-95"
+                        className={`py-2.5 px-3 rounded-xl border transition-all text-xs font-mono active:scale-95 ${
+                          isDark
+                            ? 'border-white/15 bg-navy-950/70 hover:border-brand-cyan/40 text-slate-300 hover:text-white'
+                            : 'border-slate-200 bg-slate-100 hover:border-slate-300 text-slate-700 hover:text-slate-950'
+                        }`}
                         title={es ? 'Copiar número' : 'Copy number'}
                       >
-                        {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                        {isCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
@@ -279,14 +339,18 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
             </div>
 
             {/* Protocolo de comunicación en crisis con acento ámbar */}
-            <div className="p-4 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-navy-900/90 to-navy-900/90 space-y-1.5">
-              <div className="flex items-center gap-2 text-amber-300">
+            <div className={`p-4 rounded-2xl border space-y-1.5 ${
+              isDark
+                ? 'border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-navy-900/90 to-navy-900/90'
+                : 'border-amber-200 bg-amber-50/70 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-amber-500">
                 <Radio className="w-4 h-4" />
                 <span className="text-[10px] font-mono uppercase tracking-widest font-black">
                   {es ? 'DIRECTIVA OFICIAL DE COMUNICACIÓN' : 'OFFICIAL COMMUNICATIONS DIRECTIVE'}
                 </span>
               </div>
-              <p className="text-xs text-slate-200 leading-relaxed font-medium">
+              <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 {es
                   ? 'Ante eventos sísmicos severos o tormentas mayores, las redes telefónicas de voz colapsan rápidamente. Priorice mensajes de texto SMS o aplicaciones de mensajería para dejar libres las líneas satelitales de bomberos y policía.'
                   : 'During major seismic events or severe storms, voice cellular lines quickly saturate. Prioritize SMS or data text messages to keep emergency radio and telephone lines open.'}
@@ -303,11 +367,13 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
             
             {/* Cabecera */}
-            <div className="space-y-1.5 border-b border-white/10 pb-3">
-              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-brand-cyan font-black block">
+            <div className={`space-y-1.5 border-b pb-3 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+              <span className={`text-[11px] font-mono uppercase tracking-[0.2em] font-black block ${
+                isDark ? 'text-brand-cyan' : 'text-cyan-700'
+              }`}>
                 SECCIÓN 02 / MANUAL DE AUTOPROTECCIÓN
               </span>
-              <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+              <h1 className={`text-2xl font-black tracking-tight uppercase ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {es ? 'Protocolos de Acción Inmediata' : 'Emergency Action Protocols'}
               </h1>
             </div>
@@ -326,7 +392,9 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
                     className={`py-2 px-3.5 rounded-xl text-xs uppercase font-black whitespace-nowrap flex items-center gap-2 transition-all duration-200 shrink-0 ${
                       isSelected
                         ? 'bg-brand-cyan text-navy-950 shadow-glow-cyan'
-                        : 'bg-navy-900/90 border border-white/10 text-slate-300 hover:text-white hover:border-brand-cyan/40'
+                        : isDark
+                        ? 'bg-navy-900/90 border border-white/10 text-slate-300 hover:text-white hover:border-brand-cyan/40'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:text-slate-950 shadow-sm'
                     }`}
                   >
                     {getHazardIcon(hazard.id)}
@@ -339,39 +407,49 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
             {/* Ficha Editorial de la Amenaza con paleta adaptada */}
             <div className="space-y-4 pt-1">
               
-              <div className="p-4 sm:p-5 rounded-2xl bg-navy-900/80 border border-white/10 flex items-start justify-between gap-3">
+              <div className={`p-4 sm:p-5 rounded-2xl border flex items-start justify-between gap-3 ${
+                isDark ? 'bg-navy-900/80 border-white/10' : 'bg-white border-slate-200 shadow-sm'
+              }`}>
                 <div className="space-y-1">
                   <span className={`text-[10px] font-mono font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${selectedHazard.accent.border} ${selectedHazard.accent.bg} ${selectedHazard.accent.text}`}>
                     {selectedHazard.season[language]}
                   </span>
-                  <h2 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight mt-2">
+                  <h2 className={`text-xl sm:text-2xl font-black uppercase tracking-tight mt-2 ${
+                    isDark ? 'text-white' : 'text-slate-900'
+                  }`}>
                     {selectedHazard.title[language]}
                   </h2>
-                  <p className="text-xs text-slate-300 font-medium">
+                  <p className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                     {selectedHazard.subtitle[language]}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-navy-950 border border-white/15 flex items-center justify-center shrink-0 shadow-inner">
+                <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 shadow-inner ${
+                  isDark ? 'bg-navy-950 border-white/15' : 'bg-slate-100 border-slate-200'
+                }`}>
                   {getHazardIcon(selectedHazard.id)}
                 </div>
               </div>
 
               {/* Directiva Crítica / Regla de Oro con Acento Luminoso */}
-              <div className={`p-4 rounded-2xl border ${selectedHazard.accent.border} ${selectedHazard.accent.bg} space-y-1`}>
+              <div className={`p-4 rounded-2xl border ${selectedHazard.accent.border} ${
+                isDark ? selectedHazard.accent.bg : 'bg-slate-50 shadow-sm'
+              } space-y-1`}>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className={`w-4 h-4 ${selectedHazard.accent.text}`} />
                   <span className={`text-[10px] font-mono uppercase tracking-[0.2em] font-black ${selectedHazard.accent.text}`}>
                     {es ? 'DIRECTIVA CRÍTICA VINCULANTE' : 'CRITICAL BINDING DIRECTIVE'}
                   </span>
                 </div>
-                <p className="text-sm font-black text-white leading-snug pt-0.5">
+                <p className={`text-sm font-black leading-snug pt-0.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {selectedHazard.keyRule[language]}
                 </p>
               </div>
 
               {/* Pestañas Cronológicas: Antes / Durante / Después */}
               <div className="space-y-3 pt-2">
-                <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-navy-900/90 border border-brand-cyan/20">
+                <div className={`grid grid-cols-3 gap-1.5 p-1 rounded-xl border ${
+                  isDark ? 'bg-navy-900/90 border-brand-cyan/20' : 'bg-slate-100 border-slate-200'
+                }`}>
                   {(['before', 'during', 'after'] as const).map((phase) => {
                     const isActive = activePhase === phase;
                     const labels = {
@@ -389,7 +467,9 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
                         className={`py-2 text-[11px] font-mono uppercase rounded-lg transition-all ${
                           isActive
                             ? 'bg-brand-cyan text-navy-950 font-black shadow-glow-cyan/30'
-                            : 'text-slate-400 hover:text-white font-semibold'
+                            : isDark
+                            ? 'text-slate-400 hover:text-white font-semibold'
+                            : 'text-slate-600 hover:text-slate-900 font-semibold'
                         }`}
                       >
                         {labels[phase][language]}
@@ -403,12 +483,18 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
                   {selectedHazard[activePhase].map((step, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl border border-white/10 bg-navy-900/70 hover:border-brand-cyan/30 transition-colors flex items-start gap-3"
+                      className={`p-3.5 rounded-xl border transition-colors flex items-start gap-3 ${
+                        isDark
+                          ? 'border-white/10 bg-navy-900/70 hover:border-brand-cyan/30'
+                          : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
+                      }`}
                     >
-                      <span className="font-mono text-xs font-black text-brand-cyan shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-brand-cyan/10 border border-brand-cyan/20">
+                      <span className={`font-mono text-xs font-black shrink-0 mt-0.5 px-1.5 py-0.5 rounded border ${
+                        isDark ? 'text-brand-cyan bg-brand-cyan/10 border-brand-cyan/20' : 'text-cyan-700 bg-cyan-50 border-cyan-200'
+                      }`}>
                         {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                      <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                         {step[language]}
                       </p>
                     </div>
@@ -417,9 +503,11 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
               </div>
 
               {/* Validación Institucional */}
-              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <div className={`pt-3 border-t flex items-center justify-between text-[11px] font-mono ${
+                isDark ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500'
+              }`}>
                 <span>{es ? 'ORGANISMO EMISOR:' : 'ISSUING BODY:'}</span>
-                <span className="text-brand-cyan font-bold">{selectedHazard.sources}</span>
+                <span className={`font-bold ${isDark ? 'text-brand-cyan' : 'text-cyan-700'}`}>{selectedHazard.sources}</span>
               </div>
 
             </div>
@@ -433,14 +521,16 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
         {currentSection === 'elnino' && (
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
             
-            <div className="space-y-1.5 border-b border-white/10 pb-4">
-              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-sky-400 font-black block">
+            <div className={`space-y-1.5 border-b pb-4 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+              <span className={`text-[11px] font-mono uppercase tracking-[0.2em] font-black block ${
+                isDark ? 'text-sky-400' : 'text-sky-600'
+              }`}>
                 SECCIÓN 03 / CONTINGENCIA CLIMÁTICA REGIONAL
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+              <h1 className={`text-2xl sm:text-3xl font-black tracking-tight uppercase ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {es ? 'El Niño en San Juan · Análisis' : 'El Niño in San Juan · Report'}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+              <p className={`text-xs sm:text-sm leading-relaxed max-w-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 {es
                   ? 'A diferencia de las provincias del Litoral con crecidas continuas de grandes ríos, en el oasis de Cuyo el fenómeno impacta en crecidas de badenes y tormentas de granizo violentas pero localizadas.'
                   : 'Unlike the coastal provinces with slow river floods, in Cuyo the phenomenon triggers violent localized hail storms and flash floods in dry washes.'}
@@ -451,30 +541,32 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
             <div className="space-y-3">
               {EL_NINO_IMPACTS.map((item, idx) => {
                 const colors = [
-                  { border: 'border-sky-500/30', tag: 'text-sky-300 bg-sky-500/10' },
-                  { border: 'border-amber-500/30', tag: 'text-amber-300 bg-amber-500/10' },
-                  { border: 'border-cyan-500/30', tag: 'text-cyan-300 bg-cyan-500/10' },
-                  { border: 'border-lime-500/30', tag: 'text-lime-300 bg-lime-500/10' },
+                  { border: isDark ? 'border-sky-500/30' : 'border-sky-200', tag: isDark ? 'text-sky-300 bg-sky-500/10' : 'text-sky-700 bg-sky-50' },
+                  { border: isDark ? 'border-amber-500/30' : 'border-amber-200', tag: isDark ? 'text-amber-300 bg-amber-500/10' : 'text-amber-700 bg-amber-50' },
+                  { border: isDark ? 'border-cyan-500/30' : 'border-cyan-200', tag: isDark ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-700 bg-cyan-50' },
+                  { border: isDark ? 'border-lime-500/30' : 'border-lime-200', tag: isDark ? 'text-lime-300 bg-lime-500/10' : 'text-lime-700 bg-lime-50' },
                 ];
                 const c = colors[idx % colors.length];
 
                 return (
                   <div
                     key={idx}
-                    className={`p-4 sm:p-5 rounded-2xl border ${c.border} bg-navy-900/80 space-y-2`}
+                    className={`p-4 sm:p-5 rounded-2xl border space-y-2 ${c.border} ${
+                      isDark ? 'bg-navy-900/80 text-white' : 'bg-white text-slate-900 shadow-sm'
+                    }`}
                   >
-                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                    <div className={`flex items-center justify-between border-b pb-2 ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
                       <span className={`font-mono text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${c.tag}`}>
                         VINCULANTE {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider">
+                      <span className={`text-[10px] font-mono uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                         SAN JUAN · CUYO
                       </span>
                     </div>
-                    <h3 className="text-base font-black text-white uppercase tracking-tight">
+                    <h3 className={`text-base font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {item.title[language]}
                     </h3>
-                    <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                    <p className={`text-xs font-medium leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                       {item.text[language]}
                     </p>
                   </div>
@@ -483,11 +575,17 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
             </div>
 
             {/* Advertencia vial de badenes con tono ámbar */}
-            <div className="p-4 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-navy-900/90 to-navy-900/90 space-y-1.5">
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-black block">
+            <div className={`p-4 rounded-2xl border space-y-1.5 ${
+              isDark
+                ? 'border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-navy-900/90 to-navy-900/90'
+                : 'border-amber-200 bg-amber-50/70 shadow-sm'
+            }`}>
+              <span className={`text-[10px] font-mono uppercase tracking-[0.2em] font-black block ${
+                isDark ? 'text-amber-300' : 'text-amber-700'
+              }`}>
                 {es ? 'ADVERTENCIA VIAL DEFINITIVA' : 'DEFINITIVE ROAD WARNING'}
               </span>
-              <p className="text-xs text-slate-200 leading-relaxed font-semibold">
+              <p className={`text-xs leading-relaxed font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 {es
                   ? 'Los badenes de Pocito, Caucete, Sarmiento y Ullum se llenan de agua y barro en minutos por tormentas en alta montaña, aun cuando en la ciudad no llueva. NUNCA intente cruzar un badén con agua en movimiento.'
                   : 'Fords in Pocito, Caucete, Sarmiento and Ullum flood within minutes from mountain rain, even with clear skies in town. NEVER attempt to cross a flowing ford.'}
@@ -503,14 +601,16 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
         {currentSection === 'alerts' && (
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
             
-            <div className="space-y-1.5 border-b border-white/10 pb-4">
-              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-brand-yellow font-black block">
+            <div className={`space-y-1.5 border-b pb-4 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+              <span className={`text-[11px] font-mono uppercase tracking-[0.2em] font-black block ${
+                isDark ? 'text-brand-yellow' : 'text-amber-600'
+              }`}>
                 SECCIÓN 04 / DETECCIÓN SÍSMICA INTEGRADA
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+              <h1 className={`text-2xl sm:text-3xl font-black tracking-tight uppercase ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {es ? 'Alertas de Sismos Android' : 'Android Earthquake Alerts'}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+              <p className={`text-xs sm:text-sm leading-relaxed max-w-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 {es
                   ? 'El sistema oficial de Google utiliza los sensores de tu celular como una red colaborativa de sismógrafos en miniatura para advertir segundos antes del temblor.'
                   : 'Google official alert system turns your phone sensors into a mini-seismograph network to warn you seconds before ground shaking arrives.'}
@@ -522,13 +622,17 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
               {ANDROID_ALERTS_STEPS.map((step, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl border border-white/10 bg-navy-900/80 flex items-start gap-3.5 hover:border-brand-yellow/40 transition-colors"
+                  className={`p-4 rounded-2xl border flex items-start gap-3.5 transition-colors ${
+                    isDark
+                      ? 'border-white/10 bg-navy-900/80 hover:border-brand-yellow/40'
+                      : 'border-slate-200 bg-white hover:border-amber-300 shadow-sm'
+                  }`}
                 >
-                  <div className="w-8 h-8 rounded-xl bg-brand-yellow/15 border border-brand-yellow/30 text-brand-yellow flex items-center justify-center font-mono text-xs font-black shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center font-mono text-xs font-black shrink-0">
                     {idx + 1}
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="text-xs sm:text-sm text-slate-200 font-semibold leading-relaxed">
+                    <p className={`text-xs sm:text-sm font-semibold leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                       {step[language]}
                     </p>
                   </div>
@@ -537,14 +641,18 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
             </div>
 
             {/* Condiciones operativas */}
-            <div className="p-4 rounded-2xl border border-brand-cyan/30 bg-navy-900/80 space-y-2">
-              <div className="flex items-center gap-2 text-brand-cyan">
+            <div className={`p-4 rounded-2xl border space-y-2 ${
+              isDark
+                ? 'border-brand-cyan/30 bg-navy-900/80 text-slate-300'
+                : 'border-cyan-200 bg-cyan-50/50 text-slate-700 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-cyan-600">
                 <Smartphone className="w-4 h-4" />
                 <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-black">
                   {es ? 'CONDICIONES DEL DISPOSITIVO' : 'DEVICE PREREQUISITES'}
                 </span>
               </div>
-              <ul className="text-xs text-slate-300 space-y-1.5 font-medium list-disc list-inside">
+              <ul className={`text-xs space-y-1.5 font-medium list-disc list-inside ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 <li>{es ? 'Android versión 10 o posterior.' : 'Android 10 or later.'}</li>
                 <li>{es ? 'Servicios de ubicación (GPS) activados.' : 'Location services (GPS) turned on.'}</li>
                 <li>{es ? 'Conexión a internet por datos o Wi-Fi.' : 'Active mobile data or Wi-Fi.'}</li>
@@ -558,13 +666,13 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
         {/* ======================================================================= */}
         {/* 3. MARCO INSTITUCIONAL & FUENTES ABIERTAS (POLÍTICA GOOGLE PLAY)        */}
         {/* ======================================================================= */}
-        <section className="mt-12 pt-6 border-t border-white/10 space-y-3">
+        <section className={`mt-12 pt-6 border-t space-y-3 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
           <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-400">
             <Info className="w-3.5 h-3.5 text-brand-cyan" />
             <span className="font-bold">{es ? 'TRANSPARENCIA & FUENTES OFICIALES' : 'TRANSPARENCY & OFFICIAL SOURCES'}</span>
           </div>
 
-          <p className="text-[11px] text-slate-400 leading-relaxed max-w-xl">
+          <p className={`text-[11px] leading-relaxed max-w-xl ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
             {NON_AFFILIATION_NOTICE[language]}
           </p>
 
@@ -575,13 +683,17 @@ export const PreparednessPage: React.FC<PreparednessPageProps> = ({ onNavigate }
                 href={src.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-xl border border-white/10 bg-navy-900/60 hover:border-brand-cyan/40 hover:bg-navy-900 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-all group"
+                className={`p-3 rounded-xl border flex items-center justify-between text-xs transition-all group ${
+                  isDark
+                    ? 'border-white/10 bg-navy-900/60 hover:border-brand-cyan/40 hover:bg-navy-900 text-slate-300 hover:text-white'
+                    : 'border-slate-200 bg-white hover:border-cyan-300 hover:bg-slate-50 text-slate-700 hover:text-slate-950 shadow-sm'
+                }`}
               >
                 <div className="min-w-0 pr-2">
-                  <span className="font-bold text-xs block truncate text-slate-200">{src.name}</span>
-                  <span className="text-[10px] font-mono text-brand-cyan block truncate">{src.topic[language]}</span>
+                  <span className={`font-bold text-xs block truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{src.name}</span>
+                  <span className={`text-[10px] font-mono block truncate ${isDark ? 'text-brand-cyan' : 'text-cyan-700'}`}>{src.topic[language]}</span>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-brand-cyan shrink-0" />
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-cyan shrink-0" />
               </a>
             ))}
           </div>

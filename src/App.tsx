@@ -23,7 +23,7 @@ import { AdultsDashboardPage } from './pages/Adults/AdultsDashboardPage';
 import { RankingPage } from './pages/Ranking/RankingPage';
 import { ProfilePage } from './pages/Profile/ProfilePage';
 import { LanguageProvider } from './i18n/LanguageContext';
-import { ThemeProvider } from './theme/ThemeContext';
+import { ThemeProvider, useTheme } from './theme/ThemeContext';
 
 // Lazy Loaded Minigames (Code-splitting to reduce initial bundle)
 const WhatIsSeismicGame = lazy(() => import('./components/games/WhatIsSeismicGame').then(m => ({ default: m.WhatIsSeismicGame })));
@@ -46,6 +46,7 @@ const BackpackPage = lazy(() => import('./pages/Backpack/BackpackPage').then(m =
 const FamilyPlanPage = lazy(() => import('./pages/Family/FamilyPlanPage').then(m => ({ default: m.FamilyPlanPage })));
 
 function AppContent() {
+  const { isDark } = useTheme();
   const [activeScreen, setActiveScreen] = useState<ScreenId>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.replace(/^\//, '').toLowerCase();
@@ -233,7 +234,7 @@ function AppContent() {
   const showTopBar = activeScreen !== 'splash' && !activeScreen.startsWith('game-') && activeScreen !== 'history';
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950">
+    <div className={`min-h-screen ${isDark ? 'bg-navy-950 text-slate-100' : 'bg-slate-50 text-slate-900'} flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950 transition-colors duration-200`}>
       {/* Real-Time Offline Status Indicator */}
       <OfflineIndicator />
       

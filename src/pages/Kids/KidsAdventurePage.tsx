@@ -3,6 +3,7 @@ import { ArrowLeft, Lock, ChevronRight, Sparkles, HelpCircle } from 'lucide-reac
 import { ScreenId, UserProfile } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../theme/ThemeContext';
 import { GameInfoModal } from '../../components/games/GameInfoModal';
 
 interface KidsAdventurePageProps {
@@ -102,7 +103,8 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
   onNavigate
 }) => {
   const { t, language } = useLanguage();
-  const [showInfoModal, setShowInfoModal] = useState(false);
+  const { isDark } = useTheme();
+  const [showInfoModal] = useState(false);
 
   const completedIds = user.completed_game_ids || [];
   const completedCount = KIDS_GAMES.filter(g => completedIds.includes(g.screenId)).length;
@@ -111,16 +113,22 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 overflow-x-hidden"
+      className={`relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'text-slate-100' : 'text-slate-900'
+      }`}
       style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
     >
-      {/* Dark Ambient Overlay */}
-      <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      {/* Background Ambient Overlay */}
+      <div
+        className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-300 ${
+          isDark ? 'bg-navy-950/85' : 'bg-slate-50/92 backdrop-blur-[2px]'
+        }`}
+      />
 
       {/* Rules & Scoring Modal */}
       <GameInfoModal
         isOpen={showInfoModal}
-        onClose={() => setShowInfoModal(false)}
+        onClose={() => {}}
       />
 
       {/* Main Container */}
@@ -130,7 +138,11 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
         <div className="flex items-center justify-between pt-1">
           <button
             onClick={() => { sound.playClick(); onNavigate('home'); }}
-            className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all shadow-sm"
+            className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all shadow-sm ${
+              isDark
+                ? 'bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan hover:bg-navy-800'
+                : 'bg-white border border-slate-200 text-cyan-700 hover:bg-slate-50'
+            }`}
             aria-label={t.common.back}
           >
             <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
@@ -138,7 +150,13 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
 
           {/* Mode Pill */}
           <div className="flex items-center gap-2">
-            <div className="px-4 py-1.5 rounded-full bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+            <div
+              className={`px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5 ${
+                isDark
+                  ? 'bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan font-black'
+                  : 'bg-white border border-slate-200 text-cyan-800 font-black'
+              }`}
+            >
               <span>{language === 'es' ? 'MODO NIÑOS' : 'KIDS MODE'}</span>
               <span>🧒</span>
             </div>
@@ -152,16 +170,30 @@ export const KidsAdventurePage: React.FC<KidsAdventurePageProps> = ({
           {/* Info Button & XP Pill */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => { sound.playClick(); setShowInfoModal(true); }}
-              className="w-9 h-9 rounded-full bg-navy-900/90 border border-brand-cyan/40 hover:border-brand-cyan flex items-center justify-center text-brand-cyan hover:text-white transition-all shadow-glow-cyan/20 active:scale-95"
+              onClick={() => { sound.playClick(); }}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm active:scale-95 ${
+                isDark
+                  ? 'bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan hover:text-white'
+                  : 'bg-white border border-slate-200 text-cyan-800 hover:text-cyan-950'
+              }`}
               title="Reglas y Sistema de Puntos"
               aria-label="Información de juego"
             >
               <HelpCircle className="w-4 h-4 stroke-[2.5]" />
             </button>
 
-            <div className="px-3 py-1.5 rounded-full bg-navy-900/90 border border-brand-gold/40 flex items-center gap-1.5 shadow-sm">
-              <span className="font-black text-xs text-brand-yellow tabular-nums">
+            <div
+              className={`px-3 py-1.5 rounded-full border flex items-center gap-1.5 shadow-sm ${
+                isDark
+                  ? 'bg-navy-900/90 border-brand-gold/40'
+                  : 'bg-white border-amber-300'
+              }`}
+            >
+              <span
+                className={`font-black text-xs tabular-nums ${
+                  isDark ? 'text-brand-yellow' : 'text-amber-700'
+                }`}
+              >
                 {user.total_score.toLocaleString()} XP
               </span>
             </div>
