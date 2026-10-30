@@ -230,6 +230,7 @@ export interface FamilyMember {
   status: MemberStatus;
   status_updated_at?: string;
   phone?: string;
+  avatar?: string; // ej: "/images/avatar/avatar_1.webp"
 }
 
 export interface FamilyPlan {
@@ -238,6 +239,9 @@ export interface FamilyPlan {
   invite_code: string;
   meeting_point_primary: string; // ej: "Plaza 25 de Mayo (Mitre y Mendoza)"
   meeting_point_secondary: string; // ej: "Parque de Mayo, zona despejada"
+  meeting_point_primary_coords?: [number, number]; // [lat, lng]
+  meeting_point_secondary_coords?: [number, number]; // [lat, lng]
+  home_coords?: [number, number]; // [lat, lng]
   out_of_province_contact: {
     name: string;
     phone: string;
@@ -274,6 +278,7 @@ export interface BackpackItem {
   is_packed: boolean;
   expiry_date?: string; // YYYY-MM-DD
   is_perishable: boolean;
+  image?: string;
 }
 
 export interface PreparednessIndex {

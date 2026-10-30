@@ -26,6 +26,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Cálculo oficial: 2 litros diarios por integrante durante 72 horas.',
     unit: 'L',
     is_perishable: true,
+    image: '/images/kit/agua.webp',
   },
   {
     id: 'alimentos-conservas',
@@ -34,6 +35,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Enlatados listos para consumo (atún, legumbres), barras de cereal y frutos secos.',
     unit: 'raciones',
     is_perishable: true,
+    image: '/images/kit/alimentos.webp',
   },
   {
     id: 'botiquin-auxilio',
@@ -42,6 +44,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Gasas estériles, apósitos, vendas, antiséptico, tijera y guantes descartables.',
     unit: 'kit',
     is_perishable: true,
+    image: '/images/kit/botiquin.webp',
   },
   {
     id: 'linterna-led',
@@ -50,6 +53,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Preferentemente a pilas o dinamo manual. No use velas ante posible fuga de gas.',
     unit: 'u.',
     is_perishable: false,
+    image: '/images/kit/linterna.webp',
   },
   {
     id: 'pilas-repuesto',
@@ -58,6 +62,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Juegos nuevos precintados para linterna y radio portátil.',
     unit: 'paq.',
     is_perishable: true,
+    image: '/images/kit/powerbank.webp',
   },
   {
     id: 'radio-pilas',
@@ -66,6 +71,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Para sintonizar los comunicados oficiales si colapsa la telefonía celular.',
     unit: 'u.',
     is_perishable: false,
+    image: '/images/kit/radio.webp',
   },
   {
     id: 'silbato-socorro',
@@ -74,6 +80,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Permite emitir señales acústicas sin agotar la voz en caso de quedar atrapado.',
     unit: 'u.',
     is_perishable: false,
+    image: '/images/kit/silbato.webp',
   },
   {
     id: 'documentos-hermeticos',
@@ -82,6 +89,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Copias de DNI, partidas de nacimiento, recetas médicas y títulos en sobre ziploc.',
     unit: 'juego',
     is_perishable: false,
+    image: '/images/kit/mochila.webp',
   },
   {
     id: 'dinero-efectivo',
@@ -90,6 +98,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Los cajeros automáticos y terminales de pago no funcionan sin suministro eléctrico.',
     unit: 'reserva',
     is_perishable: false,
+    image: '/images/kit/mochila.webp',
   },
   {
     id: 'copia-llaves',
@@ -98,6 +107,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Copias de acceso a la vivienda y vehículos para evacuación inmediata.',
     unit: 'juego',
     is_perishable: false,
+    image: '/images/kit/multiherramienta.webp',
   },
   {
     id: 'manta-termica',
@@ -106,6 +116,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Protege contra la hipotermia nocturna durante evacuaciones en intemperie.',
     unit: 'u.',
     is_perishable: false,
+    image: '/images/kit/manta.webp',
   },
   {
     id: 'repelente-mosquitos',
@@ -114,6 +125,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Prevención crítica contra el vector del dengue (Aedes aegypti) en época estival.',
     unit: 'u.',
     is_perishable: true,
+    image: '/images/kit/botiquin.webp',
   },
   {
     id: 'higiene-personal',
@@ -122,6 +134,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Papel higiénico, toallitas húmedas, jabón blanco y alcohol en gel.',
     unit: 'kit',
     is_perishable: false,
+    image: '/images/kit/botiquin.webp',
   },
   {
     id: 'herramienta-multiuso',
@@ -130,6 +143,7 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Herramienta de corte y apertura de latas sin requerir abrelatas externo.',
     unit: 'u.',
     is_perishable: false,
+    image: '/images/kit/multiherramienta.webp',
   },
   {
     id: 'cinta-adhesiva',
@@ -138,8 +152,34 @@ const DEFAULT_CATALOG: Omit<BackpackItem, 'quantity' | 'required_quantity' | 'is
     description: 'Útil para sellado de vidrios rajados, reparaciones provisorias y sujeciones.',
     unit: 'rollo',
     is_perishable: false,
+    image: '/images/kit/multiherramienta.webp',
   },
 ];
+
+export interface CategoryVisualMeta {
+  id: BackpackCategory;
+  name: string;
+  image: string;
+  description: string;
+}
+
+export const BACKPACK_CATEGORIES_META: CategoryVisualMeta[] = [
+  { id: 'agua', name: 'Agua Vital', image: '/images/kit/agua.webp', description: '2L diarios por integrante para 72h' },
+  { id: 'alimentos', name: 'Alimentación', image: '/images/kit/alimentos.webp', description: 'Raciones listas sin cocción' },
+  { id: 'botiquin', name: 'Primeros Auxilios', image: '/images/kit/botiquin.webp', description: 'Curaciones, gasas y antiséptico' },
+  { id: 'iluminacion', name: 'Iluminación', image: '/images/kit/linterna.webp', description: 'Linternas y baterías auxiliares' },
+  { id: 'comunicacion', name: 'Comunicación', image: '/images/kit/radio.webp', description: 'Radio AM/FM y silbato de alerta' },
+  { id: 'documentos', name: 'Documentación', image: '/images/kit/mochila.webp', description: 'Identificación y dinero en efectivo' },
+  { id: 'abrigo', name: 'Abrigo Térmico', image: '/images/kit/manta.webp', description: 'Mantas aluminizadas y protección' },
+  { id: 'herramientas', name: 'Herramientas', image: '/images/kit/multiherramienta.webp', description: 'Navaja multiuso y fijaciones' },
+  { id: 'higiene', name: 'Higiene', image: '/images/kit/botiquin.webp', description: 'Elementos sanitarios esenciales' },
+  { id: 'especiales', name: 'Especiales', image: '/images/kit/silbato.webp', description: 'Repelente, niños o medicación' },
+];
+
+export function getItemFallbackImage(category: BackpackCategory): string {
+  const meta = BACKPACK_CATEGORIES_META.find(c => c.id === category);
+  return meta?.image || '/images/kit/mochila.webp';
+}
 
 // Generador de código familiar (ej: SJ-4892)
 function generateInviteCode(): string {
@@ -161,6 +201,29 @@ export function loadFamilyPlan(defaultUserName = 'Titular'): FamilyPlan {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.members) && parsed.members.length > 0) {
+        let needsSave = false;
+        if (!parsed.meeting_point_primary_coords) {
+          parsed.meeting_point_primary_coords = [-31.5375, -68.5364]; // Plaza 25 de Mayo
+          needsSave = true;
+        }
+        if (!parsed.meeting_point_secondary_coords) {
+          parsed.meeting_point_secondary_coords = [-31.5303, -68.5418]; // Parque de Mayo
+          needsSave = true;
+        }
+        if (!parsed.home_coords) {
+          parsed.home_coords = [-31.5350, -68.5320]; // Casa centro
+          needsSave = true;
+        }
+        parsed.members = parsed.members.map((m: FamilyMember, idx: number) => {
+          if (!m.avatar) {
+            needsSave = true;
+            return { ...m, avatar: `/images/avatar/avatar_${(idx % 12) + 1}.webp` };
+          }
+          return m;
+        });
+        if (needsSave) {
+          saveFamilyPlan(parsed);
+        }
         return parsed;
       }
     }
@@ -168,13 +231,16 @@ export function loadFamilyPlan(defaultUserName = 'Titular'): FamilyPlan {
     console.warn('[familyService] Error leyendo plan familiar:', err);
   }
 
-  // Plan inicial por defecto
+  // Plan inicial por defecto con coordenadas de San Juan
   const initialPlan: FamilyPlan = {
     id: 'family-' + Date.now(),
     family_name: 'Mi Familia',
     invite_code: generateInviteCode(),
-    meeting_point_primary: 'Plaza del barrio / espacio abierto a 2 cuadras',
-    meeting_point_secondary: 'Parque o polideportivo de la zona',
+    meeting_point_primary: 'Plaza 25 de Mayo (Centro San Juan)',
+    meeting_point_secondary: 'Parque de Mayo (Zona Monumento al Deporte)',
+    meeting_point_primary_coords: [-31.5375, -68.5364],
+    meeting_point_secondary_coords: [-31.5303, -68.5418],
+    home_coords: [-31.5350, -68.5320],
     out_of_province_contact: {
       name: 'Familiar de referencia',
       phone: '',
@@ -189,6 +255,7 @@ export function loadFamilyPlan(defaultUserName = 'Titular'): FamilyPlan {
         role: 'cortar_suministros',
         status: 'safe',
         status_updated_at: new Date().toISOString(),
+        avatar: '/images/avatar/avatar_1.webp',
       },
       {
         id: 'member-2',
@@ -198,6 +265,7 @@ export function loadFamilyPlan(defaultUserName = 'Titular'): FamilyPlan {
         role: 'llevar_mochila',
         status: 'safe',
         status_updated_at: new Date().toISOString(),
+        avatar: '/images/avatar/avatar_2.webp',
       },
     ],
     updated_at: new Date().toISOString(),
@@ -224,10 +292,20 @@ export function loadBackpackInventory(membersCount = 2): BackpackItem[] {
   try {
     const raw = localStorage.getItem(BACKPACK_STORAGE_KEY);
     if (raw) {
-      const items = JSON.parse(raw) as BackpackItem[];
+      let items = JSON.parse(raw) as BackpackItem[];
       if (Array.isArray(items) && items.length > 0) {
-        // Asegurar que las cantidades requeridas se recalculen si cambió la familia
-        return recalculateRequiredQuantities(items, membersCount);
+        // Enriquecer con imágenes si no las tuvieran
+        let modified = false;
+        items = items.map((it) => {
+          if (!it.image) {
+            modified = true;
+            return { ...it, image: getItemFallbackImage(it.category) };
+          }
+          return it;
+        });
+        const recalculated = recalculateRequiredQuantities(items, membersCount);
+        if (modified) saveBackpackInventory(recalculated);
+        return recalculated;
       }
     }
   } catch (err) {
@@ -248,6 +326,7 @@ export function loadBackpackInventory(membersCount = 2): BackpackItem[] {
       quantity: 0,
       is_packed: false,
       expiry_date: catItem.is_perishable ? getSuggestedExpiryDate() : undefined,
+      image: catItem.image || getItemFallbackImage(catItem.category),
     };
   });
 
