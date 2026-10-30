@@ -203,16 +203,9 @@ export function loadFamilyPlan(defaultUserName = 'Titular'): FamilyPlan {
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.members) && parsed.members.length > 0) {
         let needsSave = false;
-        if (!parsed.meeting_point_primary_coords) {
-          parsed.meeting_point_primary_coords = [-31.5375, -68.5364]; // Plaza 25 de Mayo
-          needsSave = true;
-        }
-        if (!parsed.meeting_point_secondary_coords) {
-          parsed.meeting_point_secondary_coords = [-31.5303, -68.5418]; // Parque de Mayo
-          needsSave = true;
-        }
-        if (!parsed.home_coords) {
-          parsed.home_coords = [-31.5350, -68.5320]; // Casa centro
+        // Ensure custom_points array exists
+        if (!Array.isArray(parsed.custom_points)) {
+          parsed.custom_points = [];
           needsSave = true;
         }
         parsed.members = parsed.members.map((m: FamilyMember, idx: number) => {
@@ -242,6 +235,7 @@ export function loadFamilyPlan(defaultUserName = 'Titular'): FamilyPlan {
     meeting_point_primary_coords: [-31.5375, -68.5364],
     meeting_point_secondary_coords: [-31.5303, -68.5418],
     home_coords: [-31.5350, -68.5320],
+    custom_points: [],
     out_of_province_contact: {
       name: 'Familiar de referencia',
       phone: '',
@@ -299,13 +293,14 @@ export async function syncFamilyPlanToSupabase(plan: FamilyPlan): Promise<boolea
         created_by: plan.created_by || null,
         home_name: plan.home_name || 'Vivienda Familiar',
         home_address: plan.home_address || '',
-        home_coords: plan.home_coords || [-31.5350, -68.5320],
-        meeting_point_primary: plan.meeting_point_primary,
-        meeting_point_primary_coords: plan.meeting_point_primary_coords || [-31.5375, -68.5364],
+        home_coords: plan.home_coords || null,
+        meeting_point_primary: plan.meeting_point_primary || null,
+        meeting_point_primary_coords: plan.meeting_point_primary_coords || null,
         meeting_point_primary_notes: plan.meeting_point_primary_notes || '',
-        meeting_point_secondary: plan.meeting_point_secondary,
-        meeting_point_secondary_coords: plan.meeting_point_secondary_coords || [-31.5303, -68.5418],
+        meeting_point_secondary: plan.meeting_point_secondary || null,
+        meeting_point_secondary_coords: plan.meeting_point_secondary_coords || null,
         meeting_point_secondary_notes: plan.meeting_point_secondary_notes || '',
+        custom_points: plan.custom_points || [],
         out_of_province_contact: plan.out_of_province_contact,
         members: plan.members,
         updated_at: new Date().toISOString()
@@ -330,7 +325,7 @@ export async function fetchFamilyPlanFromSupabase(inviteCodeOrId: string): Promi
       .from('family_plans')
       .select('*')
       .or(`invite_code.eq.${code},id.eq.${inviteCodeOrId}`)
-      .single();
+      .maybeSingle();
 
     if (error || !data) return null;
 
@@ -341,13 +336,14 @@ export async function fetchFamilyPlanFromSupabase(inviteCodeOrId: string): Promi
       created_by: data.created_by,
       home_name: data.home_name || 'Vivienda Familiar',
       home_address: data.home_address || '',
-      home_coords: Array.isArray(data.home_coords) ? (data.home_coords as [number, number]) : [-31.5350, -68.5320],
-      meeting_point_primary: data.meeting_point_primary,
-      meeting_point_primary_coords: Array.isArray(data.meeting_point_primary_coords) ? (data.meeting_point_primary_coords as [number, number]) : [-31.5375, -68.5364],
+      home_coords: Array.isArray(data.home_coords) ? (data.home_coords as [number, number]) : null,
+      meeting_point_primary: data.meeting_point_primary || null,
+      meeting_point_primary_coords: Array.isArray(data.meeting_point_primary_coords) ? (data.meeting_point_primary_coords as [number, number]) : null,
       meeting_point_primary_notes: data.meeting_point_primary_notes || '',
-      meeting_point_secondary: data.meeting_point_secondary,
-      meeting_point_secondary_coords: Array.isArray(data.meeting_point_secondary_coords) ? (data.meeting_point_secondary_coords as [number, number]) : [-31.5303, -68.5418],
+      meeting_point_secondary: data.meeting_point_secondary || null,
+      meeting_point_secondary_coords: Array.isArray(data.meeting_point_secondary_coords) ? (data.meeting_point_secondary_coords as [number, number]) : null,
       meeting_point_secondary_notes: data.meeting_point_secondary_notes || '',
+      custom_points: Array.isArray(data.custom_points) ? data.custom_points : [],
       out_of_province_contact: data.out_of_province_contact || { name: '', phone: '', city: '' },
       members: Array.isArray(data.members) ? data.members : [],
       updated_at: data.updated_at || new Date().toISOString()
@@ -419,7 +415,10 @@ export function saveBackpackInventory(items: BackpackItem[], familyId?: string):
   try {
     localStorage.setItem(BACKPACK_STORAGE_KEY, JSON.stringify(items));
     if (familyId) {
-      syncBackpackToSupabase(familyId, items).catch(() => {});
+      const plan = loadFamilyPlan();
+      syncFamilyPlanToSupabase(plan).finally(() => {
+        syncBackpackToSupabase(familyId, items).catch(() => {});
+      });
     }
   } catch (err) {
     console.error('[familyService] Error guardando inventario:', err);
@@ -456,7 +455,7 @@ export async function fetchBackpackFromSupabase(familyId: string): Promise<Backp
       .from('family_backpacks')
       .select('items')
       .eq('family_id', familyId)
-      .single();
+      .maybeSingle();
 
     if (error || !data || !Array.isArray(data.items)) return null;
     saveBackpackInventory(data.items, familyId);

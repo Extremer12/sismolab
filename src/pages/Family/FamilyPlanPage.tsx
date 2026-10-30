@@ -30,7 +30,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import { ScreenId, EmergencyRole, MemberStatus, FamilyMember, FamilyPlan } from '../../types';
+import { ScreenId, EmergencyRole, MemberStatus, FamilyMember, FamilyPlan, CustomMeetingPoint } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useTheme } from '../../theme/ThemeContext';
@@ -40,7 +40,7 @@ import {
   fetchFamilyPlanFromSupabase,
   ROLE_LABELS,
 } from '../../services/familyBackpackService';
-import { MeetingPointPickerModal } from '../../components/family/MeetingPointPickerModal';
+import { MeetingPointPickerModal, CUSTOM_POINT_CATEGORIES } from '../../components/family/MeetingPointPickerModal';
 import { formatEvacuationRoute } from '../../services/geocodingService';
 
 interface FamilyPlanPageProps {
@@ -69,11 +69,12 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showEditPointsModal, setShowEditPointsModal] = useState(false);
+  const [modalTarget, setModalTarget] = useState<string>('primary');
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
-  const [activeMapTab, setActiveMapTab] = useState<'primary' | 'secondary' | 'home'>('primary');
+  const [activeMapTab, setActiveMapTab] = useState<string>('primary');
 
   // Form states for new member
   const [newMemberName, setNewMemberName] = useState('');
@@ -84,28 +85,39 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
 
   // Coordinates from current plan (always dynamically derived from plan state)
   const homeCoords: [number, number] = plan.home_coords || [-31.5350, -68.5320];
-  const primaryCoords: [number, number] = plan.meeting_point_primary_coords || [-31.5375, -68.5364];
-  const secondaryCoords: [number, number] = plan.meeting_point_secondary_coords || [-31.5303, -68.5418];
+  const primaryCoords: [number, number] | null = plan.meeting_point_primary_coords || null;
+  const secondaryCoords: [number, number] | null = plan.meeting_point_secondary_coords || null;
+  const customPoints: CustomMeetingPoint[] = plan.custom_points || [];
 
   useEffect(() => {
     saveFamilyPlan(plan);
   }, [plan]);
 
+  // Selected custom point if active tab is a custom point
+  const activeCustomPoint = useMemo(() => {
+    return customPoints.find((p) => p.id === activeMapTab) || null;
+  }, [customPoints, activeMapTab]);
+
   // Active center based on tab
   const mapCenter = useMemo<[number, number]>(() => {
-    if (activeMapTab === 'primary') return primaryCoords;
-    if (activeMapTab === 'secondary') return secondaryCoords;
+    if (activeMapTab === 'primary' && primaryCoords) return primaryCoords;
+    if (activeMapTab === 'secondary' && secondaryCoords) return secondaryCoords;
+    if (activeCustomPoint) return activeCustomPoint.coords;
     return homeCoords;
-  }, [activeMapTab, primaryCoords, secondaryCoords, homeCoords]);
+  }, [activeMapTab, primaryCoords, secondaryCoords, homeCoords, activeCustomPoint]);
 
   // Evacuation route calculations from home base
   const primaryRoute = useMemo(
-    () => formatEvacuationRoute(homeCoords, primaryCoords),
+    () => (primaryCoords ? formatEvacuationRoute(homeCoords, primaryCoords) : null),
     [homeCoords, primaryCoords]
   );
   const secondaryRoute = useMemo(
-    () => formatEvacuationRoute(homeCoords, secondaryCoords),
+    () => (secondaryCoords ? formatEvacuationRoute(homeCoords, secondaryCoords) : null),
     [homeCoords, secondaryCoords]
+  );
+  const customRoute = useMemo(
+    () => (activeCustomPoint ? formatEvacuationRoute(homeCoords, activeCustomPoint.coords) : null),
+    [homeCoords, activeCustomPoint]
   );
 
   // Leaflet custom DivIcons
@@ -163,6 +175,25 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
     });
   }, []);
 
+  const getCustomPin = (pt: CustomMeetingPoint, isSelected: boolean) => {
+    const cat = CUSTOM_POINT_CATEGORIES.find((c) => c.type === pt.type) || CUSTOM_POINT_CATEGORIES[5];
+    return L.divIcon({
+      className: 'custom-map-pin',
+      html: `
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+          <div style="display:flex;align-items:center;justify-content:center;width:${isSelected ? '40px' : '34px'};height:${isSelected ? '40px' : '34px'};background:${cat.color};border:${isSelected ? '3px solid #20D9F5' : '2.5px solid #FFFFFF'};border-radius:50%;box-shadow:0 6px 16px rgba(0,0,0,0.45);font-size:${isSelected ? '16px' : '14px'};">
+            ${cat.icon}
+          </div>
+          <div style="background:#061426;color:${isSelected ? '#20D9F5' : '#E2E8F0'};font-size:9px;font-weight:800;letter-spacing:0.5px;padding:2px 6px;border-radius:6px;margin-top:2px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.4);border:1px solid ${isSelected ? 'rgba(32,217,245,0.5)' : 'rgba(255,255,255,0.2)'};">
+            ${pt.name}
+          </div>
+        </div>
+      `,
+      iconSize: [80, 56],
+      iconAnchor: [40, 18],
+    });
+  };
+
   // Actions
   const handleCopyCode = () => {
     sound.playClick();
@@ -180,9 +211,57 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
     window.open(url, '_blank');
   };
 
+  const handleOpenEditPoints = (target = 'primary') => {
+    sound.playClick();
+    setModalTarget(target);
+    setShowEditPointsModal(true);
+  };
+
+  const handleDeleteSecondaryPoint = () => {
+    sound.playClick();
+    const updated: FamilyPlan = {
+      ...plan,
+      meeting_point_secondary: null,
+      meeting_point_secondary_coords: null,
+      meeting_point_secondary_notes: undefined,
+    };
+    setPlan(updated);
+    saveFamilyPlan(updated);
+    if (activeMapTab === 'secondary') {
+      setActiveMapTab('primary');
+    }
+  };
+
+  const handleDeleteCustomPoint = (id: string) => {
+    sound.playClick();
+    const updated: FamilyPlan = {
+      ...plan,
+      custom_points: (plan.custom_points || []).filter((p) => p.id !== id),
+    };
+    setPlan(updated);
+    saveFamilyPlan(updated);
+    if (activeMapTab === id) {
+      setActiveMapTab('primary');
+    }
+  };
+
   const handleShareMeetingPoint = () => {
     sound.playClick();
-    const text = `📍 *PUNTOS DE ENCUENTRO FAMILIA ${plan.family_name.toUpperCase()}*\n\n1️⃣ *Punto Principal:* ${plan.meeting_point_primary}\nUbicación GPS: https://maps.google.com/?q=${primaryCoords[0]},${primaryCoords[1]}\n\n2️⃣ *Punto Secundario:* ${plan.meeting_point_secondary}\nUbicación GPS: https://maps.google.com/?q=${secondaryCoords[0]},${secondaryCoords[1]}\n\n📞 *Contacto de Emergencia fuera de San Juan:* ${plan.out_of_province_contact.name} (${plan.out_of_province_contact.phone})\n\n_Generado con SISMO LAB (San Juan)_`;
+    let text = `📍 *PUNTOS DE ENCUENTRO FAMILIA ${plan.family_name.toUpperCase()}*\n\n`;
+    if (primaryCoords && plan.meeting_point_primary) {
+      text += `1️⃣ *Punto Principal:* ${plan.meeting_point_primary}\nUbicación GPS: https://maps.google.com/?q=${primaryCoords[0]},${primaryCoords[1]}\n\n`;
+    }
+    if (secondaryCoords && plan.meeting_point_secondary) {
+      text += `2️⃣ *Punto Secundario:* ${plan.meeting_point_secondary}\nUbicación GPS: https://maps.google.com/?q=${secondaryCoords[0]},${secondaryCoords[1]}\n\n`;
+    }
+    if (customPoints.length > 0) {
+      text += `✨ *Puntos Seguros Adicionales:*\n`;
+      customPoints.forEach((pt) => {
+        text += `▫️ *${pt.name}*: https://maps.google.com/?q=${pt.coords[0]},${pt.coords[1]}\n`;
+      });
+      text += `\n`;
+    }
+    text += `📞 *Contacto fuera de San Juan:* ${plan.out_of_province_contact.name} (${plan.out_of_province_contact.phone})\n\n_Generado con SISMO LAB (San Juan)_`;
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
@@ -529,16 +608,17 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
             </div>
           </div>
 
-          {/* Pestañas de enfoque rápido */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          {/* Pestañas de enfoque rápido y gestión de puntos */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+            {/* Punto 01 */}
             <button
               onClick={() => {
                 sound.playClick();
                 setActiveMapTab('primary');
               }}
-              className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap border ${
                 activeMapTab === 'primary'
-                  ? 'bg-emerald-600 text-white shadow-sm'
+                  ? 'bg-emerald-600 text-white border-emerald-400 shadow-sm'
                   : isDark
                   ? 'bg-navy-900/90 text-slate-300 hover:text-white border border-white/10'
                   : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -548,31 +628,77 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
               <span>{es ? 'Punto 01 · Principal' : 'Point 01 · Primary'}</span>
             </button>
 
+            {/* Punto 02 o Botón para Activar */}
+            {secondaryCoords ? (
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setActiveMapTab('secondary');
+                }}
+                className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap border ${
+                  activeMapTab === 'secondary'
+                    ? 'bg-sky-600 text-white border-sky-400 shadow-sm'
+                    : isDark
+                    ? 'bg-navy-900/90 text-slate-300 hover:text-white border border-white/10'
+                    : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-sky-300" />
+                <span>{es ? 'Punto 02 · Alterno' : 'Point 02 · Secondary'}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => handleOpenEditPoints('secondary')}
+                className="py-1.5 px-2.5 rounded-xl text-xs font-bold border border-dashed border-sky-400/50 text-sky-400 hover:bg-sky-500/10 transition-all flex items-center gap-1 shrink-0 whitespace-nowrap"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{es ? 'Agregar Punto 02' : 'Add Point 02'}</span>
+              </button>
+            )}
+
+            {/* Puntos Seguros Adicionales */}
+            {customPoints.map((pt) => {
+              const cat = CUSTOM_POINT_CATEGORIES.find((c) => c.type === pt.type) || CUSTOM_POINT_CATEGORIES[5];
+              const isSelected = activeMapTab === pt.id;
+              return (
+                <button
+                  key={pt.id}
+                  onClick={() => {
+                    sound.playClick();
+                    setActiveMapTab(pt.id);
+                  }}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap border ${
+                    isSelected
+                      ? 'bg-purple-600 text-white border-purple-400 shadow-sm'
+                      : isDark
+                      ? 'bg-navy-900/90 text-slate-300 hover:text-white border border-white/10'
+                      : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{pt.name}</span>
+                </button>
+              );
+            })}
+
+            {/* Botón para añadir nuevo punto seguro */}
             <button
-              onClick={() => {
-                sound.playClick();
-                setActiveMapTab('secondary');
-              }}
-              className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeMapTab === 'secondary'
-                  ? 'bg-sky-600 text-white shadow-sm'
-                  : isDark
-                  ? 'bg-navy-900/90 text-slate-300 hover:text-white border border-white/10'
-                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
-              }`}
+              onClick={() => handleOpenEditPoints('new')}
+              className="py-1.5 px-2.5 rounded-xl text-xs font-bold border border-dashed border-purple-400/50 text-purple-400 hover:bg-purple-500/10 transition-all flex items-center gap-1 shrink-0 whitespace-nowrap"
             >
-              <span className="w-2 h-2 rounded-full bg-sky-300" />
-              <span>{es ? 'Punto 02 · Alterno' : 'Point 02 · Secondary'}</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>{es ? 'Punto Seguro' : 'Safe Point'}</span>
             </button>
 
+            {/* Hogar */}
             <button
               onClick={() => {
                 sound.playClick();
                 setActiveMapTab('home');
               }}
-              className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap border ${
                 activeMapTab === 'home'
-                  ? isDark ? 'bg-brand-cyan text-navy-950 font-black shadow-glow-cyan/30' : 'bg-slate-900 text-white shadow-sm'
+                  ? isDark ? 'bg-brand-cyan text-navy-950 font-black shadow-glow-cyan/30 border-brand-cyan' : 'bg-slate-900 text-white shadow-sm border-slate-800'
                   : isDark
                   ? 'bg-navy-900/90 text-slate-300 hover:text-white border border-white/10'
                   : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -585,7 +711,7 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
 
           {/* CONTENEDOR DEL MAPA LEAFLET */}
           <div
-            className={`relative rounded-3xl overflow-hidden border shadow-md h-[340px] sm:h-[400px] ${
+            className={`relative z-0 isolate rounded-3xl overflow-hidden border shadow-md h-[340px] sm:h-[400px] ${
               isDark ? 'border-white/10 bg-[#061426]' : 'border-slate-300 bg-slate-100'
             }`}
           >
@@ -616,63 +742,106 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
               <RecenterMap center={mapCenter} zoom={15} />
 
               {/* Ruta sugerida de evacuación desde el hogar al punto principal */}
-              <Polyline
-                positions={[homeCoords, primaryCoords]}
-                pathOptions={{
-                  color: '#20D9F5',
-                  weight: 3.5,
-                  dashArray: '8, 8',
-                  opacity: 0.85,
-                }}
-              />
+              {homeCoords && primaryCoords && (
+                <Polyline
+                  positions={[homeCoords, primaryCoords]}
+                  pathOptions={{
+                    color: '#20D9F5',
+                    weight: 3.5,
+                    dashArray: '8, 8',
+                    opacity: 0.85,
+                  }}
+                />
+              )}
+
+              {/* Ruta sugerida de evacuación desde el hogar al punto alternativo */}
+              {homeCoords && secondaryCoords && (
+                <Polyline
+                  positions={[homeCoords, secondaryCoords]}
+                  pathOptions={{
+                    color: '#38BDF8',
+                    weight: 3.5,
+                    dashArray: '8, 8',
+                    opacity: 0.85,
+                  }}
+                />
+              )}
 
               {/* Marcador Hogar */}
-              <Marker
-                position={homeCoords}
-                icon={homePin}
-                eventHandlers={{
-                  click: () => setActiveMapTab('home'),
-                }}
-              >
-                <Popup className="custom-leaflet-popup">
-                  <div className="text-xs p-1 font-sans">
-                    <p className="font-bold text-slate-900">Vivienda Familiar</p>
-                    <p className="text-[11px] text-slate-600">Punto de partida de la evacuación</p>
-                  </div>
-                </Popup>
-              </Marker>
+              {homeCoords && (
+                <Marker
+                  position={homeCoords}
+                  icon={homePin}
+                  eventHandlers={{
+                    click: () => setActiveMapTab('home'),
+                  }}
+                >
+                  <Popup className="custom-leaflet-popup">
+                    <div className="text-xs p-1 font-sans">
+                      <p className="font-bold text-slate-900">{plan.home_name || (es ? 'Vivienda Familiar' : 'Home')}</p>
+                      <p className="text-[11px] text-slate-600">{plan.home_address || (es ? 'Punto de partida de la evacuación' : 'Evacuation start')}</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
 
               {/* Marcador Punto Principal */}
-              <Marker
-                position={primaryCoords}
-                icon={primaryPin}
-                eventHandlers={{
-                  click: () => setActiveMapTab('primary'),
-                }}
-              >
-                <Popup className="custom-leaflet-popup">
-                  <div className="text-xs p-1 font-sans">
-                    <p className="font-bold text-emerald-800">Punto 01 · Principal</p>
-                    <p className="text-[11px] text-slate-700">{plan.meeting_point_primary}</p>
-                  </div>
-                </Popup>
-              </Marker>
+              {primaryCoords && (
+                <Marker
+                  position={primaryCoords}
+                  icon={primaryPin}
+                  eventHandlers={{
+                    click: () => setActiveMapTab('primary'),
+                  }}
+                >
+                  <Popup className="custom-leaflet-popup">
+                    <div className="text-xs p-1 font-sans">
+                      <p className="font-bold text-emerald-800">Punto 01 · Principal</p>
+                      <p className="text-[11px] text-slate-700">{plan.meeting_point_primary}</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
 
               {/* Marcador Punto Secundario */}
-              <Marker
-                position={secondaryCoords}
-                icon={secondaryPin}
-                eventHandlers={{
-                  click: () => setActiveMapTab('secondary'),
-                }}
-              >
-                <Popup className="custom-leaflet-popup">
-                  <div className="text-xs p-1 font-sans">
-                    <p className="font-bold text-sky-800">Punto 02 · Alternativo</p>
-                    <p className="text-[11px] text-slate-700">{plan.meeting_point_secondary}</p>
-                  </div>
-                </Popup>
-              </Marker>
+              {secondaryCoords && (
+                <Marker
+                  position={secondaryCoords}
+                  icon={secondaryPin}
+                  eventHandlers={{
+                    click: () => setActiveMapTab('secondary'),
+                  }}
+                >
+                  <Popup className="custom-leaflet-popup">
+                    <div className="text-xs p-1 font-sans">
+                      <p className="font-bold text-sky-800">Punto 02 · Alternativo</p>
+                      <p className="text-[11px] text-slate-700">{plan.meeting_point_secondary}</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Marcadores de Puntos Personalizados */}
+              {customPoints.map((pt) => {
+                const pin = getCustomPin(pt, activeMapTab === pt.id);
+                return (
+                  <Marker
+                    key={pt.id}
+                    position={pt.coords}
+                    icon={pin}
+                    eventHandlers={{
+                      click: () => setActiveMapTab(pt.id),
+                    }}
+                  >
+                    <Popup className="custom-leaflet-popup">
+                      <div className="text-xs p-1 font-sans">
+                        <p className="font-bold text-purple-900">{pt.name}</p>
+                        {pt.notes && <p className="text-[11px] text-slate-700">{pt.notes}</p>}
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
             </MapContainer>
 
             {/* Badge flotante de San Juan */}
@@ -687,16 +856,19 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
               isDark ? 'bg-navy-900/90 border-white/10' : 'bg-white border-slate-200'
             }`}
           >
+            {/* VISTA: PUNTO 01 PRINCIPAL */}
             {activeMapTab === 'primary' && (
               <div className="space-y-2 animate-in fade-in duration-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-600 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
                     PUNTO 01 · REUNIÓN INMEDIATA
                   </span>
-                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded-lg border border-emerald-500/30">
-                    <Navigation className="w-3 h-3 text-emerald-400" />
-                    <span>{primaryRoute.distanceFormatted} · {primaryRoute.timeFormatted}</span>
-                  </div>
+                  {primaryRoute && (
+                    <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded-lg border border-emerald-500/30">
+                      <Navigation className="w-3 h-3 text-emerald-400" />
+                      <span>{primaryRoute.distanceFormatted} · {primaryRoute.timeFormatted}</span>
+                    </div>
+                  )}
                 </div>
                 <h3 className={`font-bold text-sm sm:text-base tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {plan.meeting_point_primary}
@@ -706,61 +878,149 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
                     ? 'Zona abierta y despejada. Libre de cableado aéreo, árboles añejos o vidrieras altas. Todo integrante que esté en casa o en inmediaciones debe dirigirse aquí en los primeros 15 minutos.'
                     : 'Open clearing free of powerlines and masonry. Rendezvous within the first 15 minutes.')}
                 </p>
-                <div className="pt-1 flex items-center justify-between flex-wrap gap-2">
-                  <span className={`text-[11px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    ~{primaryRoute.blocksEstimate} {es ? 'cuadras estimadas desde el hogar' : 'blocks from home base'}
-                  </span>
-                  <a
-                    href={primaryRoute.googleMapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-cyan hover:underline"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>{es ? 'Ruta a pie en Google Maps' : 'Open walking route'}</span>
-                  </a>
+                <div className="pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-white/5">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenEditPoints('primary')}
+                      className="py-1.5 px-3 rounded-xl bg-brand-cyan text-navy-950 font-black text-xs uppercase flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>{es ? 'Modificar este punto' : 'Edit point'}</span>
+                    </button>
+                    {primaryRoute && (
+                      <span className={`text-[11px] font-mono hidden sm:inline ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        ~{primaryRoute.blocksEstimate} {es ? 'cuadras desde casa' : 'blocks from home'}
+                      </span>
+                    )}
+                  </div>
+                  {primaryRoute && (
+                    <a
+                      href={primaryRoute.googleMapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-cyan hover:underline"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{es ? 'Ruta a pie en Google Maps' : 'Open walking route'}</span>
+                    </a>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* VISTA: PUNTO 02 ALTERNATIVO */}
             {activeMapTab === 'secondary' && (
               <div className="space-y-2 animate-in fade-in duration-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-sky-400 bg-sky-500/15 px-2 py-0.5 rounded border border-sky-500/30">
                     PUNTO 02 · ALTERNATIVO EXTERIOR
                   </span>
-                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-sky-300 bg-sky-950/40 px-2.5 py-0.5 rounded-lg border border-sky-500/30">
-                    <Navigation className="w-3 h-3 text-sky-300" />
-                    <span>{secondaryRoute.distanceFormatted} · {secondaryRoute.timeFormatted}</span>
-                  </div>
+                  {secondaryRoute && (
+                    <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-sky-300 bg-sky-950/40 px-2.5 py-0.5 rounded-lg border border-sky-500/30">
+                      <Navigation className="w-3 h-3 text-sky-300" />
+                      <span>{secondaryRoute.distanceFormatted} · {secondaryRoute.timeFormatted}</span>
+                    </div>
+                  )}
                 </div>
                 <h3 className={`font-bold text-sm sm:text-base tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {plan.meeting_point_secondary}
+                  {plan.meeting_point_secondary || (es ? 'Punto 02 No configurado' : 'Point 02 not set')}
                 </h3>
                 <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                   {plan.meeting_point_secondary_notes || (es
                     ? 'Punto de repliegue si el barrio sufre anegamiento, caída masiva de tendido eléctrico o corte de accesos principales. Espacio verde amplio o polideportivo municipal.'
                     : 'Secondary assembly area if the neighborhood is inaccessible.')}
                 </p>
-                <div className="pt-1 flex items-center justify-between flex-wrap gap-2">
-                  <span className={`text-[11px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    ~{secondaryRoute.blocksEstimate} {es ? 'cuadras estimadas desde el hogar' : 'blocks from home base'}
-                  </span>
-                  <a
-                    href={secondaryRoute.googleMapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:underline"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>{es ? 'Ruta a pie en Google Maps' : 'Open walking route'}</span>
-                  </a>
+                <div className="pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-white/5">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenEditPoints('secondary')}
+                      className="py-1.5 px-3 rounded-xl bg-sky-500 text-white font-bold text-xs uppercase flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>{es ? 'Modificar Punto 02' : 'Edit Point 02'}</span>
+                    </button>
+                    {secondaryCoords && (
+                      <button
+                        onClick={handleDeleteSecondaryPoint}
+                        className="py-1.5 px-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-bold text-xs flex items-center gap-1 active:scale-95 transition-all"
+                        title={es ? 'Eliminar este punto del mapa' : 'Delete point'}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{es ? 'Eliminar punto' : 'Delete'}</span>
+                      </button>
+                    )}
+                  </div>
+                  {secondaryRoute && (
+                    <a
+                      href={secondaryRoute.googleMapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:underline"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{es ? 'Ruta a pie en Google Maps' : 'Open walking route'}</span>
+                    </a>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* VISTA: PUNTO PERSONALIZADO (ESCUELA, TRABAJO, ETC.) */}
+            {activeCustomPoint && (
+              <div className="space-y-2 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple-400 bg-purple-500/15 px-2 py-0.5 rounded border border-purple-500/30">
+                    PUNTO SEGURO · {activeCustomPoint.type.toUpperCase()}
+                  </span>
+                  {customRoute && (
+                    <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-purple-300 bg-purple-950/40 px-2.5 py-0.5 rounded-lg border border-purple-500/30">
+                      <Navigation className="w-3 h-3 text-purple-300" />
+                      <span>{customRoute.distanceFormatted} · {customRoute.timeFormatted}</span>
+                    </div>
+                  )}
+                </div>
+                <h3 className={`font-bold text-sm sm:text-base tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {activeCustomPoint.name}
+                </h3>
+                <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {activeCustomPoint.notes || activeCustomPoint.address || (es ? 'Punto seguro establecido por la familia.' : 'Family safe point.')}
+                </p>
+                <div className="pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-white/5">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenEditPoints(activeCustomPoint.id)}
+                      className="py-1.5 px-3 rounded-xl bg-purple-600 text-white font-bold text-xs uppercase flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>{es ? 'Modificar' : 'Edit'}</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCustomPoint(activeCustomPoint.id)}
+                      className="py-1.5 px-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-bold text-xs flex items-center gap-1 active:scale-95 transition-all"
+                      title={es ? 'Eliminar este punto del mapa' : 'Delete point'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{es ? 'Eliminar punto' : 'Delete'}</span>
+                    </button>
+                  </div>
+                  {customRoute && (
+                    <a
+                      href={customRoute.googleMapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-400 hover:underline"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{es ? 'Ruta a pie en Google Maps' : 'Open walking route'}</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* VISTA: HOGAR FAMILIAR */}
             {activeMapTab === 'home' && (
-              <div className="space-y-1.5 animate-in fade-in duration-200">
+              <div className="space-y-2 animate-in fade-in duration-200">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-cyan-400 bg-brand-cyan/15 px-2 py-0.5 rounded border border-brand-cyan/30">
                   HOGAR FAMILIAR · PUNTO CERO
                 </span>
@@ -773,6 +1033,15 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
                     ? 'Al producirse el sismo: Agacharse, Cubrirse y Sujetarse. Luego de finalizado el movimiento, cortar suministros de gas y luz, retirar la mochila 72h junto a la puerta y evacuar caminando hacia el Punto 01.'
                     : 'Drop, Cover and Hold On. Shut off gas and electricity, grab the emergency backpack and evacuate.'}
                 </p>
+                <div className="pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-white/5">
+                  <button
+                    onClick={() => handleOpenEditPoints('home')}
+                    className="py-1.5 px-3 rounded-xl bg-brand-cyan text-navy-950 font-black text-xs uppercase flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>{es ? 'Modificar ubicación de casa' : 'Edit home location'}</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -888,7 +1157,7 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
       {/* 6. DRAWER / SHEET CONTEXTUAL DE DETALLE DEL INTEGRANTE                     */}
       {/* ========================================================================= */}
       {selectedMember && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
             className={`rounded-t-3xl sm:rounded-3xl p-6 max-w-md w-full space-y-5 shadow-2xl animate-in slide-in-from-bottom-5 duration-200 border max-h-[90vh] overflow-y-auto ${
               isDark ? 'bg-navy-900 border-white/15 text-white' : 'bg-white border-slate-200 text-slate-900'
@@ -1058,7 +1327,7 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
       {/* 7. MODAL PARA SUMAR INTEGRANTE                                            */}
       {/* ========================================================================= */}
       {showAddMemberModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div
             className={`rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 border ${
               isDark ? 'bg-navy-900 border-white/15 text-white' : 'bg-white border-slate-100 text-slate-900'
@@ -1185,6 +1454,7 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
         isOpen={showEditPointsModal}
         onClose={() => setShowEditPointsModal(false)}
         plan={plan}
+        initialTarget={modalTarget}
         onSavePlan={(updated) => {
           setPlan(updated);
           saveFamilyPlan(updated);
@@ -1195,7 +1465,7 @@ export const FamilyPlanPage: React.FC<FamilyPlanPageProps> = ({ onNavigate }) =>
       {/* 9. MODAL PARA UNIRSE A UNA FAMILIA EXISTENTE                              */}
       {/* ========================================================================= */}
       {showJoinModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div
             className={`rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 border ${
               isDark ? 'bg-navy-900 border-white/15 text-white' : 'bg-white border-slate-100 text-slate-900'

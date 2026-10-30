@@ -233,6 +233,17 @@ export interface FamilyMember {
   avatar?: string; // ej: "/images/avatar/avatar_1.webp"
 }
 
+export type CustomPointType = 'escuela' | 'trabajo' | 'salud' | 'seguro' | 'familiar' | 'otro';
+
+export interface CustomMeetingPoint {
+  id: string;
+  name: string;
+  coords: [number, number];
+  type: CustomPointType;
+  notes?: string;
+  address?: string;
+}
+
 export interface FamilyPlan {
   id: string;
   family_name: string;
@@ -240,13 +251,14 @@ export interface FamilyPlan {
   created_by?: string;
   home_name?: string;
   home_address?: string;
-  home_coords?: [number, number]; // [lat, lng]
-  meeting_point_primary: string; // ej: "Plaza 25 de Mayo (Mitre y Mendoza)"
-  meeting_point_primary_coords?: [number, number]; // [lat, lng]
+  home_coords?: [number, number] | null; // [lat, lng]
+  meeting_point_primary?: string | null; // ej: "Plaza 25 de Mayo (Mitre y Mendoza)"
+  meeting_point_primary_coords?: [number, number] | null; // [lat, lng]
   meeting_point_primary_notes?: string;
-  meeting_point_secondary: string; // ej: "Parque de Mayo, zona despejada"
-  meeting_point_secondary_coords?: [number, number]; // [lat, lng]
+  meeting_point_secondary?: string | null; // ej: "Parque de Mayo, zona despejada"
+  meeting_point_secondary_coords?: [number, number] | null; // [lat, lng]
   meeting_point_secondary_notes?: string;
+  custom_points?: CustomMeetingPoint[];
   out_of_province_contact: {
     name: string;
     phone: string;

@@ -19,6 +19,12 @@
   }
 }
 
+/* Ensure Leaflet panes and controls never bleed above modals */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0 !important;
+}
+
 /* From Uiverse.io by gharsh11032000 */ 
 .loader {
   width: 4.5em;
