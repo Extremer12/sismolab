@@ -23,6 +23,7 @@ import { AdultsDashboardPage } from './pages/Adults/AdultsDashboardPage';
 import { RankingPage } from './pages/Ranking/RankingPage';
 import { ProfilePage } from './pages/Profile/ProfilePage';
 import { LanguageProvider } from './i18n/LanguageContext';
+import { ThemeProvider } from './theme/ThemeContext';
 
 // Lazy Loaded Minigames (Code-splitting to reduce initial bundle)
 const WhatIsSeismicGame = lazy(() => import('./components/games/WhatIsSeismicGame').then(m => ({ default: m.WhatIsSeismicGame })));
@@ -450,9 +451,11 @@ function AppContent() {
 
 export function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

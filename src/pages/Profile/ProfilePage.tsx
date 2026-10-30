@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   ArrowLeft, Edit3, Check, Settings, ShieldCheck, Scale, Award, 
   ChevronRight, HelpCircle, Sparkles, LogOut, Trash2, AlertTriangle, 
-  Loader2, Star, Target, CheckCircle2, Lock, Flame
+  Loader2, Star, Target, CheckCircle2, Lock, Flame, Globe, Sun, Moon
 } from 'lucide-react';
 import { ScreenId, UserProfile, UserMode } from '../../types';
 import { OFFICIAL_ACHIEVEMENTS } from '../../services/gamesService';
@@ -10,7 +10,8 @@ import { OFFICIAL_AVATARS, AvatarOption, createGuestProfile, isNicknameAvailable
 import { supabase } from '../../services/supabase';
 import { sound } from '../../lib/sound';
 import { Modal } from '../../components/ui/Modal';
-import { useLanguage, LanguageToggle } from '../../i18n/LanguageContext';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../theme/ThemeContext';
 import { OnboardingTutorial } from '../../components/onboarding/OnboardingTutorial';
 
 interface ProfilePageProps {
@@ -24,7 +25,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onUpdateUser,
   onNavigate
 }) => {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { theme, isDark, setTheme } = useTheme();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user.nickname);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -229,8 +231,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </span>
 
         <div className="flex items-center gap-1.5">
-          <LanguageToggle compact />
-
           <button
             onClick={() => { sound.playClick(); onNavigate('admin'); }}
             className="w-10 h-10 rounded-2xl sismo-card flex items-center justify-center text-slate-400 hover:text-white"
@@ -464,28 +464,126 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 5. AJUSTES Y RECONFIGURACIÓN                                              */}
+      {/* 5. AJUSTES Y CONFIGURACIÓN (IDIOMA, TEMA & TUTORIAL)                     */}
       {/* ========================================================================= */}
-      <div className="sismo-card p-2">
-        <button
-          onClick={() => { sound.playClick(); setIsTutorialOpen(true); }}
-          className="w-full p-2.5 rounded-xl flex items-center justify-between text-xs text-slate-200 hover:text-white hover:bg-white/5 transition-colors"
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-navy-950 border border-brand-cyan/30 flex items-center justify-center text-brand-cyan shrink-0">
-              <HelpCircle className="w-4 h-4" />
-            </div>
-            <div className="text-left">
-              <span className="font-bold text-white block">
-                {language === 'es' ? 'Tutorial y Cambio de Edad' : 'Tutorial & Change Age'}
-              </span>
-              <span className="text-[11px] text-slate-400 block">
-                {language === 'es' ? 'Reconfigurar categoría y modo de juego' : 'Reconfigure mode and age bracket'}
-              </span>
-            </div>
+      <div className="sismo-card p-4 space-y-4">
+        <div className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+          {language === 'es' ? 'Preferencias y Configuración' : 'Preferences & Settings'}
+        </div>
+
+        {/* 1. Selector de Idioma (Español / English) */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-brand-cyan" />
+            <span className="text-xs font-bold text-white">
+              {language === 'es' ? 'Idioma del Sistema' : 'System Language'}
+            </span>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-500" />
-        </button>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                sound.playClick();
+                setLanguage('es');
+              }}
+              className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                language === 'es'
+                  ? 'bg-brand-cyan/20 border-brand-cyan text-brand-cyan shadow-sm font-black'
+                  : 'bg-navy-950/80 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+              }`}
+            >
+              <span className="text-base">🇦🇷</span>
+              <span>Español</span>
+              {language === 'es' && <Check className="w-3.5 h-3.5 ml-1" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                sound.playClick();
+                setLanguage('en');
+              }}
+              className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                language === 'en'
+                  ? 'bg-brand-cyan/20 border-brand-cyan text-brand-cyan shadow-sm font-black'
+                  : 'bg-navy-950/80 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+              }`}
+            >
+              <span className="text-base">🇺🇸</span>
+              <span>English</span>
+              {language === 'en' && <Check className="w-3.5 h-3.5 ml-1" />}
+            </button>
+          </div>
+        </div>
+
+        {/* 2. Selector de Tema Visual (Modo Oscuro / Modo Claro) */}
+        <div className="space-y-2 pt-2 border-t border-white/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {isDark ? <Moon className="w-4 h-4 text-amber-300" /> : <Sun className="w-4 h-4 text-amber-400" />}
+              <span className="text-xs font-bold text-white">
+                {language === 'es' ? 'Apariencia Visual' : 'Appearance'}
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">
+              {isDark ? (language === 'es' ? 'Oscuro' : 'Dark') : (language === 'es' ? 'Claro' : 'Light')}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                isDark
+                  ? 'bg-amber-400/15 border-amber-400/50 text-amber-300 shadow-sm font-black'
+                  : 'bg-navy-950/80 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+              }`}
+            >
+              <Moon className="w-4 h-4 text-amber-300" />
+              <span>{language === 'es' ? 'Modo Oscuro' : 'Dark Mode'}</span>
+              {isDark && <Check className="w-3.5 h-3.5 ml-1" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme('light')}
+              className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                !isDark
+                  ? 'bg-sky-400/20 border-sky-400 text-sky-300 shadow-sm font-black'
+                  : 'bg-navy-950/80 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+              }`}
+            >
+              <Sun className="w-4 h-4 text-sky-400" />
+              <span>{language === 'es' ? 'Modo Claro' : 'Light Mode'}</span>
+              {!isDark && <Check className="w-3.5 h-3.5 ml-1" />}
+            </button>
+          </div>
+        </div>
+
+        {/* 3. Tutorial y Cambio de Edad */}
+        <div className="pt-2 border-t border-white/5">
+          <button
+            onClick={() => { sound.playClick(); setIsTutorialOpen(true); }}
+            className="w-full p-2 rounded-xl flex items-center justify-between text-xs text-slate-200 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-navy-950 border border-brand-cyan/30 flex items-center justify-center text-brand-cyan shrink-0">
+                <HelpCircle className="w-4 h-4" />
+              </div>
+              <div className="text-left">
+                <span className="font-bold text-white block">
+                  {language === 'es' ? 'Tutorial y Cambio de Edad' : 'Tutorial & Change Age'}
+                </span>
+                <span className="text-[11px] text-slate-400 block">
+                  {language === 'es' ? 'Reconfigurar categoría y modo de juego' : 'Reconfigure mode and age bracket'}
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
+          </button>
+        </div>
       </div>
 
       {/* ========================================================================= */}

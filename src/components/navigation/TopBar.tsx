@@ -1,7 +1,8 @@
 import React from 'react';
 import { UserProfile, ScreenId } from '../../types';
 import { sound } from '../../lib/sound';
-import { LanguageToggle, useLanguage } from '../../i18n/LanguageContext';
+import { ThemeToggle, useTheme } from '../../theme/ThemeContext';
+import { Settings } from 'lucide-react';
 
 interface TopBarProps {
   user: UserProfile;
@@ -9,38 +10,58 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ user, onNavigate }) => {
-  const { t } = useLanguage();
+  const { isDark } = useTheme();
 
   return (
-    <header className="sticky top-0 z-40 bg-navy-950/90 backdrop-blur-xl border-b border-brand-cyan/15 px-4 py-3 max-w-md mx-auto w-full flex items-center justify-between select-none">
-      {/* Brand Group with Real App Icon */}
+    <header
+      className={`sticky top-0 z-40 px-4 py-2.5 max-w-md mx-auto w-full flex items-center justify-between select-none transition-colors duration-200 backdrop-blur-xl border-b ${
+        isDark
+          ? 'bg-navy-950/90 border-white/10 text-white'
+          : 'bg-white/90 border-slate-200 text-slate-900 shadow-sm'
+      }`}
+    >
+      {/* Brand Group with App Icon */}
       <div
-        onClick={() => { sound.playClick(); onNavigate('home'); }}
+        onClick={() => {
+          sound.playClick();
+          onNavigate('home');
+        }}
         className="flex items-center gap-2.5 cursor-pointer group"
       >
         <img
           src="/images/icono.png"
           alt="SISMO LAB"
-          className="w-10 h-10 rounded-2xl object-cover border border-brand-cyan/40 shadow-glow-cyan/40 shrink-0 group-hover:scale-105 transition-transform"
+          className="w-9 h-9 rounded-xl object-cover border border-brand-cyan/40 shadow-sm shrink-0 group-hover:scale-105 transition-transform"
         />
         <div>
-          <div className="text-[10px] font-black text-brand-cyan uppercase tracking-wider leading-none">
-            ZION CODE · SAN JUAN
+          <div className="font-black text-sm tracking-tight leading-tight flex items-center gap-1">
+            <span className={isDark ? 'text-white' : 'text-slate-900'}>SISMO</span>
+            <span className="text-brand-cyan">LAB</span>
           </div>
-          <div className="font-black text-base text-white tracking-tight leading-tight mt-0.5">
-            SISMO <span className="text-brand-cyan">LAB</span>
-          </div>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block leading-none mt-0.5">
+            SAN JUAN · PREVENCIÓN
+          </span>
         </div>
       </div>
 
-      {/* Right Controls: Language Selector + User Avatar & Score Pill */}
+      {/* Right Controls: Theme Switcher (Claro/Oscuro) + Profile Avatar */}
       <div className="flex items-center gap-2">
-        <LanguageToggle compact />
+        {/* Theme Toggle (Sun / Moon) */}
+        <ThemeToggle compact />
 
-        {/* Score & Profile Pill */}
+        {/* Profile Avatar Button */}
         <button
-          onClick={() => { sound.playClick(); onNavigate('profile'); }}
-          className="pl-1.5 pr-3 py-1.5 rounded-full bg-navy-900/90 border border-brand-gold/40 flex items-center gap-2 shadow-sm hover:border-brand-cyan hover:scale-105 active:scale-95 transition-all group"
+          onClick={() => {
+            sound.playClick();
+            onNavigate('profile');
+          }}
+          className={`p-1 pl-1.5 pr-2 rounded-full border flex items-center gap-2 transition-all active:scale-95 group ${
+            isDark
+              ? 'bg-navy-900/90 border-white/15 hover:border-brand-cyan text-white'
+              : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
+          }`}
+          title="Configuraciones y Perfil"
+          aria-label="Perfil y configuraciones"
         >
           {/* Circular 3D Avatar */}
           <div className="w-7 h-7 rounded-full bg-navy-950 border border-brand-cyan/50 overflow-hidden flex items-center justify-center shrink-0">
@@ -62,14 +83,9 @@ export const TopBar: React.FC<TopBarProps> = ({ user, onNavigate }) => {
             )}
           </div>
 
-          <div className="text-left leading-tight">
-            <span className="font-black text-xs text-brand-yellow tabular-nums block">
-              ★ {user.total_score.toLocaleString()}
-            </span>
-            <span className="text-[8px] font-extrabold text-slate-400 tracking-wider uppercase block truncate max-w-[65px]">
-              {user.nickname}
-            </span>
-          </div>
+          <span className="text-xs font-bold truncate max-w-[80px]">
+            {user.nickname || 'Perfil'}
+          </span>
         </button>
       </div>
     </header>

@@ -19,6 +19,7 @@ import {
 import { ScreenId, BackpackItem, BackpackCategory } from '../../types';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../theme/ThemeContext';
 import {
   loadBackpackInventory,
   saveBackpackInventory,
@@ -34,6 +35,7 @@ interface BackpackPageProps {
 
 export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
+  const { isDark } = useTheme();
   const es = language === 'es';
 
   const [familyPlan] = useState(() => loadFamilyPlan());
@@ -126,22 +128,34 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
 
     if (diffDays < 0) {
       return (
-        <span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-          <AlertTriangle className="w-3 h-3 text-rose-600" />
+        <span
+          className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border ${
+            isDark
+              ? 'text-rose-300 bg-rose-500/20 border-rose-500/30'
+              : 'text-rose-700 bg-rose-50 border-rose-200'
+          }`}
+        >
+          <AlertTriangle className="w-3 h-3 text-rose-500" />
           {es ? 'VENCIDO' : 'EXPIRED'}
         </span>
       );
     }
     if (diffDays <= 30) {
       return (
-        <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-          <Clock className="w-3 h-3 text-amber-600" />
+        <span
+          className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border ${
+            isDark
+              ? 'text-amber-300 bg-amber-500/20 border-amber-500/30'
+              : 'text-amber-800 bg-amber-50 border-amber-200'
+          }`}
+        >
+          <Clock className="w-3 h-3 text-amber-500" />
           {es ? `Vence en ${diffDays}d` : `Expires in ${diffDays}d`}
         </span>
       );
     }
     return (
-      <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
+      <span className={`text-[11px] font-medium flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
         <Calendar className="w-3 h-3 text-slate-400" />
         {expiryDate}
       </span>
@@ -149,19 +163,30 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950 pb-28">
-      
+    <div
+      className={`min-h-screen flex flex-col font-sans selection:bg-brand-cyan selection:text-navy-950 pb-28 transition-colors duration-200 ${
+        isDark ? 'bg-[#061426] text-slate-100' : 'bg-slate-50 text-slate-900'
+      }`}
+    >
       {/* ========================================================================= */}
-      {/* 1. HEADER DE IDENTIDAD SISMO LAB (AZUL MARINO Y CIAN)                     */}
+      {/* 1. HEADER DE IDENTIDAD SISMO LAB                                          */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-30 bg-[#061426] text-white border-b border-white/10 px-4 py-3 shadow-md">
+      <header
+        className={`sticky top-0 z-30 px-4 py-3 border-b transition-colors ${
+          isDark
+            ? 'bg-[#061426]/95 border-white/10 text-white backdrop-blur-md'
+            : 'bg-white/95 border-slate-200 text-slate-900 shadow-sm backdrop-blur-md'
+        }`}
+      >
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
             onClick={() => {
               sound.playClick();
               onNavigate('home');
             }}
-            className="flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-300 hover:text-white transition-colors"
+            className={`flex items-center gap-2 text-xs font-semibold tracking-wider transition-colors ${
+              isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-950'
+            }`}
           >
             <ArrowLeft className="w-4 h-4 text-brand-cyan" />
             <span>{es ? 'Inicio' : 'Home'}</span>
@@ -171,7 +196,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
             <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-brand-cyan block">
               SISMO LAB · PREPARACIÓN FAMILIAR
             </span>
-            <span className="text-xs font-bold text-white tracking-wide">
+            <span className={`text-xs font-bold tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}>
               {es ? 'Mochila de Supervivencia 72h' : '72h Emergency Kit'}
             </span>
           </div>
@@ -181,7 +206,13 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
       {/* ========================================================================= */}
       {/* 2. HERO EDITORIAL: FOTOGRAFÍA PROTAGONISTA & ESTADO DE PREPARACIÓN         */}
       {/* ========================================================================= */}
-      <section className="bg-gradient-to-b from-[#061426] via-[#0A1D33] to-[#0F2844] text-white px-4 pt-6 pb-8 border-b border-slate-200 shadow-sm relative overflow-hidden">
+      <section
+        className={`px-4 pt-6 pb-8 border-b shadow-sm relative overflow-hidden transition-colors ${
+          isDark
+            ? 'bg-gradient-to-b from-[#061426] via-[#0A1D33] to-[#0D2235] text-white border-white/10'
+            : 'bg-gradient-to-b from-[#0D2235] via-[#102A45] to-[#153455] text-white border-slate-200'
+        }`}
+      >
         {/* Glow de ambiente */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -251,7 +282,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Barra de progreso sobria y elegante */}
+            {/* Barra de progreso */}
             <div className="w-full h-2.5 rounded-full bg-navy-950/80 border border-white/10 overflow-hidden p-0.5">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${
@@ -291,14 +322,14 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. SUPERFICIE CLARA: CUADRÍCULA VISUAL DE CATEGORÍAS CON FOTOS REALES     */}
+      {/* 3. SECCIÓN DE CONTENIDO: CATEGORÍAS & INVENTARIO ADAPTABLE AL TEMA         */}
       {/* ========================================================================= */}
       <main className="max-w-2xl w-full mx-auto p-4 sm:p-6 space-y-6">
         
         {/* Selector Visual de Categorías */}
         <section className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-500">
+            <h2 className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
               {es ? 'Categorías de Equipamiento' : 'Equipment Categories'}
             </h2>
             {selectedCategory !== 'all' && (
@@ -307,7 +338,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                   sound.playClick();
                   setSelectedCategory('all');
                 }}
-                className="text-xs font-bold text-cyan-700 hover:text-cyan-800"
+                className="text-xs font-bold text-brand-cyan hover:underline"
               >
                 {es ? 'Ver todas' : 'View all'}
               </button>
@@ -331,12 +362,20 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                   }}
                   className={`p-2.5 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between h-28 overflow-hidden group ${
                     isSelected
-                      ? 'bg-cyan-50/80 border-cyan-500 shadow-sm ring-2 ring-cyan-500/20'
-                      : 'bg-white border-slate-200/90 hover:border-slate-300 shadow-sm'
+                      ? isDark
+                        ? 'bg-brand-cyan/15 border-brand-cyan shadow-glow-cyan/20 ring-2 ring-brand-cyan/30'
+                        : 'bg-cyan-50/90 border-cyan-500 shadow-sm ring-2 ring-cyan-500/20'
+                      : isDark
+                      ? 'bg-navy-900/90 border-white/10 hover:border-white/20 shadow-sm'
+                      : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
                   }`}
                 >
                   {/* Imagen fotográfica del kit */}
-                  <div className="w-12 h-12 rounded-xl bg-slate-100/80 p-1 flex items-center justify-center self-start">
+                  <div
+                    className={`w-12 h-12 rounded-xl p-1 flex items-center justify-center self-start border ${
+                      isDark ? 'bg-navy-950 border-white/10' : 'bg-slate-100 border-slate-200/80'
+                    }`}
+                  >
                     <img
                       src={cat.image}
                       alt={cat.name}
@@ -346,15 +385,21 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
 
                   {/* Nombre y badge de completitud */}
                   <div>
-                    <h3 className={`text-xs font-bold tracking-tight line-clamp-1 ${isSelected ? 'text-cyan-950 font-black' : 'text-slate-800'}`}>
+                    <h3
+                      className={`text-xs font-bold tracking-tight line-clamp-1 ${
+                        isSelected
+                          ? isDark ? 'text-brand-cyan font-black' : 'text-cyan-950 font-black'
+                          : isDark ? 'text-slate-200' : 'text-slate-800'
+                      }`}
+                    >
                       {cat.name}
                     </h3>
                     <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-[10px] font-mono text-slate-500 font-medium">
+                      <span className={`text-[10px] font-mono font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                         {catPacked}/{catItems.length}
                       </span>
                       {isComplete && (
-                        <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[8px]">
+                        <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[8px] font-bold">
                           ✓
                         </span>
                       )}
@@ -366,48 +411,62 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
           </div>
         </section>
 
-        {/* Filtros de estado secundarios (limpios y compactos) */}
-        <section className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-slate-200 pt-1">
+        {/* Filtros de estado secundarios */}
+        <section className={`flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b pt-1 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
           {[
             { id: 'all', label: es ? `Todos (${items.length})` : `All (${items.length})` },
             { id: 'missing', label: es ? `Pendientes (${missingCount})` : `Pending (${missingCount})` },
             { id: 'packed', label: es ? `Listos (${packedCount})` : `Packed (${packedCount})` },
             { id: 'perishable', label: es ? 'Control de Vencimiento' : 'Expiry Check' },
-          ].map((f) => (
-            <button
-              key={f.id}
-              onClick={() => {
-                sound.playClick();
-                setStatusFilter(f.id as any);
-              }}
-              className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                statusFilter === f.id
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+          ].map((f) => {
+            const isActive = statusFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => {
+                  sound.playClick();
+                  setStatusFilter(f.id as any);
+                }}
+                className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  isActive
+                    ? isDark
+                      ? 'bg-brand-cyan text-navy-950 font-black shadow-glow-cyan/30'
+                      : 'bg-slate-900 text-white shadow-sm'
+                    : isDark
+                    ? 'bg-navy-900/90 text-slate-300 hover:text-white border border-white/10'
+                    : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                {f.label}
+              </button>
+            );
+          })}
         </section>
 
         {/* ========================================================================= */}
-        {/* 4. LISTA COMPACTA DE INSUMOS (ESTILO MANUAL DE EQUIPO DE MONTAÑA / APPLE) */}
+        {/* 4. LISTA COMPACTA DE INSUMOS                                              */}
         {/* ========================================================================= */}
-        <section className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
-          
-          <div className="p-3.5 bg-slate-100/70 border-b border-slate-200 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+        <section
+          className={`rounded-2xl border shadow-sm overflow-hidden transition-colors ${
+            isDark ? 'bg-navy-900/90 border-white/10' : 'bg-white border-slate-200'
+          }`}
+        >
+          <div
+            className={`p-3.5 border-b flex items-center justify-between ${
+              isDark ? 'bg-navy-950/70 border-white/10' : 'bg-slate-100/70 border-slate-200'
+            }`}
+          >
+            <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
               {selectedCategory === 'all'
                 ? (es ? 'Lista de Insumos Esenciales' : 'Essential Supplies')
                 : (BACKPACK_CATEGORIES_META.find(c => c.id === selectedCategory)?.name || selectedCategory)}
             </span>
-            <span className="text-xs font-mono font-bold text-slate-500">
+            <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
               {filteredItems.length} {es ? 'elementos' : 'items'}
             </span>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className={`divide-y ${isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
             {filteredItems.map((item) => {
               const isExpanded = expandedItemId === item.id;
 
@@ -415,7 +474,9 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                 <div
                   key={item.id}
                   className={`p-3.5 sm:p-4 transition-colors ${
-                    item.is_packed ? 'bg-white hover:bg-slate-50/60' : 'bg-slate-50/30 hover:bg-slate-50'
+                    isDark
+                      ? item.is_packed ? 'bg-navy-900/40 hover:bg-navy-900/70' : 'bg-navy-950/30 hover:bg-navy-900/60'
+                      : item.is_packed ? 'bg-white hover:bg-slate-50/60' : 'bg-slate-50/30 hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center gap-3.5">
@@ -424,26 +485,35 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                     <button
                       type="button"
                       onClick={() => toggleItemPacked(item.id)}
-                      className="shrink-0 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                      className="shrink-0 p-1 transition-colors"
                       aria-label={item.is_packed ? 'Desmarcar' : 'Marcar como listo'}
                     >
                       {item.is_packed ? (
-                        <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+                        <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
                         </div>
                       ) : (
-                        <div className="w-6 h-6 rounded-full border-2 border-slate-300 hover:border-slate-400 flex items-center justify-center bg-white" />
+                        <div
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            isDark
+                              ? 'border-slate-500 hover:border-brand-cyan bg-navy-950'
+                              : 'border-slate-300 hover:border-slate-400 bg-white'
+                          }`}
+                        />
                       )}
                     </button>
 
                     {/* Miniatura de la fotografía del insumo */}
-                    <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 p-1 flex items-center justify-center shrink-0">
+                    <div
+                      className={`w-11 h-11 rounded-xl border p-1 flex items-center justify-center shrink-0 ${
+                        isDark ? 'bg-navy-950 border-white/10' : 'bg-slate-100 border-slate-200/80'
+                      }`}
+                    >
                       <img
                         src={item.image || getItemFallbackImage(item.category)}
                         alt={item.name}
                         className="w-full h-full object-contain filter drop-shadow-sm"
                         onError={(e) => {
-                          // Fallback si la imagen no carga
                           (e.target as HTMLImageElement).src = '/images/kit/mochila.webp';
                         }}
                       />
@@ -455,21 +525,29 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                         <h4
                           onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
                           className={`text-sm font-bold tracking-tight cursor-pointer ${
-                            item.is_packed ? 'text-slate-800 line-through opacity-80' : 'text-slate-900'
+                            item.is_packed
+                              ? isDark ? 'text-slate-400 line-through' : 'text-slate-700 line-through opacity-80'
+                              : isDark ? 'text-white' : 'text-slate-900'
                           }`}
                         >
                           {item.name}
                         </h4>
 
                         {/* Cantidad requerida destacada */}
-                        <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md shrink-0">
+                        <span
+                          className={`text-xs font-mono font-bold px-2 py-0.5 rounded-md shrink-0 border ${
+                            isDark
+                              ? 'bg-brand-gold/15 text-brand-yellow border-brand-gold/30'
+                              : 'bg-slate-100 text-slate-800 border-slate-200'
+                          }`}
+                        >
                           {item.required_quantity} {item.unit}
                         </span>
                       </div>
 
                       {/* Explicación breve y control de vencimiento */}
                       <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className="text-xs text-slate-500 line-clamp-1">
+                        <span className={`text-xs line-clamp-1 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
                           {item.description}
                         </span>
 
@@ -485,7 +563,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                     <button
                       type="button"
                       onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
-                      className="text-slate-400 hover:text-slate-600 p-1 shrink-0"
+                      className={`p-1 shrink-0 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       <ChevronDown
                         className={`w-4 h-4 transition-transform duration-200 ${
@@ -495,17 +573,21 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                     </button>
                   </div>
 
-                  {/* Detalle contextual expandible (solo cuando el usuario lo pide) */}
+                  {/* Detalle contextual expandible */}
                   {isExpanded && (
-                    <div className="mt-3 pt-3 border-t border-slate-100 pl-14 pr-2 space-y-2 text-xs animate-in fade-in duration-150">
-                      <p className="text-slate-600 leading-relaxed font-medium">
+                    <div
+                      className={`mt-3 pt-3 border-t pl-14 pr-2 space-y-2 text-xs animate-in fade-in duration-150 ${
+                        isDark ? 'border-white/10 text-slate-300' : 'border-slate-100 text-slate-600'
+                      }`}
+                    >
+                      <p className="leading-relaxed font-medium">
                         {item.description}
                       </p>
 
                       {/* Ajuste de fecha de vencimiento si es perecedero */}
                       {item.is_perishable && (
                         <div className="flex items-center gap-3 pt-1">
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <label className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                             <Calendar className="w-3.5 h-3.5 text-slate-400" />
                             <span>{es ? 'Fecha de vencimiento:' : 'Expiry date:'}</span>
                           </label>
@@ -513,7 +595,11 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                             type="date"
                             value={item.expiry_date || ''}
                             onChange={(e) => handleUpdateExpiry(item.id, e.target.value)}
-                            className="bg-slate-100 border border-slate-200 text-slate-800 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus:border-cyan-600"
+                            className={`rounded-lg px-2 py-1 text-xs font-mono focus:outline-none border ${
+                              isDark
+                                ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
+                                : 'bg-slate-100 border-slate-200 text-slate-800 focus:border-cyan-600'
+                            }`}
                           />
                         </div>
                       )}
@@ -526,8 +612,8 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
 
             {filteredItems.length === 0 && (
               <div className="p-8 text-center space-y-2">
-                <ShieldCheck className="w-8 h-8 text-slate-300 mx-auto" />
-                <p className="text-xs font-bold text-slate-500">
+                <ShieldCheck className={`w-8 h-8 mx-auto ${isDark ? 'text-slate-600' : 'text-slate-300'}`} />
+                <p className={`text-xs font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   {es ? 'No hay insumos en esta selección' : 'No items found in this filter'}
                 </p>
               </div>
@@ -541,15 +627,19 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
       {/* 5. MODAL PARA AGREGAR INSUMO PERSONALIZADO                                */}
       {/* ========================================================================= */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 border border-slate-100">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div
+            className={`rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 border ${
+              isDark ? 'bg-navy-900 border-white/15 text-white' : 'bg-white border-slate-100 text-slate-900'
+            }`}
+          >
             <div className="flex items-center justify-between">
-              <h3 className="font-black text-base text-slate-900 tracking-tight">
+              <h3 className="font-black text-base tracking-tight">
                 {es ? 'Agregar Insumo a la Mochila' : 'Add Emergency Supply'}
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className={`p-1 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -557,7 +647,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
 
             <form onSubmit={handleAddNewItem} className="space-y-3.5">
               <div>
-                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                <label className={`text-xs font-bold uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                   {es ? 'Nombre del insumo' : 'Supply name'}
                 </label>
                 <input
@@ -566,22 +656,30 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                   placeholder={es ? 'Ej: Medicamento crónico, anteojos, alimento canino' : 'e.g., Prescriptions, spare glasses'}
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-600 focus:bg-white"
+                  className={`w-full rounded-xl p-3 text-xs placeholder:text-slate-400 focus:outline-none border ${
+                    isDark
+                      ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
+                      : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600 focus:bg-white'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                  <label className={`text-xs font-bold uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                     {es ? 'Categoría' : 'Category'}
                   </label>
                   <select
                     value={newItemCategory}
                     onChange={(e) => setNewItemCategory(e.target.value as BackpackCategory)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-cyan-600"
+                    className={`w-full rounded-xl p-2.5 text-xs focus:outline-none border ${
+                      isDark
+                        ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
+                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600'
+                    }`}
                   >
                     {BACKPACK_CATEGORIES_META.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <option key={cat.id} value={cat.id} className={isDark ? 'bg-navy-950 text-white' : 'bg-white text-slate-900'}>
                         {cat.name}
                       </option>
                     ))}
@@ -589,7 +687,7 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                  <label className={`text-xs font-bold uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                     {es ? 'Cantidad requerida' : 'Quantity'}
                   </label>
                   <input
@@ -598,7 +696,11 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                     max="99"
                     value={newItemQuantity}
                     onChange={(e) => setNewItemQuantity(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-cyan-600 font-mono"
+                    className={`w-full rounded-xl p-2.5 text-xs font-mono focus:outline-none border ${
+                      isDark
+                        ? 'bg-navy-950 border-white/20 text-white focus:border-brand-cyan'
+                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-cyan-600'
+                    }`}
                   />
                 </div>
               </div>
@@ -607,13 +709,19 @@ export const BackpackPage: React.FC<BackpackPageProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="py-2.5 px-4 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800"
+                  className={`py-2.5 px-4 rounded-xl text-xs font-bold ${
+                    isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800'
+                  }`}
                 >
                   {es ? 'Cancelar' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="py-2.5 px-5 rounded-xl bg-slate-900 text-white font-bold text-xs uppercase tracking-wider hover:bg-slate-800 shadow-md"
+                  className={`py-2.5 px-5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all ${
+                    isDark
+                      ? 'bg-brand-cyan text-navy-950 hover:bg-cyan-300'
+                      : 'bg-slate-900 text-white hover:bg-slate-800'
+                  }`}
                 >
                   {es ? 'Guardar' : 'Save'}
                 </button>
