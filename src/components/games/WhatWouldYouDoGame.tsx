@@ -4,6 +4,7 @@ import { ScreenId, ScenarioChoice, UserMode } from '../../types';
 import { getRandomScenarios } from '../../services/gamesService';
 import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
+import { useTheme } from '../../theme/ThemeContext';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
 
@@ -18,6 +19,7 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const { isDark } = useTheme();
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
   const [scenarios, setScenarios] = useState<ScenarioChoice[]>(() => getRandomScenarios(4, userMode));
 
@@ -85,10 +87,12 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden"
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      className={`relative min-h-screen select-none font-sans flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
+      }`}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.png')` } : undefined}
     >
-      <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      {isDark && <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />}
 
       {/* 1. INTRO COUNTDOWN */}
       {gameState === 'intro' && (
@@ -124,7 +128,11 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
             <div className="flex items-center justify-between">
               <button
                 onClick={() => { sound.playClick(); onNavigate(userMode === 'kids' ? 'kids' : 'adults'); }}
-                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-purple/50 flex items-center justify-center text-purple-300 hover:bg-navy-800"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  isDark
+                    ? 'bg-navy-900/90 border border-brand-purple/50 text-purple-300 hover:bg-navy-800'
+                    : 'bg-white border border-purple-200 text-purple-700 shadow-sm hover:bg-purple-50'
+                }`}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -137,14 +145,20 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
                 </div>
               )}
 
-              <div className="flex items-center gap-1 bg-navy-900/90 px-3 py-1 rounded-2xl border border-brand-gold/40">
+              <div className={`flex items-center gap-1 px-3 py-1 rounded-2xl border ${
+                isDark ? 'bg-navy-900/90 border-brand-gold/40' : 'bg-white border-amber-200 shadow-xs'
+              }`}>
                 <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-                <span className="font-black text-xs text-brand-yellow tabular-nums">+{earnedScore} pts</span>
+                <span className={`font-black text-xs tabular-nums ${isDark ? 'text-brand-yellow' : 'text-amber-800 font-black'}`}>
+                  +{earnedScore} pts
+                </span>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full h-2.5 bg-navy-900 rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div className={`w-full h-2.5 rounded-full overflow-hidden p-0.5 border ${
+              isDark ? 'bg-navy-900 border-white/10' : 'bg-slate-200 border-slate-300'
+            }`}>
               <div
                 className="h-full bg-gradient-to-r from-brand-purple to-brand-cyan rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
@@ -154,14 +168,20 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
 
           {/* Center Scenario Content */}
           <div className="relative z-10 my-auto space-y-3.5 py-2">
-            <div className="sismo-card p-5 space-y-2.5 border-2 border-brand-purple/50 bg-navy-950/85 backdrop-blur-xl shadow-glow-purple/20">
+            <div className={`sismo-card p-5 space-y-2.5 border-2 ${
+              isDark ? 'border-brand-purple/50 bg-navy-950/85 backdrop-blur-xl shadow-glow-purple/20' : 'border-purple-200 bg-white shadow-sm'
+            }`}>
               <div className="flex items-center gap-3">
                 <span className="text-4xl shrink-0 filter drop-shadow">{scenario.icon}</span>
                 <div>
-                  <span className="text-[10px] font-black text-purple-400 uppercase tracking-wider block">
+                  <span className={`text-[10px] font-black uppercase tracking-wider block ${
+                    isDark ? 'text-purple-400' : 'text-purple-700'
+                  }`}>
                     {scenario.scenarioTitle}
                   </span>
-                  <h2 className="font-black text-base sm:text-lg text-white leading-snug">
+                  <h2 className={`font-black text-base sm:text-lg leading-snug ${
+                    isDark ? 'text-white' : 'text-slate-900'
+                  }`}>
                     {scenario.situation}
                   </h2>
                 </div>
@@ -172,7 +192,9 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
             <div className="space-y-2.5">
               {scenario.options.map((opt) => {
                 const isSelected = selectedOptionId === opt.id;
-                let btnStyle = 'border border-white/15 bg-navy-950/80 hover:border-brand-purple/60 text-slate-200';
+                let btnStyle = isDark
+                  ? 'border border-white/15 bg-navy-950/80 hover:border-brand-purple/60 text-slate-200'
+                  : 'border border-slate-200 bg-white hover:border-purple-300 text-slate-800 shadow-xs';
 
                 if (isAnswered) {
                   if (opt.isCorrect) {
@@ -208,13 +230,15 @@ export const WhatWouldYouDoGame: React.FC<WhatWouldYouDoGameProps> = ({
 
             {/* Feedback Sheet */}
             {isAnswered && chosenOpt && (
-              <div className="sismo-card p-4 space-y-2.5 border-brand-purple/50 bg-navy-900/90 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+              <div className={`sismo-card p-4 space-y-2.5 border backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 ${
+                isDark ? 'border-brand-purple/50 bg-navy-900/90 text-slate-300' : 'border-purple-200 bg-white text-slate-700 shadow-md'
+              }`}>
                 <span className={`text-xs font-black uppercase tracking-wider block ${
-                  chosenOpt.isCorrect ? 'text-emerald-400' : 'text-rose-400'
+                  chosenOpt.isCorrect ? (isDark ? 'text-emerald-400' : 'text-emerald-700') : (isDark ? 'text-rose-400' : 'text-rose-700')
                 }`}>
                   {chosenOpt.isCorrect ? '✅ ¡DECISIÓN CORRECTA!' : '⚠️ ¡PELIGRO!'}
                 </span>
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                   {chosenOpt.feedback}
                 </p>
 

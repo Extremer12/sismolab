@@ -3,6 +3,7 @@ import { Sparkles, Timer, Zap, Play, Flame, HelpCircle } from 'lucide-react';
 import { sound } from '../../lib/sound';
 import { GameInfoModal } from './GameInfoModal';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface GameIntroCountdownProps {
   title: string;
@@ -26,6 +27,7 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
   onStart
 }) => {
   const { language } = useLanguage();
+  const { isDark } = useTheme();
   const isEs = language === 'es';
 
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -63,10 +65,16 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
   }, [countdown, onStart]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-navy-950/95 backdrop-blur-2xl flex flex-col justify-between p-5 select-none font-sans text-slate-100 max-w-md mx-auto animate-in fade-in duration-300">
+    <div className={`fixed inset-0 z-50 backdrop-blur-2xl flex flex-col justify-between p-5 select-none font-sans max-w-md mx-auto animate-in fade-in duration-300 ${
+      isDark ? 'bg-navy-950/95 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
       {/* Background Ambience Graphic */}
-      <div className="absolute inset-0 bg-[radial-gradient(#22D3EE_1px,transparent_1px)] [background-size:20px_20px] opacity-15 pointer-events-none" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      {isDark && (
+        <>
+          <div className="absolute inset-0 bg-[radial-gradient(#22D3EE_1px,transparent_1px)] [background-size:20px_20px] opacity-15 pointer-events-none" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+        </>
+      )}
 
       {/* Fullscreen Rules & Scoring Info Modal */}
       <GameInfoModal
@@ -78,13 +86,21 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
       <div className="relative z-10 pt-2 flex items-center justify-between">
         <div className="w-9" />
 
-        <span className="px-4 py-1.5 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-black text-xs uppercase tracking-[0.2em] inline-block shadow-glow-cyan/20">
+        <span className={`px-4 py-1.5 rounded-full font-black text-xs uppercase tracking-[0.2em] inline-block ${
+          isDark
+            ? 'bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan shadow-glow-cyan/20'
+            : 'bg-cyan-100 border border-cyan-300 text-cyan-800'
+        }`}>
           {category}
         </span>
 
         <button
           onClick={() => { sound.playClick(); setShowInfoModal(true); }}
-          className="w-9 h-9 rounded-full bg-navy-900/90 border border-brand-cyan/40 hover:border-brand-cyan flex items-center justify-center text-brand-cyan hover:text-white transition-all shadow-glow-cyan/20 active:scale-95"
+          className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 ${
+            isDark
+              ? 'bg-navy-900/90 border border-brand-cyan/40 hover:border-brand-cyan text-brand-cyan hover:text-white shadow-glow-cyan/20'
+              : 'bg-white border border-slate-300 text-slate-700 hover:text-slate-950 shadow-sm'
+          }`}
           title={isEs ? 'Reglas y Sistema de Puntos' : 'Rules & Scoring System'}
           aria-label="Información del juego"
         >
@@ -97,7 +113,11 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
         {countdown === null ? (
           <div className="space-y-4 animate-in zoom-in-95 duration-200">
             {/* Stable Icon Box */}
-            <div className="relative mx-auto w-24 h-24 rounded-3xl bg-gradient-to-tr from-brand-electric via-navy-900 to-navy-950 border-2 border-brand-cyan flex items-center justify-center text-5xl shadow-glow-cyan/40">
+            <div className={`relative mx-auto w-24 h-24 rounded-3xl border-2 flex items-center justify-center text-5xl ${
+              isDark
+                ? 'bg-gradient-to-tr from-brand-electric via-navy-900 to-navy-950 border-brand-cyan shadow-glow-cyan/40'
+                : 'bg-white border-cyan-400 shadow-md'
+            }`}>
               <span>{icon}</span>
               <div className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-brand-gold text-navy-950 font-black text-[10px] uppercase shadow-md">
                 ★ +{rewardXp} XP
@@ -106,25 +126,37 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
 
             {/* Mission Name & Info */}
             <div className="space-y-1">
-              <h1 className="font-black text-2xl sm:text-3xl text-white uppercase tracking-tight leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
+              <h1 className={`font-black text-2xl sm:text-3xl uppercase tracking-tight leading-tight ${
+                isDark ? 'text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]' : 'text-slate-900'
+              }`}>
                 {title}
               </h1>
-              <p className="text-xs sm:text-sm text-brand-cyan font-bold">
+              <p className={`text-xs sm:text-sm font-bold ${
+                isDark ? 'text-brand-cyan' : 'text-cyan-700'
+              }`}>
                 {subtitle}
               </p>
             </div>
 
             {/* Mission Instructions Card */}
-            <div className="sismo-card p-4 text-left border-white/15 bg-navy-900/90 space-y-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+            <div className={`p-4 text-left space-y-2 rounded-2xl border ${
+              isDark ? 'sismo-card border-white/15 bg-navy-900/90' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <span className={`text-[10px] font-black uppercase tracking-wider block ${
+                isDark ? 'text-slate-400' : 'text-slate-700'
+              }`}>
                 {isEs ? '📋 OBJETIVO DEL DESAFÍO:' : '📋 MISSION OBJECTIVE:'}
               </span>
-              <p className="text-xs text-slate-200 font-medium leading-relaxed">
+              <p className={`text-xs font-medium leading-relaxed ${
+                isDark ? 'text-slate-200' : 'text-slate-800'
+              }`}>
                 {instructions}
               </p>
 
               {timeLimitSec && (
-                <div className="flex items-center gap-1.5 text-xs text-brand-yellow font-black pt-1 border-t border-white/10">
+                <div className={`flex items-center gap-1.5 text-xs font-black pt-1 border-t ${
+                  isDark ? 'text-brand-yellow border-white/10' : 'text-amber-800 border-slate-200'
+                }`}>
                   <Timer className="w-3.5 h-3.5" />
                   <span>{isEs ? `Tiempo límite por ronda: ${timeLimitSec} segundos` : `Time limit per round: ${timeLimitSec} seconds`}</span>
                 </div>
@@ -136,17 +168,23 @@ export const GameIntroCountdown: React.FC<GameIntroCountdownProps> = ({
           <div className="space-y-4 py-8 flex flex-col items-center justify-center animate-in zoom-in-50 duration-200">
             <div className="flex items-center justify-center h-36">
               {countdown > 0 ? (
-                <span className="font-black text-8xl sm:text-9xl text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-200 to-brand-cyan drop-shadow-[0_0_35px_rgba(34,211,238,0.8)] font-mono">
+                <span className={`font-black text-8xl sm:text-9xl font-mono ${
+                  isDark
+                    ? 'text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-200 to-brand-cyan drop-shadow-[0_0_35px_rgba(34,211,238,0.8)]'
+                    : 'text-cyan-700'
+                }`}>
                   {countdown}
                 </span>
               ) : (
-                <span className="font-black text-6xl sm:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-amber-300 to-yellow-500 tracking-widest drop-shadow-[0_0_40px_rgba(250,204,21,0.9)]">
+                <span className="font-black text-6xl sm:text-7xl text-amber-500 tracking-widest drop-shadow-md">
                   {isEs ? '¡YA!' : 'GO!'}
                 </span>
               )}
             </div>
 
-            <p className="text-sm font-extrabold text-brand-cyan tracking-wider uppercase">
+            <p className={`text-sm font-extrabold tracking-wider uppercase ${
+              isDark ? 'text-brand-cyan' : 'text-cyan-800 font-black'
+            }`}>
               {countdown > 0
                 ? (isEs ? '¡PREPARATE!' : 'GET READY!')
                 : (isEs ? '¡DEMOSTRÁ LO QUE SABÉS!' : 'SHOW WHAT YOU KNOW!')}

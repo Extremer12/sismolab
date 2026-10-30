@@ -106,17 +106,15 @@ export const RankingPage: React.FC<RankingPageProps> = ({ user, onNavigate }) =>
 
   return (
     <div
-      className={`relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans overflow-x-hidden transition-colors duration-200 ${
-        isDark ? 'text-slate-100' : 'text-slate-900'
+      className={`relative min-h-screen select-none font-sans overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
       }`}
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.png')` } : undefined}
     >
-      {/* Background Overlay */}
-      <div
-        className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-300 ${
-          isDark ? 'bg-navy-950/85' : 'bg-slate-50/92 backdrop-blur-[2px]'
-        }`}
-      />
+      {/* Background Overlay: Deep navy wash ONLY in dark mode */}
+      {isDark && (
+        <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      )}
 
       {/* Main Content Layout */}
       <div className="relative z-10 p-4 sm:p-5 space-y-4 pb-28 max-w-md mx-auto">

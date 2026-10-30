@@ -113,17 +113,15 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
 
   return (
     <div
-      className={`relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans overflow-x-hidden transition-colors duration-200 ${
-        isDark ? 'text-slate-100' : 'text-slate-900'
+      className={`relative min-h-screen select-none font-sans overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
       }`}
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.png')` } : undefined}
     >
-      {/* Background Ambient Overlay */}
-      <div
-        className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-300 ${
-          isDark ? 'bg-navy-950/85' : 'bg-slate-50/92 backdrop-blur-[2px]'
-        }`}
-      />
+      {/* Background Ambient Overlay: Deep navy wash ONLY in dark mode */}
+      {isDark && (
+        <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      )}
 
       {/* Rules & Scoring Modal */}
       <GameInfoModal
@@ -305,11 +303,21 @@ export const AdultsDashboardPage: React.FC<AdultsDashboardPageProps> = ({
         </div>
 
         {/* 4. Bottom Motivational Banner */}
-        <div className="rounded-3xl border border-purple-500/20 bg-gradient-to-r from-navy-950 via-purple-950/40 to-navy-950 p-3.5 flex items-center gap-3 shadow-md">
-          <div className="w-10 h-10 rounded-2xl bg-purple-500/15 border border-purple-500/40 flex items-center justify-center text-purple-300 shrink-0">
+        <div className={`rounded-3xl border p-3.5 flex items-center gap-3 transition-colors ${
+          isDark
+            ? 'border-purple-500/20 bg-gradient-to-r from-navy-950 via-purple-950/40 to-navy-950 shadow-md'
+            : 'border-slate-200 bg-white shadow-sm'
+        }`}>
+          <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center shrink-0 ${
+            isDark
+              ? 'bg-purple-500/15 border-purple-500/40 text-purple-300'
+              : 'bg-purple-100 border-purple-300 text-purple-800'
+          }`}>
             <Sparkles className="w-5 h-5" />
           </div>
-          <p className="text-[11px] text-slate-300 font-bold leading-tight">
+          <p className={`text-[11px] font-bold leading-tight ${
+            isDark ? 'text-slate-300' : 'text-slate-700'
+          }`}>
             {language === 'es'
               ? '¡Completá los entrenamientos técnicos y sumá puntos para la clasificación general!'
               : 'Complete the technical training modules and gain points for the global leaderboard!'}

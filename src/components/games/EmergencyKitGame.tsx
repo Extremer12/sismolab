@@ -4,6 +4,7 @@ import { ScreenId, EmergencyKitItem, UserMode } from '../../types';
 import { getEmergencyKitItems } from '../../services/gamesService';
 import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
+import { useTheme } from '../../theme/ThemeContext';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -22,6 +23,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const { isDark } = useTheme();
   const { language } = useLanguage();
   const isEs = language === 'es';
   const allKitItems = getEmergencyKitItems(language);
@@ -307,10 +309,12 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 flex flex-col justify-between p-3.5 sm:p-5 pb-20 max-w-md mx-auto overflow-x-hidden"
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      className={`relative min-h-screen select-none font-sans flex flex-col justify-between p-3.5 sm:p-5 pb-20 max-w-md mx-auto overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
+      }`}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.png')` } : undefined}
     >
-      <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      {isDark && <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />}
 
       {/* 1. INTRO SCREEN */}
       {gameState === 'intro' && (
@@ -351,29 +355,39 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
               <button
                 type="button"
                 onClick={() => { sound.playClick(); onNavigate(userMode === 'kids' ? 'kids' : 'adults'); }}
-                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all cursor-pointer"
+                className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all cursor-pointer ${
+                  isDark
+                    ? 'bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan hover:bg-navy-800'
+                    : 'bg-white border border-slate-200 text-cyan-700 hover:bg-slate-50 shadow-sm'
+                }`}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
               {/* Countdown Timer */}
               <div className={`flex items-center gap-1.5 px-3.5 py-1 rounded-full font-black text-xs border ${
-                timeLeft <= 10 ? 'bg-rose-950/90 border-rose-500 text-rose-400 animate-pulse' : 'bg-navy-900/90 border-brand-cyan/40 text-brand-cyan'
+                timeLeft <= 10
+                  ? isDark ? 'bg-rose-950/90 border-rose-500 text-rose-400 animate-pulse' : 'bg-rose-100 border-rose-300 text-rose-700 animate-pulse'
+                  : isDark ? 'bg-navy-900/90 border-brand-cyan/40 text-brand-cyan' : 'bg-white border-slate-200 text-cyan-800 shadow-sm'
               }`}>
                 <Timer className="w-4 h-4" />
                 <span>00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}s</span>
               </div>
 
               {/* Capacity Pill */}
-              <div className="flex items-center gap-1.5 bg-navy-900/90 px-3 py-1 rounded-2xl border border-brand-cyan/40 shadow-glow-cyan/20">
-                <span className="font-black text-xs text-brand-cyan">
+              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-2xl border ${
+                isDark ? 'bg-navy-900/90 border-brand-cyan/40 text-brand-cyan shadow-glow-cyan/20' : 'bg-white border-slate-200 text-cyan-800 shadow-sm'
+              }`}>
+                <span className="font-black text-xs">
                   🎒 {packedItemIds.length}/{MAX_BACKPACK_CAPACITY}
                 </span>
               </div>
             </div>
 
             {/* Instruction Tip */}
-            <div className="text-center flex items-center justify-center gap-1.5 text-xs text-brand-cyan font-black uppercase tracking-wider pt-0.5">
+            <div className={`text-center flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider pt-0.5 ${
+              isDark ? 'text-brand-cyan' : 'text-cyan-800'
+            }`}>
               <Hand className="w-3.5 h-3.5 animate-bounce" />
               <span>{isEs ? 'Tocá o arrastrá hacia la mochila' : 'Tap or drag into backpack'}</span>
             </div>
@@ -399,7 +413,9 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
               />
 
               {/* Capacity Floating Badge */}
-              <div className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-navy-950/95 border border-brand-cyan text-brand-cyan font-black text-[11px] shadow-lg">
+              <div className={`absolute -bottom-2 px-3 py-0.5 rounded-full border font-black text-[11px] shadow-lg ${
+                isDark ? 'bg-navy-950/95 border-brand-cyan text-brand-cyan' : 'bg-white border-cyan-400 text-cyan-800'
+              }`}>
                 {packedItemIds.length}/{MAX_BACKPACK_CAPACITY} {isEs ? 'EMPACADOS' : 'PACKED'}
               </div>
             </div>
@@ -412,7 +428,11 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => handleUnpackItem(item.id)}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-navy-950/95 border border-brand-cyan/40 text-[11px] text-slate-100 hover:border-rose-400 active:scale-95 transition-all group shadow-sm cursor-pointer"
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] active:scale-95 transition-all group shadow-sm cursor-pointer ${
+                      isDark
+                        ? 'bg-navy-950/95 border-brand-cyan/40 text-slate-100 hover:border-rose-400'
+                        : 'bg-white border-slate-200 text-slate-800 hover:border-rose-400'
+                    }`}
                     title={isEs ? 'Quitar de la mochila' : 'Remove from backpack'}
                   >
                     {item.image ? (
@@ -421,7 +441,7 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                       <span className="text-[11px] pointer-events-none">{item.icon}</span>
                     )}
                     <span className="truncate max-w-[65px] text-[10px] pointer-events-none">{item.name}</span>
-                    <X className="w-2.5 h-2.5 text-slate-400 group-hover:text-rose-300 pointer-events-none" />
+                    <X className="w-2.5 h-2.5 text-slate-400 group-hover:text-rose-500 pointer-events-none" />
                   </button>
                 ))}
               </div>
@@ -431,10 +451,12 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
           {/* DYNAMIC 4-SLOT TRAY */}
           <div className="relative z-10 space-y-2">
             {/* Header info */}
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 px-1">
+            <div className={`flex items-center justify-between text-[11px] font-bold px-1 ${
+              isDark ? 'text-slate-300' : 'text-slate-700'
+            }`}>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-brand-cyan animate-ping" />
-                <span className="uppercase text-brand-cyan font-black tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping" />
+                <span className={`uppercase font-black tracking-wider ${isDark ? 'text-brand-cyan' : 'text-cyan-800'}`}>
                   {isEs ? `Objetos por clasificar (${totalUnpackedCount})` : `Items to classify (${totalUnpackedCount})`}
                 </span>
               </div>
@@ -443,7 +465,11 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                 <button
                   type="button"
                   onClick={handleRotateAllSlots}
-                  className="px-2.5 py-1 rounded-lg bg-navy-900/90 border border-brand-cyan/40 text-[11px] text-brand-cyan hover:bg-navy-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer font-bold shadow-sm"
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] flex items-center gap-1 transition-all active:scale-95 cursor-pointer font-bold shadow-sm ${
+                    isDark
+                      ? 'bg-navy-900/90 border-brand-cyan/40 text-brand-cyan hover:bg-navy-800'
+                      : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                  }`}
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>{isEs ? `Rotar (+${waitingDeck.length})` : `Rotate (+${waitingDeck.length})`}</span>
@@ -458,7 +484,9 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                   return (
                     <div
                       key={`empty-slot-${idx}`}
-                      className="h-24 rounded-2xl border-2 border-dashed border-white/10 bg-navy-950/40 flex items-center justify-center text-slate-500 text-xs font-bold"
+                      className={`h-24 rounded-2xl border-2 border-dashed flex items-center justify-center text-xs font-bold ${
+                        isDark ? 'border-white/10 bg-navy-950/40 text-slate-500' : 'border-slate-300 bg-slate-100 text-slate-400'
+                      }`}
                     >
                       <span>{isEs ? '✓ Clasificado' : '✓ Classified'}</span>
                     </div>
@@ -469,7 +497,11 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                   <div
                     key={item.id}
                     onPointerDown={(e) => handlePointerDownItem(e, item, idx)}
-                    className="relative p-2 rounded-2xl bg-gradient-to-b from-navy-900/95 to-navy-950/95 border border-brand-cyan/40 shadow-lg flex flex-col items-center justify-between text-center cursor-pointer hover:border-brand-cyan hover:scale-[1.02] active:scale-95 transition-all group touch-none select-none"
+                    className={`relative p-2 rounded-2xl border shadow-sm flex flex-col items-center justify-between text-center cursor-pointer hover:scale-[1.02] active:scale-95 transition-all group touch-none select-none ${
+                      isDark
+                        ? 'bg-gradient-to-b from-navy-900/95 to-navy-950/95 border-brand-cyan/40 hover:border-brand-cyan'
+                        : 'bg-white border-slate-200 hover:border-cyan-400'
+                    }`}
                   >
                     {/* Item Visual */}
                     <div className="w-12 h-12 flex items-center justify-center pointer-events-none mt-0.5">
@@ -477,29 +509,37 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] group-hover:scale-110 transition-transform"
+                          className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)] group-hover:scale-110 transition-transform"
                         />
                       ) : (
-                        <span className="text-3xl filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] group-hover:scale-110 transition-transform">
+                        <span className="text-3xl filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)] group-hover:scale-110 transition-transform">
                           {item.icon}
                         </span>
                       )}
                     </div>
 
                     {/* Item Name */}
-                    <span className="text-[11px] font-black text-slate-100 leading-tight mt-1 line-clamp-1 pointer-events-none">
+                    <span className={`text-[11px] font-black leading-tight mt-1 line-clamp-1 pointer-events-none ${
+                      isDark ? 'text-slate-100' : 'text-slate-900'
+                    }`}>
                       {item.name}
                     </span>
 
                     {/* Action Buttons Row */}
-                    <div className="w-full flex items-center gap-1 mt-1 pt-1 border-t border-white/5">
+                    <div className={`w-full flex items-center gap-1 mt-1 pt-1 border-t ${
+                      isDark ? 'border-white/5' : 'border-slate-100'
+                    }`}>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           packItemFromSlot(item, idx);
                         }}
-                        className="flex-1 py-1 rounded-lg bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        className={`flex-1 py-1 rounded-lg font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-colors cursor-pointer ${
+                          isDark
+                            ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
+                            : 'bg-cyan-100 hover:bg-cyan-200 text-cyan-800'
+                        }`}
                       >
                         <span>{isEs ? 'Empacar' : 'Pack'}</span>
                         <Check className="w-3 h-3 stroke-[3]" />
@@ -509,7 +549,11 @@ export const EmergencyKitGame: React.FC<EmergencyKitGameProps> = ({
                         <button
                           type="button"
                           onClick={(e) => handleSkipSlotItem(idx, e)}
-                          className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors cursor-pointer"
+                          className={`px-2 py-1 rounded-lg font-bold text-[10px] transition-colors cursor-pointer ${
+                            isDark
+                              ? 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                          }`}
                           title={isEs ? 'Pasar al final' : 'Skip to back'}
                         >
                           <span>↷</span>

@@ -38,17 +38,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div
-      className={`relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans overflow-x-hidden transition-colors duration-200 ${
-        isDark ? 'text-slate-100' : 'text-slate-900'
+      className={`relative min-h-screen select-none font-sans overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
       }`}
-      style={{ backgroundImage: `url('/images/fondoinicio.webp')` }}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.webp')` } : undefined}
     >
-      {/* Background Overlay: Deep navy wash in dark mode, clean slate glass wash in light mode */}
-      <div
-        className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-300 ${
-          isDark ? 'bg-navy-950/85' : 'bg-slate-50/92 backdrop-blur-[2px]'
-        }`}
-      />
+      {/* Background Overlay: Deep navy wash ONLY in dark mode */}
+      {isDark && (
+        <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      )}
 
       {/* Main Container Layout */}
       <div className="relative z-10 p-4 sm:p-5 space-y-5 pb-24 max-w-md mx-auto">
@@ -64,7 +62,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               }`}
             >
               {t.home.heroTitle1}<br />
-              <span className={isDark ? 'text-brand-cyan' : 'text-cyan-600'}>
+              <span className={isDark ? 'text-brand-cyan' : 'text-cyan-700'}>
                 {t.home.heroTitle2}
               </span>
             </h1>
@@ -74,7 +72,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <svg
                 viewBox="0 0 120 18"
                 fill="none"
-                className={`w-full ${isDark ? 'text-brand-cyan' : 'text-cyan-600'}`}
+                className={`w-full ${isDark ? 'text-brand-cyan' : 'text-cyan-700'}`}
               >
                 <path
                   d="M0 9 H25 L32 2 L38 16 L45 5 L52 13 L58 9 H120"

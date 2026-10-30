@@ -3,6 +3,7 @@ import { ArrowLeft, Timer, Heart, Zap, Flame, ShieldAlert, ShieldCheck, AlertTri
 import { ScreenId, UserMode } from '../../types';
 import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
+import { useTheme } from '../../theme/ThemeContext';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -207,6 +208,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
   onNavigate
 }) => {
   const { language } = useLanguage();
+  const { isDark } = useTheme();
   const isEs = language === 'es';
 
   const roundTimeSec = userMode === 'kids' ? 6.5 : 4.0;
@@ -322,10 +324,12 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden"
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      className={`relative min-h-screen select-none font-sans flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
+      }`}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.png')` } : undefined}
     >
-      <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      {isDark && <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />}
 
       {gameState === 'intro' && (
         <GameIntroCountdown
@@ -361,19 +365,25 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
             <div className="flex items-center justify-between">
               <button
                 onClick={() => { sound.playClick(); onNavigate(userMode === 'kids' ? 'kids' : 'adults'); }}
-                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800 active:scale-95 transition-all"
+                className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all ${
+                  isDark
+                    ? 'bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan hover:bg-navy-800'
+                    : 'bg-white border border-cyan-200 text-cyan-700 shadow-sm hover:bg-cyan-50'
+                }`}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-navy-900/90 border border-rose-500/40 shadow-sm">
+              <div className={`flex items-center gap-1 px-3 py-1 rounded-full border shadow-sm ${
+                isDark ? 'bg-navy-900/90 border-rose-500/40' : 'bg-white border-rose-200'
+              }`}>
                 {[1, 2, 3].map((heartIdx) => (
                   <Heart
                     key={heartIdx}
                     className={`w-4 h-4 transition-all ${
                       heartIdx <= lives
                         ? 'text-rose-500 fill-rose-500 animate-pulse'
-                        : 'text-slate-600 fill-slate-700 opacity-40'
+                        : (isDark ? 'text-slate-600 fill-slate-700 opacity-40' : 'text-slate-300 fill-slate-300 opacity-50')
                     }`}
                   />
                 ))}
@@ -385,15 +395,21 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                     <Flame className="w-3.5 h-3.5 fill-orange-500" /> x{streak}
                   </div>
                 )}
-                <div className="bg-navy-900/90 px-3 py-1 rounded-2xl border border-brand-gold/40 flex items-center gap-1.5 shadow-sm">
+                <div className={`px-3 py-1 rounded-2xl border flex items-center gap-1.5 shadow-sm ${
+                  isDark ? 'bg-navy-900/90 border-brand-gold/40' : 'bg-white border-amber-200'
+                }`}>
                   <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-                  <span className="font-black text-xs text-brand-yellow tabular-nums">+{totalScore}</span>
+                  <span className={`font-black text-xs tabular-nums ${isDark ? 'text-brand-yellow' : 'text-amber-800 font-black'}`}>
+                    +{totalScore}
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-1 pt-1">
-              <div className="w-full h-2.5 rounded-full bg-navy-950 border border-white/10 overflow-hidden p-0.5">
+              <div className={`w-full h-2.5 rounded-full overflow-hidden p-0.5 border ${
+                isDark ? 'bg-navy-950 border-white/10' : 'bg-slate-200 border-slate-300'
+              }`}>
                 <div
                   className={`h-full rounded-full transition-all duration-100 ${
                     timeLeft > 2.0
@@ -405,9 +421,9 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                   style={{ width: `${gameState === 'feedback' ? 100 : timePercent}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] font-black uppercase text-slate-400">
+              <div className={`flex justify-between items-center text-[10px] font-black uppercase ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 <span>{isEs ? `Ronda ${currentIndex + 1} de ${scenarios.length}` : `Round ${currentIndex + 1} of ${scenarios.length}`}</span>
-                <span className={timeLeft <= 1.2 ? 'text-rose-400 font-extrabold animate-pulse' : 'text-brand-cyan'}>
+                <span className={timeLeft <= 1.2 ? 'text-rose-400 font-extrabold animate-pulse' : (isDark ? 'text-brand-cyan' : 'text-cyan-700 font-bold')}>
                   ⏱️ {timeLeft.toFixed(1)}s
                 </span>
               </div>
@@ -415,7 +431,9 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
           </div>
 
           <div className="relative z-10 my-auto py-2 space-y-3">
-            <div className="sismo-card p-5 rounded-3xl border-brand-cyan/40 bg-navy-950/90 backdrop-blur-xl text-center space-y-2 shadow-2xl relative overflow-hidden">
+            <div className={`sismo-card p-5 rounded-3xl text-center space-y-2 shadow-2xl relative overflow-hidden border ${
+              isDark ? 'border-brand-cyan/40 bg-navy-950/90 backdrop-blur-xl' : 'border-cyan-200 bg-white shadow-sm'
+            }`}>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-cyan/15 border border-brand-cyan/40 text-brand-cyan font-black text-[10px] uppercase tracking-wider">
                 <span>{currentScenario.contextTag}</span>
               </div>
@@ -426,7 +444,7 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                 </span>
               </div>
 
-              <h2 className="font-black text-lg sm:text-xl text-white uppercase tracking-tight leading-tight">
+              <h2 className={`font-black text-lg sm:text-xl uppercase tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {currentScenario.situation}
               </h2>
             </div>
@@ -437,16 +455,24 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                   <button
                     key={idx}
                     onClick={() => handleSelectOption(opt.isSafe)}
-                    className="relative flex flex-col justify-between rounded-2xl overflow-hidden bg-gradient-to-b from-navy-900/95 to-navy-950/95 border-2 border-white/20 hover:border-brand-cyan hover:scale-[1.03] active:scale-[0.97] transition-all text-center p-2.5 shadow-xl group"
+                    className={`relative flex flex-col justify-between rounded-2xl overflow-hidden border-2 hover:scale-[1.03] active:scale-[0.97] transition-all text-center p-2.5 shadow-xl group ${
+                      isDark
+                        ? 'bg-gradient-to-b from-navy-900/95 to-navy-950/95 border-white/20 hover:border-brand-cyan'
+                        : 'bg-white border-slate-200 hover:border-cyan-400 shadow-sm'
+                    }`}
                   >
                     <div className="flex items-center justify-between w-full pb-1.5">
-                      <span className="px-2 py-0.5 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan font-black text-[9px] uppercase tracking-wider">
+                      <span className={`px-2 py-0.5 rounded-full border font-black text-[9px] uppercase tracking-wider ${
+                        isDark ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan' : 'bg-cyan-50 border-cyan-200 text-cyan-800'
+                      }`}>
                         {idx === 0 ? (isEs ? 'OPCIÓN A' : 'OPTION A') : (isEs ? 'OPCIÓN B' : 'OPTION B')}
                       </span>
-                      <Zap className="w-3.5 h-3.5 text-brand-cyan opacity-40 group-hover:opacity-100 transition-opacity" />
+                      <Zap className={`w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity ${isDark ? 'text-brand-cyan' : 'text-cyan-600'}`} />
                     </div>
 
-                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-navy-900 border border-white/10 flex items-center justify-center mb-2 shadow-inner">
+                    <div className={`relative w-full aspect-square rounded-xl overflow-hidden border flex items-center justify-center mb-2 shadow-inner ${
+                      isDark ? 'bg-navy-900 border-white/10' : 'bg-slate-100 border-slate-200'
+                    }`}>
                       {opt.image ? (
                         <img
                           src={opt.image}
@@ -462,7 +488,9 @@ export const SafeHomeGame: React.FC<SafeHomeGameProps> = ({
                       </span>
                     </div>
 
-                    <span className="font-extrabold text-[11px] sm:text-xs text-slate-100 group-hover:text-white leading-tight line-clamp-3">
+                    <span className={`font-extrabold text-[11px] sm:text-xs leading-tight line-clamp-3 ${
+                      isDark ? 'text-slate-100 group-hover:text-white' : 'text-slate-800 group-hover:text-slate-950'
+                    }`}>
                       {opt.text}
                     </span>
                   </button>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Star, Sparkles, RotateCcw, ArrowRight, Flame, Zap, CheckCircle2 } from 'lucide-react';
 import { sound } from '../../lib/sound';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../theme/ThemeContext';
 
 export interface GameResultScreenProps {
   gameTitle: string;
@@ -25,6 +26,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   onContinue
 }) => {
   const { t } = useLanguage();
+  const { isDark } = useTheme();
   const [starsVisible, setStarsVisible] = useState<number>(0);
 
   // Calculate star count: 3 stars if >= 85%, 2 stars if >= 55%, 1 star otherwise
@@ -74,13 +76,21 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-navy-950/95 backdrop-blur-2xl flex flex-col justify-between p-5 select-none font-sans text-slate-100 max-w-md mx-auto animate-in fade-in duration-300">
+    <div className={`fixed inset-0 z-50 backdrop-blur-2xl flex flex-col justify-between p-5 select-none font-sans max-w-md mx-auto animate-in fade-in duration-300 ${
+      isDark ? 'bg-navy-950/95 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
       {/* Glow Effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-brand-gold/15 rounded-full blur-3xl pointer-events-none" />
+      {isDark && (
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-brand-gold/15 rounded-full blur-3xl pointer-events-none" />
+      )}
 
       {/* Top Header Badge */}
       <div className="relative z-10 pt-4 text-center">
-        <span className="px-4 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-yellow font-black text-[11px] uppercase tracking-[0.25em] inline-block shadow-glow-gold/30">
+        <span className={`px-4 py-1 rounded-full font-black text-[11px] uppercase tracking-[0.25em] inline-block ${
+          isDark
+            ? 'bg-brand-gold/15 border border-brand-gold/40 text-brand-yellow shadow-glow-gold/30'
+            : 'bg-amber-100 border border-amber-300 text-amber-800'
+        }`}>
           {t.gameResult.completedBadge}
         </span>
       </div>
@@ -90,84 +100,122 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
         {/* Animated 3 Stars */}
         <div className="flex justify-center items-end gap-3 pb-1">
           {/* Star 1 */}
-          <div className={`transition-all duration-300 ${starsVisible >= 1 ? 'scale-100 opacity-100 text-brand-yellow drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]' : 'scale-50 opacity-20 text-slate-600'}`}>
+          <div className={`transition-all duration-300 ${starsVisible >= 1 ? 'scale-100 opacity-100 text-brand-yellow drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]' : isDark ? 'scale-50 opacity-20 text-slate-600' : 'scale-50 opacity-20 text-slate-300'}`}>
             <Star className="w-12 h-12 fill-current rotate-[-12deg]" />
           </div>
 
           {/* Star 2 (Protagonist Middle Star) */}
-          <div className={`transition-all duration-300 -mb-2 ${starsVisible >= 2 ? 'scale-125 opacity-100 text-brand-yellow drop-shadow-[0_0_25px_rgba(250,204,21,0.9)]' : 'scale-75 opacity-20 text-slate-600'}`}>
+          <div className={`transition-all duration-300 -mb-2 ${starsVisible >= 2 ? 'scale-125 opacity-100 text-brand-yellow drop-shadow-[0_0_25px_rgba(250,204,21,0.9)]' : isDark ? 'scale-75 opacity-20 text-slate-600' : 'scale-75 opacity-20 text-slate-300'}`}>
             <Star className="w-16 h-16 fill-current" />
           </div>
 
           {/* Star 3 */}
-          <div className={`transition-all duration-300 ${starsVisible >= 3 ? 'scale-100 opacity-100 text-brand-yellow drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]' : 'scale-50 opacity-20 text-slate-600'}`}>
+          <div className={`transition-all duration-300 ${starsVisible >= 3 ? 'scale-100 opacity-100 text-brand-yellow drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]' : isDark ? 'scale-50 opacity-20 text-slate-600' : 'scale-50 opacity-20 text-slate-300'}`}>
             <Star className="w-12 h-12 fill-current rotate-[12deg]" />
           </div>
         </div>
 
         {/* Message */}
         <div className="space-y-1">
-          <h2 className="font-black text-2xl sm:text-3xl text-white uppercase tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
+          <h2 className={`font-black text-2xl sm:text-3xl uppercase tracking-tight leading-none ${
+            isDark ? 'text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]' : 'text-slate-900'
+          }`}>
             {getTitleMessage()}
           </h2>
-          <p className="text-xs text-slate-300 font-medium px-4 leading-relaxed">
+          <p className={`text-xs font-semibold px-4 leading-relaxed ${
+            isDark ? 'text-slate-300' : 'text-slate-600'
+          }`}>
             {getSubtitleMessage()}
           </p>
         </div>
 
         {/* XP Big Display */}
-        <div className="sismo-card p-4 rounded-3xl border-2 border-brand-gold/60 bg-gradient-to-b from-amber-950/40 via-navy-950/90 to-navy-950/95 shadow-[0_8px_30px_rgba(245,184,61,0.25)] space-y-3">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className={`p-4 rounded-3xl border-2 space-y-3 ${
+          isDark
+            ? 'sismo-card border-brand-gold/60 bg-gradient-to-b from-amber-950/40 via-navy-950/90 to-navy-950/95 shadow-[0_8px_30px_rgba(245,184,61,0.25)]'
+            : 'border-amber-300 bg-white shadow-md'
+        }`}>
+          <div className={`flex items-center justify-between border-b pb-3 ${
+            isDark ? 'border-white/10' : 'border-slate-200'
+          }`}>
             <div className="flex items-center gap-2 text-left">
-              <div className="w-10 h-10 rounded-2xl bg-brand-gold/20 border border-brand-gold/50 flex items-center justify-center text-brand-yellow shadow-glow-gold/30">
+              <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center ${
+                isDark ? 'bg-brand-gold/20 border-brand-gold/50 text-brand-yellow shadow-glow-gold/30' : 'bg-amber-100 border-amber-300 text-amber-700'
+              }`}>
                 <Sparkles className="w-5 h-5 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[10px] font-black text-brand-gold uppercase tracking-wider block">
+                <span className={`text-[10px] font-black uppercase tracking-wider block ${
+                  isDark ? 'text-brand-gold' : 'text-amber-800'
+                }`}>
                   {t.gameResult.xpEarned}
                 </span>
-                <span className="font-extrabold text-xs text-white">
+                <span className={`font-extrabold text-xs ${
+                  isDark ? 'text-white' : 'text-slate-900'
+                }`}>
                   {gameTitle}
                 </span>
               </div>
             </div>
 
             <div className="text-right">
-              <span className="font-black text-3xl text-brand-yellow tabular-nums drop-shadow-md">
+              <span className={`font-black text-3xl tabular-nums ${
+                isDark ? 'text-brand-yellow drop-shadow-md' : 'text-amber-700'
+              }`}>
                 +{earnedScore}
               </span>
-              <span className="text-xs font-bold text-brand-gold block">{t.gameResult.points}</span>
+              <span className={`text-xs font-bold block ${
+                isDark ? 'text-brand-gold' : 'text-amber-800'
+              }`}>{t.gameResult.points}</span>
             </div>
           </div>
 
           {/* Breakdown Stats 3 Columns */}
           <div className="grid grid-cols-3 gap-2 text-center pt-1">
-            <div className="bg-navy-900/80 p-2.5 rounded-2xl border border-white/10 space-y-0.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" />
-              <span className="font-black text-sm text-white tabular-nums block">
+            <div className={`p-2.5 rounded-2xl border space-y-0.5 ${
+              isDark ? 'bg-navy-900/80 border-white/10' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
+              <span className={`font-black text-sm tabular-nums block ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 {correctCount}/{totalCount}
               </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className={`text-[9px] font-bold uppercase tracking-wider block ${
+                isDark ? 'text-slate-400' : 'text-slate-700'
+              }`}>
                 {t.gameResult.accuracy}
               </span>
             </div>
 
-            <div className="bg-navy-900/80 p-2.5 rounded-2xl border border-white/10 space-y-0.5">
-              <Flame className="w-4 h-4 text-orange-400 mx-auto fill-orange-400" />
-              <span className="font-black text-sm text-white tabular-nums block">
+            <div className={`p-2.5 rounded-2xl border space-y-0.5 ${
+              isDark ? 'bg-navy-900/80 border-white/10' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <Flame className="w-4 h-4 text-amber-500 mx-auto fill-amber-500" />
+              <span className={`font-black text-sm tabular-nums block ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 x{Math.max(1, maxStreak)}
               </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className={`text-[9px] font-bold uppercase tracking-wider block ${
+                isDark ? 'text-slate-400' : 'text-slate-700'
+              }`}>
                 {t.gameResult.maxStreak}
               </span>
             </div>
 
-            <div className="bg-navy-900/80 p-2.5 rounded-2xl border border-white/10 space-y-0.5">
-              <Zap className="w-4 h-4 text-brand-cyan mx-auto" />
-              <span className="font-black text-sm text-white tabular-nums block">
+            <div className={`p-2.5 rounded-2xl border space-y-0.5 ${
+              isDark ? 'bg-navy-900/80 border-white/10' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <Zap className="w-4 h-4 text-cyan-600 mx-auto" />
+              <span className={`font-black text-sm tabular-nums block ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 +{speedBonus}
               </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className={`text-[9px] font-bold uppercase tracking-wider block ${
+                isDark ? 'text-slate-400' : 'text-slate-700'
+              }`}>
                 {t.gameResult.speedBonus}
               </span>
             </div>
@@ -187,9 +235,13 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
         <button
           onClick={() => { sound.playClick(); onReplay(); }}
-          className="w-full h-12 rounded-full bg-navy-900/90 border border-white/20 hover:border-brand-cyan/50 text-slate-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          className={`w-full h-12 rounded-full border font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+            isDark
+              ? 'bg-navy-900/90 border-white/20 hover:border-brand-cyan/50 text-slate-200'
+              : 'bg-white border-slate-300 hover:border-slate-400 text-slate-700 shadow-sm'
+          }`}
         >
-          <RotateCcw className="w-4 h-4 text-brand-cyan" />
+          <RotateCcw className="w-4 h-4 text-cyan-600" />
           <span>{t.gameResult.replayBtn}</span>
         </button>
       </div>

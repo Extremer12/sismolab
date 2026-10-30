@@ -4,6 +4,7 @@ import { ScreenId, MythStatement, UserMode } from '../../types';
 import { getRandomMyths } from '../../services/gamesService';
 import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
+import { useTheme } from '../../theme/ThemeContext';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
 
@@ -18,6 +19,7 @@ export const MythOrRealityGame: React.FC<MythOrRealityGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const { isDark } = useTheme();
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
   const [statements, setStatements] = useState<MythStatement[]>(() => getRandomMyths(5, userMode));
 
@@ -129,10 +131,12 @@ export const MythOrRealityGame: React.FC<MythOrRealityGameProps> = ({
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden"
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      className={`relative min-h-screen select-none font-sans flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
+      }`}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.png')` } : undefined}
     >
-      <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      {isDark && <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />}
 
       {/* 1. INTRO COUNTDOWN SCREEN */}
       {gameState === 'intro' && (

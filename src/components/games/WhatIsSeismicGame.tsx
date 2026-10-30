@@ -4,6 +4,7 @@ import { ScreenId, UserMode, Question } from '../../types';
 import { getRandomQuestions } from '../../services/gamesService';
 import { Button } from '../ui/Button';
 import { sound } from '../../lib/sound';
+import { useTheme } from '../../theme/ThemeContext';
 import { GameIntroCountdown } from './GameIntroCountdown';
 import { GameResultScreen } from './GameResultScreen';
 
@@ -18,6 +19,7 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
   onFinishGame,
   onNavigate
 }) => {
+  const { isDark } = useTheme();
   const timerLimit = userMode === 'kids' ? 20 : 15;
 
   // Game States: 'intro' | 'playing' | 'result'
@@ -128,10 +130,12 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center bg-fixed select-none font-sans text-slate-100 flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden"
-      style={{ backgroundImage: `url('/images/fondoinicio.png')` }}
+      className={`relative min-h-screen select-none font-sans flex flex-col justify-between p-4 sm:p-5 pb-24 max-w-md mx-auto overflow-x-hidden transition-colors duration-200 ${
+        isDark ? 'bg-navy-950 text-slate-100 bg-cover bg-center bg-fixed' : 'bg-[#F8FAFC] text-slate-900'
+      }`}
+      style={isDark ? { backgroundImage: `url('/images/fondoinicio.png')` } : undefined}
     >
-      <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />
+      {isDark && <div className="fixed inset-0 bg-navy-950/85 pointer-events-none z-0" />}
 
       {/* 1. INTRO COUNTDOWN SCREEN */}
       {gameState === 'intro' && (
@@ -169,7 +173,11 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
             <div className="flex items-center justify-between">
               <button
                 onClick={() => { sound.playClick(); onNavigate(userMode === 'kids' ? 'kids' : 'adults'); }}
-                className="w-10 h-10 rounded-full bg-navy-900/90 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan hover:bg-navy-800"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  isDark
+                    ? 'bg-navy-900/90 border border-brand-cyan/40 text-brand-cyan hover:bg-navy-800'
+                    : 'bg-white border border-cyan-200 text-cyan-700 shadow-sm hover:bg-cyan-50'
+                }`}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -183,23 +191,29 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
               )}
 
               {/* Quick Score */}
-              <div className="flex items-center gap-1.5 bg-navy-900/90 px-3 py-1 rounded-2xl border border-brand-gold/40 shadow-sm">
+              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-2xl border shadow-sm ${
+                isDark ? 'bg-navy-900/90 border-brand-gold/40' : 'bg-white border-amber-200 shadow-xs'
+              }`}>
                 <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-                <span className="font-black text-xs text-brand-yellow tabular-nums">+{earnedScore} pts</span>
+                <span className={`font-black text-xs tabular-nums ${isDark ? 'text-brand-yellow' : 'text-amber-800 font-black'}`}>
+                  +{earnedScore} pts
+                </span>
               </div>
             </div>
 
             {/* Progress & Speed Timer Bar */}
             <div className="space-y-1">
-              <div className="flex justify-between items-center text-[10px] font-black text-slate-400">
+              <div className={`flex justify-between items-center text-[10px] font-black ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 <span>PREGUNTA {currentIdx + 1} DE {activeQuestions.length}</span>
-                <span className={`flex items-center gap-1 font-black text-xs ${questionTimer <= 5 ? 'text-rose-400 animate-pulse' : 'text-brand-cyan'}`}>
+                <span className={`flex items-center gap-1 font-black text-xs ${questionTimer <= 5 ? 'text-rose-400 animate-pulse' : (isDark ? 'text-brand-cyan' : 'text-cyan-700')}`}>
                   <Timer className="w-3.5 h-3.5" />
                   <span>{questionTimer}s</span>
                 </span>
               </div>
 
-              <div className="w-full h-2.5 bg-navy-900 rounded-full overflow-hidden p-0.5 border border-white/10">
+              <div className={`w-full h-2.5 rounded-full overflow-hidden p-0.5 border ${
+                isDark ? 'bg-navy-900 border-white/10' : 'bg-slate-200 border-slate-300'
+              }`}>
                 <div
                   className={`h-full rounded-full transition-all duration-1000 ${
                     questionTimer <= 5 ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]' : 'bg-gradient-to-r from-brand-electric to-brand-cyan'
@@ -213,26 +227,36 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
           {/* Center Question & Options */}
           <div className="relative z-10 my-auto space-y-3.5 py-2">
             {/* Question Card */}
-            <div className="sismo-card p-4 sm:p-5 space-y-2 border-2 border-brand-cyan/40 bg-navy-950/90 backdrop-blur-xl shadow-glow-cyan/20">
+            <div className={`sismo-card p-4 sm:p-5 space-y-2 border-2 ${
+              isDark ? 'border-brand-cyan/40 bg-navy-950/90 backdrop-blur-xl shadow-glow-cyan/20' : 'border-cyan-200 bg-white shadow-sm'
+            }`}>
               {/* Question Image (if present) */}
               {question.image_url && (
-                <div className="relative w-full aspect-[16/8.5] sm:aspect-[16/8] rounded-2xl overflow-hidden border border-brand-cyan/30 shadow-md bg-navy-900 flex items-center justify-center">
+                <div className={`relative w-full aspect-[16/8.5] sm:aspect-[16/8] rounded-2xl overflow-hidden border shadow-md flex items-center justify-center ${
+                  isDark ? 'border-brand-cyan/30 bg-navy-900' : 'border-slate-200 bg-slate-100'
+                }`}>
                   <img
                     src={question.image_url}
                     alt={question.question}
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     loading="eager"
                   />
-                  <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-navy-950/80 border border-brand-cyan/40 text-brand-cyan font-black text-[9px] uppercase tracking-wider backdrop-blur-md">
+                  <div className={`absolute top-2 right-2 px-2.5 py-0.5 rounded-full border font-black text-[9px] uppercase tracking-wider backdrop-blur-md ${
+                    isDark ? 'bg-navy-950/80 border-brand-cyan/40 text-brand-cyan' : 'bg-white/90 border-cyan-300 text-cyan-800'
+                  }`}>
                     {userMode === 'kids' ? 'MODO NIÑOS' : 'INPRES'}
                   </div>
                 </div>
               )}
 
-              <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest block pt-0.5">
+              <span className={`text-[10px] font-black uppercase tracking-widest block pt-0.5 ${
+                isDark ? 'text-brand-cyan' : 'text-cyan-700'
+              }`}>
                 {userMode === 'kids' ? 'DESAFÍO SÍSMICO' : 'CIENCIA SÍSMICA'} · NIVEL {question.difficulty.toUpperCase()}
               </span>
-              <h2 className="font-black text-base sm:text-lg text-white leading-snug">
+              <h2 className={`font-black text-base sm:text-lg leading-snug ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 {question.question}
               </h2>
             </div>
@@ -243,14 +267,16 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
                 const isSelected = selectedOption === opt.key;
                 const isCorrect = opt.key === question.correct_option;
 
-                let btnStyle = 'border border-white/15 bg-navy-950/80 hover:border-brand-cyan/50 text-slate-200';
+                let btnStyle = isDark
+                  ? 'border border-white/15 bg-navy-950/80 hover:border-brand-cyan/50 text-slate-200'
+                  : 'border border-slate-200 bg-white hover:border-cyan-400 text-slate-800 shadow-xs';
                 if (isAnswered) {
                   if (isCorrect) {
                     btnStyle = 'bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-bold shadow-[0_0_20px_rgba(16,185,129,0.4)]';
                   } else if (isSelected && !isCorrect) {
                     btnStyle = 'bg-rose-950/90 border-2 border-rose-500 text-rose-100 font-bold animate-shake';
                   } else {
-                    btnStyle = 'opacity-40 border-white/5 bg-navy-950/60';
+                    btnStyle = isDark ? 'opacity-40 border-white/5 bg-navy-950/60' : 'opacity-40 border-slate-100 bg-slate-50';
                   }
                 }
 
@@ -262,7 +288,9 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
                     className={`w-full p-4 rounded-2xl flex items-center justify-between text-left transition-all active:scale-[0.98] ${btnStyle}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-xl bg-navy-900 border border-white/10 flex items-center justify-center font-black text-xs text-brand-cyan shrink-0 uppercase">
+                      <span className={`w-8 h-8 rounded-xl border flex items-center justify-center font-black text-xs shrink-0 uppercase ${
+                        isDark ? 'bg-navy-900 border-white/10 text-brand-cyan' : 'bg-cyan-50 border-cyan-200 text-cyan-800'
+                      }`}>
                         {opt.key}
                       </span>
                       <span className="text-xs sm:text-sm font-semibold leading-snug">
@@ -283,23 +311,27 @@ export const WhatIsSeismicGame: React.FC<WhatIsSeismicGameProps> = ({
 
             {/* Dynamic In-place Feedback Sheet */}
             {isAnswered && (
-              <div className="sismo-card p-4 space-y-2.5 border-brand-cyan/50 bg-navy-900/90 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+              <div className={`sismo-card p-4 space-y-2.5 border backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 ${
+                isDark ? 'border-brand-cyan/50 bg-navy-900/90 text-slate-300' : 'border-cyan-200 bg-white text-slate-700 shadow-md'
+              }`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-brand-yellow shrink-0" />
-                    <h3 className="font-black text-xs sm:text-sm text-white">
+                    <Lightbulb className="w-4 h-4 text-brand-gold shrink-0" />
+                    <h3 className={`font-black text-xs sm:text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {selectedOption === question.correct_option ? '¡EXCELENTE RESPUESTA!' : 'EXPLICACIÓN INPRES:'}
                     </h3>
                   </div>
 
                   {speedBonusAwarded > 0 && (
-                    <span className="text-[10px] font-black text-brand-yellow uppercase flex items-center gap-1 bg-amber-950/80 px-2 py-0.5 rounded-md border border-brand-gold/40">
-                      <Zap className="w-3 h-3 text-brand-gold" /> +{speedBonusAwarded} VELOZ
+                    <span className={`text-[10px] font-black uppercase flex items-center gap-1 px-2 py-0.5 rounded-md border ${
+                      isDark ? 'text-brand-yellow bg-amber-950/80 border-brand-gold/40' : 'text-amber-800 bg-amber-50 border-amber-300'
+                    }`}>
+                      <Zap className="w-3 h-3 text-amber-500" /> +{speedBonusAwarded} VELOZ
                     </span>
                   )}
                 </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                   {question.explanation}
                 </p>
 
